@@ -28,7 +28,7 @@ MODULE MOD_CaMa_colmCaMa
    USE CMF_CTRL_OUTPUT_MOD,       only: CMF_OUTPUT_INIT,CMF_OUTPUT_END,NVARSOUT,VAROUT
    USE YOS_CMF_INPUT,             only: NXIN, NYIN, DT,DTIN,IFRQ_INP,LLEAPYR,NX,NY,RMIS,DMIS
    USE MOD_Precision,             only: r8,r4
-   USE YOS_CMF_INPUT ,            only: LROSPLIT,LWEVAP,LWINFILT,LDAMIRR,CSETFILE
+   USE YOS_CMF_INPUT ,            only: LROSPLIT,LWEVAP,LWINFILT,LDAMIRR,CSETFILE,LSEDIMENT
    USE YOS_CMF_MAP,               only: D1LON, D1LAT
    USE YOS_CMF_INPUT,             only: WEST,EAST,NORTH,SOUTH
    USE YOS_CMF_INPUT,             ONLY: LOGNAM
@@ -45,7 +45,9 @@ MODULE MOD_CaMa_colmCaMa
                                           release_cama,release_cama_riv,release_cama_dam,release_cama_rof
 
    USE CMF_CTRL_RESTART_MOD
+   USE CMF_CTRL_SED_MOD,          only: CMF_SED_RESTART_WRITE,CMF_SED_FORCING_PUT
    USE YOS_CMF_MAP,               only: R2GRDARE
+   USE CMF_CTRL_OUTPUT_MOD,       only: CVNAMES
    IMPLICIT NONE
    !----------------------- Dummy argument --------------------------------
    integer I,J
@@ -53,7 +55,7 @@ MODULE MOD_CaMa_colmCaMa
    integer(KIND=JPIM)              :: ISTEPADV            ! time step to be advanced within DRV_ADVANCE
    real(r8),ALLOCATABLE            :: ZBUFF(:,:,:)        ! Buffer to store forcing runoff
    real(r8),ALLOCATABLE            :: ZBUFF_2(:,:,:)        ! Buffer to store forcing runoff
-
+   real(r8),ALLOCATABLE            :: ZBUFF_SED(:,:)        ! Buffer to store forcing sediment
    INTERFACE colm_CaMa_init
       MODULE PROCEDURE colm_CaMa_init
    END INTERFACE
@@ -76,10 +78,6 @@ CONTAINS
 
    integer i,j
    integer(KIND=JPIM)          :: JF
-
-#ifdef USEMPI
-      CALL mpi_barrier (p_comm_glb, p_err)
-#endif
 
       IF (p_is_master) THEN
          CSETFILE = DEF_CaMa_Namelist
@@ -107,9 +105,10 @@ CONTAINS
          DMIS     = spval
 
          CALL CMF_DRV_INIT       !INITIALIZATION
+
          !Initialize varialbes to be outputed from variable list
          DO JF=1,NVARSOUT
-            SELECT CASE (VAROUT(JF)%CVNAME)
+            SELECT CASE (CVNAMES(JF))
             CASE ('rivout') ! river discharge [m3/s]
                DEF_hist_cama_vars%rivout=.true.
             CASE ('rivsto') ! river storage  [m3]
@@ -188,6 +187,50 @@ CONTAINS
                ENDIF
             CASE ('outflw_ocean') ! discharge to ocean [m3/s]
                DEF_hist_cama_vars%outflw_ocean=.true.
+            CASE ('sedout') ! suspended sediment flow [m3/s]
+               IF (LSEDIMENT) THEN
+                  DEF_hist_cama_vars%sedout=.true.
+               ELSE
+                  DEF_hist_cama_vars%sedout=.false.
+               ENDIF
+            CASE ('sedcon') ! suspended sediment concentration [m3/m3]
+               IF (LSEDIMENT) THEN
+                  DEF_hist_cama_vars%sedcon=.true.
+               ELSE
+                  DEF_hist_cama_vars%sedcon=.false.
+               ENDIF
+            CASE ('sedinp') ! sediment inflow from land [m3/s]
+               IF (LSEDIMENT) THEN
+                  DEF_hist_cama_vars%sedinp=.true.
+               ELSE
+                  DEF_hist_cama_vars%sedinp=.false.
+               ENDIF
+            CASE ('bedout') ! bedload [m3/s]
+               IF (LSEDIMENT) THEN
+                  DEF_hist_cama_vars%bedout=.true.
+               ELSE
+                  DEF_hist_cama_vars%bedout=.false.
+               ENDIF
+            CASE ('netflw') ! net entrainment flow [m3/s]
+               IF (LSEDIMENT) THEN
+                  DEF_hist_cama_vars%netflw=.true.
+               ELSE
+                  DEF_hist_cama_vars%netflw=.false.
+               ENDIF
+            CASE ('layer') ! exchange layer volume [m3]
+               IF (LSEDIMENT) THEN
+                  DEF_hist_cama_vars%layer=.true.
+               ELSE
+                  DEF_hist_cama_vars%layer=.false.
+               ENDIF
+            CASE ('deplyr') ! river bed volume (vertical layer) [m3]
+               IF (LSEDIMENT) THEN
+                  ! Note: deplyr is a special case for sediment deposition layers
+                  ! It requires additional parsing to determine layer number
+                  DEF_hist_cama_vars%layer=.true.  ! Use existing layer flag
+               ELSE
+                  DEF_hist_cama_vars%layer=.false.
+               ENDIF
             CASE DEFAULT
                STOP
             END SELECT
@@ -202,7 +245,8 @@ CONTAINS
       CALL mpi_bcast (LWEVAP  ,   1, MPI_LOGICAL,   p_address_master, p_comm_glb, p_err) ! switch for inundation evaporation
       CALL mpi_bcast (LWINFILT,   1, MPI_LOGICAL,   p_address_master, p_comm_glb, p_err) ! switch for inundation re-infiltration
       CALL mpi_bcast (LDAMIRR ,   1, MPI_LOGICAL,   p_address_master, p_comm_glb, p_err) ! switch for deficit irrigation
-
+      CALL mpi_bcast (LSEDIMENT,  1, MPI_LOGICAL,   p_address_master, p_comm_glb, p_err) ! switch for sediment transport
+      
       IF (.not. allocated(D1LAT))  allocate (D1LAT(NY))
       IF (.not. allocated(D1LON))  allocate (D1LON(NX))
 
@@ -227,11 +271,13 @@ CONTAINS
       !Only master processor allocate the 2D variables
       IF (p_is_master) THEN
          allocate (runoff_2d (NX,NY))
+         allocate (prcp_2d (NX,NY))
          allocate (fevpg_2d  (NX,NY))
          allocate (finfg_2d  (NX,NY))
          !allocate data buffer for input forcing, flood fraction and flood depth
          allocate (ZBUFF(NX,NY,2))
          allocate (ZBUFF_2(NX,NY,2))
+         allocate (ZBUFF_SED(NX,NY))
          allocate (fldfrc_tmp(NX,NY))
          allocate (flddepth_tmp(NX,NY))
          allocate (dirrig_2d (NX,NY))
@@ -249,10 +295,13 @@ CONTAINS
          allocate (release_cama_rof(NX,NY))
          !Initialize the data buffer for input forcing, flood fraction and flood depth
          runoff_2d(:,:)    = 0.0 !runoff in master processor
+         prcp_2d(:,:)      = 0.0
          fevpg_2d(:,:)     = 0.0 !evaporation in master processor
          finfg_2d(:,:)     = 0.0 !re-infiltration in master processor
          ZBUFF(:,:,:)      = 0.0 !input forcing in master processor
          ZBUFF_2(:,:,:)    = 0.0 !input forcing in master processor
+         ZBUFF_SED(:,:)    = 0.0 !input forcing in master processor
+         
          fldfrc_tmp(:,:)   = 0.0 !flood fraction in master processor
          flddepth_tmp(:,:) = 0.0 !flood depth in master processor
          dirrig_2d(:,:)    = 0.0 !deficit_irrigation in master processor
@@ -304,15 +353,11 @@ CONTAINS
       ! If the time is the same as the input time step of cama-flood
       IF  (MOD(idate_sec,3600*int(IFRQ_INP))==0) THEN
          ! Prepare sending the accumulated runoff flux varilble to cama model (master processor to worker processors)
-#ifdef USEMPI
-            CALL mpi_barrier (p_comm_glb, p_err)
-#endif
          CALL colm2cama_real8 (a_rnof_cama, f_rnof_cama, runoff_2d)
-
+         IF (LSEDIMENT) THEN
+            CALL colm2cama_real8 (a_prcp_cama, f_prcp_cama, prcp_2d)
+         ENDIF
          IF (LDAMIRR) THEN 
-#ifdef USEMPI
-            CALL mpi_barrier (p_comm_glb, p_err)
-#endif
             ! Prepare sending the accumulated deficit irriggation varilble to cama model (master processor to worker processors)
             IF (p_is_worker) THEN
                dirrig_tmp = a_dirrig_cama
@@ -335,14 +380,10 @@ CONTAINS
             CALL colm2cama_real8 (a_finfg_fld, f_finfg_fld, finfg_2d)
          ENDIF
 
-#ifdef USEMPI
-         CALL mpi_barrier (p_comm_glb, p_err)
-#endif
+
       ! Reset the accumulation variables
          CALL flush_acc_cama_fluxes
-#ifdef USEMPI
-         CALL mpi_barrier (p_comm_glb, p_err)
-#endif
+
          ! Initialize the variables unit for cama-flood input
          IF(p_is_master)THEN
             ! Use vectorized operations for better performance
@@ -351,14 +392,14 @@ CONTAINS
             
             IF (LWEVAP) THEN
                ZBUFF_2(:,:,1) = fevpg_2d(:,:) * 1.0D-3 ! mm/s -->m/s
-            ELSE
-               ZBUFF_2(:,:,1) = 0.0D0
             ENDIF
             
             IF (LWINFILT) THEN
                ZBUFF_2(:,:,2) = finfg_2d(:,:) * 1.0D-3  !mm/s -->m/s
-            ELSE
-               ZBUFF_2(:,:,2) = 0.0D0
+            ENDIF
+
+            IF (LSEDIMENT) THEN
+               ZBUFF_SED(:,:) = prcp_2d(:,:) !* 1.0D-3 ! mm/s  
             ENDIF
 
             IF (LDAMIRR) THEN
@@ -403,6 +444,9 @@ CONTAINS
             ISTEPADV=INT(DTIN/DT,JPIM)
             ! Interporlate variables & send to CaMa-Flood
             CALL CMF_FORCING_PUT(real(ZBUFF,kind=JPRB),real(ZBUFF_2,kind=JPRB))
+            IF (LSEDIMENT) THEN
+               CALL CMF_SED_FORCING_PUT(real(ZBUFF_SED,kind=JPRB))
+            ENDIF
             ! Advance CaMa-Flood model for ISTEPADV
             CALL CMF_DRV_ADVANCE(ISTEPADV)
             ! Get the flood depth and flood fraction from cama-flood model
@@ -414,9 +458,7 @@ CONTAINS
          IF (LWINFILT .or. LWEVAP) THEN
             CALL cama2colm_real8 (flddepth_tmp, f_flddepth_cama, flddepth_cama)! unit [m]
             CALL cama2colm_real8 (fldfrc_tmp,   f_fldfrc_cama,   fldfrc_cama  ) ! unit [%]
-#ifdef USEMPI
-            CALL mpi_barrier (p_comm_glb, p_err)
-#endif
+
             IF (p_is_worker) flddepth_cama=flddepth_cama*1000.D0 !m --> mm
             IF (p_is_worker) fldfrc_cama=fldfrc_cama/100.D0     !% --> [0-1]
          ENDIF
@@ -440,9 +482,7 @@ CONTAINS
                   ENDDO
                ENDDO
             ENDIF
-#ifdef USEMPI
-            CALL mpi_barrier (p_comm_glb, p_err)
-#endif
+
             IF (p_is_worker) THEN
                withdrawal_cama = dirrig_day
                withdrawal_riv_cama = dirrig_day
@@ -462,15 +502,14 @@ CONTAINS
    USE YOS_CMF_MAP, only: I2NEXTX
 
    IMPLICIT NONE
-#ifdef USEMPI
-      CALL mpi_barrier (p_comm_glb, p_err)
-#endif
+
       ! finalize CaMa-Flood
       CALL deallocate_acc_cama_Fluxes ()
       IF(p_is_master)THEN
          ! finalize CaMa-Flood
          deallocate(ZBUFF)
          deallocate(ZBUFF_2)
+         deallocate(ZBUFF_SED)
          deallocate (runoff_2d)
          deallocate (fevpg_2d)
          deallocate (finfg_2d)
@@ -521,6 +560,9 @@ CONTAINS
       CRESTDIR =    trim(DEF_dir_restart)// '/CaMa'//'/'//trim(cdate)//'/'
       CALL system('mkdir -p ' // trim(CRESTDIR))
       CALL CMF_RESTART_WRITE()
+      IF (LSEDIMENT) THEN
+         CALL CMF_SED_RESTART_WRITE()
+      ENDIF
 
    END SUBROUTINE colm_cama_write_restart
 

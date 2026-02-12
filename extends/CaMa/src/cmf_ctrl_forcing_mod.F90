@@ -22,7 +22,7 @@ MODULE CMF_CTRL_FORCING_MOD
 ! See the License for the specific language governing permissions and limitations under the License.
 !==========================================================
 USE PARKIND1,                ONLY: JPIM, JPRB, JPRM
-USE YOS_CMF_INPUT,           ONLY: LOGNAM, LWEVAP, LWINFILT
+USE YOS_CMF_INPUT,           ONLY: LOGNAM, LWEVAP, LWINFILT,LSEDIMENT
 USE YOS_CMF_MAP,             ONLY: INPX, INPY, INPA, INPXI, INPYI, INPAI, INPNI
 !============================
 IMPLICIT NONE
@@ -726,6 +726,7 @@ SUBROUTINE CMF_FORCING_PUT(PBUFF,PBUFF2)
       !  add water re-infiltration calculation 
 USE YOS_CMF_INPUT,           ONLY: LROSPLIT,LWEVAP,LWINFILT
 USE YOS_CMF_PROG,            ONLY: D2RUNOFF,D2ROFSUB,D2WEVAP,D2WINFILT
+!USE CMF_CTRL_SED_MOD,        ONLY: D2SEDINP
 IMPLICIT NONE 
 ! Declaration of arguments 
 real(KIND=JPRB), intent(in)     :: PBUFF(:,:,:)
@@ -839,6 +840,7 @@ ENDDO
 
 END SUBROUTINE CONV_RESOL
 !==========================================================
+
 
 END SUBROUTINE CMF_FORCING_PUT
 !####################################################################

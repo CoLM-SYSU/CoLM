@@ -30,14 +30,19 @@ MODULE MOD_CaMa_Vars
    USE MOD_DataType
    USE PARKIND1,                 only: JPRB
    USE MOD_SpatialMapping
-   USE YOS_CMF_INPUT,            only: RMIS, DMIS
+   USE YOS_CMF_INPUT,            only: RMIS, DMIS,LSEDIMENT
    USE MOD_Vars_Global,          only: spval
    USE YOS_CMF_INPUT,            ONLY: LOGNAM
+   USE CMF_CTRL_SED_MOD,         ONLY: nsed, sDiam, d2sedout_avg, d2sedcon, d2sedinp_avg, d2bedout_avg, d2netflw_avg, d2layer
 
    real(r8) :: nacc                                        ! number of accumulation
    real(r8), allocatable         :: a_rnof_cama (:)        ! on worker : total runoff [mm/s]
    type(block_data_real8_2d)     :: f_rnof_cama            ! on IO     : total runoff [mm/s]
    real(r8), allocatable         :: runoff_2d (:,:)        ! on Master : total runoff [mm/s]
+   ! Precipitation for sediment forcing (coupled mode)
+   real(r8), allocatable         :: a_prcp_cama (:)        ! on worker : precipitation (rain+snow) [mm/s]
+   type(block_data_real8_2d)     :: f_prcp_cama            ! on IO     : precipitation [mm/s]
+   real(r8), allocatable         :: prcp_2d (:,:)          ! on Master : precipitation [mm/s]
    
    !!!!!!!!!!!! added by shulei
    real(r8), allocatable         :: a_dirrig_cama (:)      ! on worker : total runoff [mm/s]
@@ -127,6 +132,12 @@ MODULE MOD_CaMa_Vars
       logical :: levdph       = .false.
       logical :: outflw_ocean = .false.
       logical :: outins       = .false.
+      logical :: sedout       = .false.
+      logical :: sedcon       = .false.
+      logical :: sedinp       = .false.
+      logical :: bedout       = .false.
+      logical :: netflw       = .false.
+      logical :: layer        = .false.
    END type history_var_cama_type
 
    type (history_var_cama_type) :: DEF_hist_cama_vars
@@ -142,6 +153,7 @@ MODULE MOD_CaMa_Vars
    PUBLIC :: cama2colm_real8
    PUBLIC :: camavar2colm_real8
    PUBLIC :: hist_out_cama
+   PUBLIC :: flux_map_and_write_3d_cama
 
 CONTAINS
 
@@ -171,6 +183,7 @@ CONTAINS
             allocate (a_fevpg_fld(numpatch))
             allocate (a_finfg_fld(numpatch))
             allocate (a_dirrig_cama(numpatch))
+            allocate (a_prcp_cama(numpatch))
          ENDIF
       ENDIF
 
@@ -196,6 +209,7 @@ CONTAINS
       IF (p_is_worker) THEN
          IF (numpatch > 0) THEN
             deallocate (a_rnof_cama)
+            deallocate (a_prcp_cama)
             deallocate (a_fevpg_fld)
             deallocate (a_finfg_fld)
             deallocate (a_dirrig_cama)
@@ -228,6 +242,7 @@ CONTAINS
          IF (numpatch > 0) THEN
             ! flush the Fluxes for accumulation
             a_rnof_cama (:) = spval
+            a_prcp_cama (:) = spval
             a_fevpg_fld (:) = spval
             a_finfg_fld (:) = spval
             a_dirrig_cama(:)= spval
@@ -252,6 +267,7 @@ CONTAINS
    USE MOD_Precision
    USE MOD_SPMD_Task
    USE MOD_Vars_1DFluxes, only: rnof
+   USE MOD_Vars_1DForcing, only: forc_rain
    USE MOD_Vars_TimeVariables, only: reservoirriver_demand
    USE MOD_LandPatch, only: numpatch
 
@@ -263,6 +279,7 @@ CONTAINS
          IF (numpatch > 0) THEN
             nacc = nacc + 1
             CALL acc1d_cama (rnof, a_rnof_cama)
+            CALL acc1d_cama (forc_rain, a_prcp_cama)
             CALL acc1d_cama (fevpg_fld, a_fevpg_fld)
             CALL acc1d_cama (finfg_fld, a_finfg_fld)
             call acc1d_cama (reservoirriver_demand, a_dirrig_cama)
@@ -328,6 +345,7 @@ CONTAINS
 
       IF (p_is_io) THEN
          CALL allocate_block_data (grid, f_rnof_cama)      ! total runoff         [m/s]
+         CALL allocate_block_data (grid, f_prcp_cama)      ! precipitation         [m/s]
          CALL allocate_block_data (grid, f_flddepth_cama)  ! inundation depth     [m/s]
          CALL allocate_block_data (grid, f_fldfrc_cama)    ! inundation fraction  [m/s]
          !TODO: check the following variables
@@ -489,6 +507,40 @@ CONTAINS
       real(D2OUTFLW_oAVG), file_hist, 'outflw_ocean', itime_in_file,'discharge to ocean','m3/s')
       ENDIF
 
+      ! Sediment output
+      IF (DEF_hist_cama_vars%sedout) THEN
+      CALL flux_map_and_write_3d_cama(DEF_hist_cama_vars%sedout, &
+      real(d2sedout_avg), file_hist, 'sedout', itime_in_file,'suspended sediment flow','m3/s')
+      ENDIF
+
+      IF (DEF_hist_cama_vars%sedcon) THEN
+      CALL flux_map_and_write_3d_cama(DEF_hist_cama_vars%sedcon, &
+      real(d2sedcon), file_hist, 'sedcon', itime_in_file,'suspended sediment concentration','m3/m3')
+      ENDIF
+
+      IF (DEF_hist_cama_vars%sedinp) THEN
+      CALL flux_map_and_write_3d_cama(DEF_hist_cama_vars%sedinp, &
+      real(d2sedinp_avg), file_hist, 'sedinp', itime_in_file,'sediment inflow from land','m3/s')
+      ENDIF
+
+      IF (DEF_hist_cama_vars%bedout) THEN
+      CALL flux_map_and_write_3d_cama(DEF_hist_cama_vars%bedout, &
+      real(d2bedout_avg), file_hist, 'bedout', itime_in_file,'bedload','m3/s')
+      ENDIF
+
+      IF (DEF_hist_cama_vars%netflw) THEN
+      CALL flux_map_and_write_3d_cama(DEF_hist_cama_vars%netflw, &
+      real(d2netflw_avg), file_hist, 'netflw', itime_in_file,'net entrainment flow','m3/s')
+      ENDIF
+
+      IF (DEF_hist_cama_vars%layer) THEN
+      CALL flux_map_and_write_3d_cama(DEF_hist_cama_vars%layer, &
+      real(d2layer), file_hist, 'layer', itime_in_file,'exchange layer volume','m3')
+      ENDIF
+
+      ! Handle deplyr variables (sediment deposition layers)
+      ! Note: deplyr parsing would require additional logic to extract layer number
+      ! For now, we use the same layer variable as a placeholder
 
       !*** reset variable
       CALL CMF_DIAG_RESET_OUTPUT
@@ -516,6 +568,7 @@ CONTAINS
    USE MOD_NetCDFSerial
    USE YOS_CMF_INPUT, only: NX, NY
    USE YOS_CMF_MAP,   only: D1LON, D1LAT
+   USE CMF_CTRL_SED_MOD, only: nsed, sDiam
 
    IMPLICIT NONE
 
@@ -526,6 +579,7 @@ CONTAINS
 
    ! Local variables
    logical :: fexists
+   logical :: needSedDef
 
       IF (p_is_master) THEN
          inquire (file=filename, exist=fexists)
@@ -534,8 +588,19 @@ CONTAINS
             CALL ncio_define_dimension(filename, 'time', 0)
             CALL ncio_define_dimension(filename,'lat_cama', NY)
             CALL ncio_define_dimension(filename,'lon_cama', NX)
+            ! Define sediment dimension only if any sediment outputs are enabled
+            needSedDef = LSEDIMENT .and. ( &
+     &         DEF_hist_cama_vars%sedout .or. DEF_hist_cama_vars%sedcon .or. DEF_hist_cama_vars%sedinp .or. &
+     &         DEF_hist_cama_vars%bedout .or. DEF_hist_cama_vars%netflw .or. DEF_hist_cama_vars%layer)
+            IF (needSedDef) CALL ncio_define_dimension(filename, 'sedD', nsed)
             CALL ncio_write_serial (filename, 'lat_cama', D1LAT,'lat_cama')
             CALL ncio_write_serial (filename, 'lon_cama', D1LON,'lon_cama')
+            ! Write sediment diameter data only if needed
+            IF (needSedDef) THEN
+               CALL ncio_write_serial_real8_1d (filename, 'sedD', real(sDiam, kind=r8), 'sedD')
+               CALL ncio_put_attr (filename, 'sedD', 'long_name', 'sediment grain size')
+               CALL ncio_put_attr (filename, 'sedD', 'units', 'meters')
+            ENDIF
          ENDIF
 
          CALL ncio_write_time (filename, dataname, time, itime)
@@ -562,14 +627,14 @@ CONTAINS
          USE MOD_Namelist
          USE MOD_Vars_Global, only: spval
          USE YOS_CMF_INPUT,  only: NX, NY
-         USE YOS_CMF_MAP,    only: NSEQALL
+         USE YOS_CMF_MAP,    only: NSEQMAX
          USE PARKIND1,       only: JPRM
          USE CMF_UTILS_MOD,  only: vecP2mapR
          USE MOD_NetCDFSerial,    only: ncio_write_serial_time, ncio_put_attr
          USE YOS_CMF_MAP,        only: I2NEXTX, I2NEXTY
          IMPLICIT NONE
          logical, intent(in)          :: is_hist
-         real(r8), intent(in)         ::  var_in (NSEQALL, 1)
+         real(r8), intent(in)         ::  var_in (NSEQMAX, 1)
          character(len=*), intent(in) :: file_hist
          character(len=*), intent(in) :: varname
          integer, intent(in)          :: itime_in_file
@@ -582,7 +647,7 @@ CONTAINS
          integer  :: compress
       
             IF (.not. is_hist) RETURN
-            CALL vecP2mapR(var_in,R2OUT)
+            CALL vecP2mapR(var_in(1:NSEQMAX,1),R2OUT)
             do j = 1,NY
                do i = 1,NX
                   if (I2NEXTX(i,j) .NE. -9) then
@@ -620,15 +685,15 @@ CONTAINS
    ! 2023.02.23  Zhongwang Wei @ SYSU
 
    USE MOD_Namelist
-   USE YOS_CMF_INPUT,  only: NX, NY
-   USE YOS_CMF_MAP,    only: NSEQALL
+   USE YOS_CMF_INPUT,  only: NX, NY, LSEDIMENT
+   USE YOS_CMF_MAP,    only: NSEQMAX
    USE PARKIND1,       only: JPRM
    USE CMF_UTILS_MOD,  only: vecP2mapR
    USE MOD_NetCDFSerial,    only: ncio_write_serial_time, ncio_put_attr
 
    IMPLICIT NONE
    logical, intent(in)          :: is_hist
-   real(r8), intent(in)         ::  var_in (NSEQALL, 1)
+   real(r8), intent(in)         ::  var_in (NSEQMAX, 1)
    character(len=*), intent(in) :: file_hist
    character(len=*), intent(in) :: varname
    integer, intent(in)          :: itime_in_file
@@ -642,7 +707,7 @@ CONTAINS
 
       IF (.not. is_hist) RETURN
 
-      CALL vecP2mapR(var_in,R2OUT)
+      CALL vecP2mapR(var_in(1:NSEQMAX,1),R2OUT)
       compress = DEF_HIST_CompressLevel
       CALL ncio_write_serial_time (file_hist, varname,  &
          itime_in_file, real(R2OUT,kind=8), 'lon_cama', 'lat_cama', 'time',compress)
@@ -653,6 +718,75 @@ CONTAINS
       ENDIF
 
    END SUBROUTINE flux_map_and_write_2d_cama
+
+   SUBROUTINE flux_map_and_write_3d_cama (is_hist, &
+         var_in, file_hist, varname, itime_in_file, longname, units)
+!DESCRIPTION
+!===========
+   ! This subrountine is used for mapping 3D cama-flood sediment output using netcdf format.
+   ! 3D data has dimensions (NSEQALL, nsed) where nsed is the number of sediment classes.
+
+!ANCILLARY FUNCTIONS AND SUBROUTINES
+!-------------------
+   !* :SUBROUTINE:"ncio_put_attr"                      :  write netcdf attribute, see ncio_serial.F90
+   !* :SUBROUTINE:"vecP2mapR"                          :  convert 1D vector data -> 2D map data (real*4), CAMA/cmf_utils_mod.F90
+   !* :SUBROUTINE:"ncio_write_serial_time"             :  define dimension of netcdf file, see ncio_serial.F90
+
+!REVISION HISTORY
+!----------------
+   ! 2025.09.23  Zhongwang Wei @ SYSU
+
+   USE MOD_Namelist
+   USE YOS_CMF_INPUT,  only: NX, NY
+   USE YOS_CMF_MAP,    only: NSEQMAX
+   USE PARKIND1,       only: JPRM
+   USE CMF_UTILS_MOD,  only: vecP2mapR
+   USE MOD_NetCDFSerial,    only: ncio_write_serial_time, ncio_put_attr, ncio_write_serial_real8_1d, ncio_define_dimension
+
+   IMPLICIT NONE
+   logical, intent(in)          :: is_hist
+   real(r8), intent(in)         :: var_in (NSEQMAX, nsed)
+   character(len=*), intent(in) :: file_hist
+   character(len=*), intent(in) :: varname
+   integer, intent(in)          :: itime_in_file
+
+   character (len=*), intent(in),optional :: longname
+   character (len=*), intent(in),optional :: units
+
+   real(KIND=JPRM)             :: R3OUT(NX,NY,nsed)
+   integer                     :: compress
+   integer                     :: ised
+
+      IF (.not. is_hist) RETURN
+
+      R3OUT(:,:,:) = real(real(spval,kind=JPRM),kind=8)
+
+      DO ised = 1, nsed
+         CALL vecP2mapR(var_in(1:NSEQMAX,ised), R3OUT(:,:,ised))
+      END DO
+
+      compress = DEF_HIST_CompressLevel
+
+      ! Ensure sedD dimension exists even if file was created earlier without sediment
+      IF (LSEDIMENT) THEN
+         CALL ncio_define_dimension (file_hist, 'sedD', nsed)
+      ENDIF
+      CALL ncio_write_serial_time (file_hist, varname,  &
+         itime_in_file, real(R3OUT,kind=8), 'lon_cama', 'lat_cama', 'sedD', 'time', compress)
+
+      IF (itime_in_file == 1) THEN
+         CALL ncio_put_attr (file_hist, varname, 'long_name', longname)
+         CALL ncio_put_attr (file_hist, varname, 'units', units)
+         CALL ncio_put_attr (file_hist, varname, 'missing_value', real(real(spval,kind=JPRM),kind=8))
+
+         ! Ensure sediment diameter variable exists and add attributes
+         CALL ncio_write_serial_real8_1d (file_hist, 'sedD', real(sDiam, kind=r8), 'sedD')
+         CALL ncio_put_attr (file_hist, 'sedD', 'long_name', 'sediment grain size')
+         CALL ncio_put_attr (file_hist, 'sedD', 'units', 'meters')
+         
+      ENDIF
+
+   END SUBROUTINE flux_map_and_write_3d_cama
 
    SUBROUTINE colm2cama_real8 (WorkerVar, IOVar, MasterVar)
 !DESCRIPTION

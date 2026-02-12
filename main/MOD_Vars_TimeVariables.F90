@@ -1083,6 +1083,10 @@ IF(DEF_USE_OZONESTRESS)THEN
       CALL ncio_write_vector (file_restart, 'lai_old    ', 'patch', landpatch, lai_old    , compress)
       CALL ncio_write_vector (file_restart, 'o3uptakesun', 'patch', landpatch, o3uptakesun, compress)
       CALL ncio_write_vector (file_restart, 'o3uptakesha', 'patch', landpatch, o3uptakesha, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefv_sun', 'patch', landpatch, o3coefv_sun, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefv_sha', 'patch', landpatch, o3coefv_sha, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefg_sun', 'patch', landpatch, o3coefg_sun, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefg_sha', 'patch', landpatch, o3coefg_sha, compress)
 ENDIF
       CALL ncio_write_vector (file_restart, 't_grnd  '   , 'patch', landpatch, t_grnd    , compress)                    ! ground surface temperature [K]
       CALL ncio_write_vector (file_restart, 'tleaf   '   , 'patch', landpatch, tleaf     , compress)                    ! leaf temperature [K]
@@ -1280,6 +1284,10 @@ IF(DEF_USE_OZONESTRESS)THEN
       CALL ncio_read_vector (file_restart, 'lai_old    ', landpatch, lai_old    )
       CALL ncio_read_vector (file_restart, 'o3uptakesun', landpatch, o3uptakesun)
       CALL ncio_read_vector (file_restart, 'o3uptakesha', landpatch, o3uptakesha)
+      CALL ncio_read_vector (file_restart, 'o3coefv_sun', landpatch, o3coefv_sun)
+      CALL ncio_read_vector (file_restart, 'o3coefv_sha', landpatch, o3coefv_sha)
+      CALL ncio_read_vector (file_restart, 'o3coefg_sun', landpatch, o3coefg_sun)
+      CALL ncio_read_vector (file_restart, 'o3coefg_sha', landpatch, o3coefg_sha)
 ENDIF
       CALL ncio_read_vector (file_restart, 'alb     '   , 2, 2, landpatch, alb  ) ! averaged albedo [-]
       CALL ncio_read_vector (file_restart, 'ssun    '   , 2, 2, landpatch, ssun ) ! sunlit canopy absorption for solar radiation (0-1)

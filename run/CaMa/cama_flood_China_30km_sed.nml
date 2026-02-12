@@ -1,0 +1,147 @@
+&NRUNVER
+LADPSTP  = .TRUE.                      ! true: use adaptive time step
+LFPLAIN  = .TRUE.                      ! true: consider floodplain (false: only river channel)
+LKINE    = .FALSE.                     ! true: use kinematic wave
+LFLDOUT  = .TRUE.                      ! true: floodplain flow (high-water channel flow) active
+LPTHOUT  = .TRUE.                      ! true: activate bifurcation scheme
+LDAMOUT  = .FALSE.                     ! true: activate dam operation 
+LLEVEE   = .FALSE.                     ! true: activate levee scheme  (under development)
+LSEDIMENT =.TRUE.
+
+LROSPLIT     = .FALSE.                          ! true: input if surface (Qs) and sub-surface (Qsb) runoff
+LWEVAP       = .FALSE.                          ! true: input water evaporation to extract from floodplain
+LWEVAPFIX    = .FALSE.                          ! true: water balance closure extracting water from evap when available
+LWINFILT     = .FALSE.                          ! true: input water infiltration to extract from floodplain
+LWINFILTFIX  = .FALSE.                          ! true: water balance closure extracting water from Infiltration when available
+LWEXTRACTRIV = .FALSE.                          ! true: also extract water from rivers 
+LSLOPEMOUTH  = .FALSE.                          ! true: prescribe water level slope == elevation slope on river month
+
+LGDWDLY  = .FALSE.                              ! true: Activate ground water reservoir and delay
+LSLPMIX  = .FALSE.                              ! true: activate mixed kinematic and local inertia based on slope
+
+LMEANSL  = .FALSE.                              ! true: boundary condition for mean sea level
+LSEALEV  = .FALSE.                              ! true: boundary condition for variable sea level
+!LOUTINS  = .FALSE.                             ! true: diagnose instantaneous discharge 
+
+LRESTART = .FALSE.                              ! true: initial condition from restart file
+LSTOONLY = .FALSE.                              ! true: storage only restart (mainly for data assimilation)
+LOUTPUT  = .TRUE.                               ! true: use standard output (to file)
+LOUTINI  = .FALSE.                              ! true: output initial storage (netCDF only)
+
+LGRIDMAP = .TRUE.                               ! true: for standard XY gridded 2D map
+LLEAPYR  = .TRUE.                               ! true: neglect leap year (Feb29 skipped)
+
+LMAPEND  = .FALSE.                              ! true: for map data endian conversion
+LSTG_ES  = .FALSE.                              ! true: for Vector Processor optimization (CMF_OPT_FLDSTG_ES) 
+/
+&NDIMTIME
+CDIMINFO = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/diminfo_15min_China.txt"                       ! text file for dimention information
+DT       = 21600                                                                            ! time step length (sec)
+IFRQ_INP = 6                                                                               ! input forcing update frequency (hour)
+/
+&NPARAM
+PMANRIV  = 0.03D0                      ! manning coefficient river
+PMANFLD  = 0.10D0                      ! manning coefficient floodplain
+PGRV     = 9.8D0                       ! gravity accerelation
+PDSTMTH  = 10000.D0                    ! downstream distance at river mouth [m]
+PCADP    = 0.7                         ! CFL coefficient
+PMINSLP  = 1.D-5                       ! minimum slope (kinematic wave)
+IMIS     = -9999                       ! missing value for integer
+RMIS     = 1.E36                       ! missing value for real*4
+DMIS     = 1.E36                       ! missing value for real*8
+CSUFBIN  = '.bin'                      ! file suffix for plain binary 2D map
+CSUFVEC  = '.vec'                      ! file suffix for plain binary 1D vector
+CSUFPTH  = '.pth'                      ! file suffix for plain binary bifurcation channel
+CSUFCDF  = '.nc'                       ! file suffix for netCDF
+/
+&NSIMTIME
+SYEAR   = 1900                            !  start year : will not gonna used in here
+SMON    = 01                           !  month      : will not gonna used in here
+SDAY    = 01                             !  day        : will not gonna used in here
+SHOUR   = 00                        !  hour       : will not gonna used in here
+EYEAR   = 2024                     		!  end year   : will not gonna used in here
+EMON    = 01                        	!  month      : will not gonna used in here
+EDAY    = 01                        	!  day        : will not gonna used in here
+EHOUR   = 00                        	!  hour       : will not gonna used in here
+/
+&NMAP
+LMAPCDF    = .FALSE.                ! * true for netCDF map input
+CNEXTXY    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/nextxy.bin"              ! river network nextxy
+CGRAREA    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/ctmare.bin"              ! catchment area
+CELEVTN    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/elevtn.bin"              ! bank top elevation
+CNXTDST    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/nxtdst.bin"              ! distance to next outlet
+CRIVLEN    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/rivlen.bin"              ! river channel length
+CFLDHGT    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/fldhgt.bin"              ! floodplain elevation profile
+CRIVWTH    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/rivwth_gwdlr.bin"        ! channel width
+CRIVHGT    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/rivhgt.bin"              ! channel depth
+CRIVMAN    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/rivman.bin"              ! river manning coefficient
+CPTHOUT    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/bifprm.txt"              ! bifurcation channel table
+CGRDARE    = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/grdare.bin"
+CGDWDLY    = ""              							    ! Groundwater Delay Parameter
+CMEANSL    = ""              							    ! mean sea level
+CRIVCLINC  = ""            							        ! * river map netcdf
+CRIVPARNC  = ""            							        ! * river parameter netcdf (width, height, manning, ground water delay)
+CMEANSLNC  = ""            							        ! * mean sea level netCDF
+!CMPIREG    = "/share/home/dq013/zhwei/colm/script/CoLM202X_20250724/extends/CaMa/map/China_15min_natural/mpireg-2.bin"
+/
+&NRESTART
+CRESTSTO = ""               ! restart file
+CRESTDIR = "./"               ! restart directory
+CVNREST  = "restart"                ! restart variable name
+LRESTCDF = .FALSE.                 ! * true for netCDF restart file
+IFRQ_RST = 0                 ! restart write frequency (1-24: hour, 0:end of run)
+/
+&NFORCE
+LINTERP   = .TRUE.                  ! true for runoff interpolation using input matrix
+LINPEND   = .TRUE.                  ! true for runoff endian conversion
+LITRPCDF  = .FALSE.                  ! * true for netCDF input matrix
+CINPMAT   = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/inpmat_15min_China.bin"                ! input matrix file name
+DROFUNIT  = 1.0                 ! runoff unit conversion
+/
+
+
+&NDAMOUT
+CDAMFILE = "/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/dam_param.csv"               ! Reservoir Parameter File
+LDAMTXT  = .TRUE.                      ! True for text-based reservoir data output
+LDAMH22  = .FALSE.                     ! True to use Hanazaki 2022 dam scheme. (False for Yamazaki&Funato scheme)
+LDAMYBY  = .FALSE.                     ! .TRUE. to use Year-By-Year dam activation scheme. .False. for All-reservoirs-in scheme
+LiVnorm  = .FALSE.                     ! .TRUE. to use Noemal Volume as initial reservoir storage. False for zero-additional storage.
+/
+ 
+&NAMSED
+nsed=3
+totlyrnum=2
+revEgia=.true.
+lambda=0.4d0
+lyrdph=0.00005d0
+psedD=2.65d0
+pset=1.0d0
+pwatD=1.0d0
+visKin=1.0d-6
+vonKar=0.4d0
+pyld=0.1d0                                ! coefficients for sediment yield estimation based on sunada and hasegawa(1994)
+pyldpc=2.d0                               !    sediment yield[] = pyld * precipitation[mm/hr]**pyldpc * slope[deg]**pyldc
+pyldc=1.d0                                !
+crocdph="./dda.nc" !bedrock dataset
+sedD="0.001D0,0.000025D0,0.0000001D0"
+csedfrc="/share/home/dq013/zhwei/colm/data/cama_map/sediment/sedfrc_China_15min_old.nc"
+cslope="/share/home/dq013/zhwei/colm/data/cama_map/sediment/slope_China_15min.nc"
+dsylunit=1.d-6      ! sediment yield conversion unit ( m3/km2 -> m3/m2 )
+COUTDIR_SED="./"
+COUTTAG_SED="sed_"
+cinpmat_sed="/share/home/dq013/zhwei/colm/data/cama_map/China_15min_dam/inpmat_15min_China.bin"
+sedrest_infile=""
+sedrest_outpre="sediment"
+ifrq_rst_sed=0
+/
+
+&NOUTPUT
+COUTDIR  = "../cases/"                ! OUTPUT DIRECTORY
+!CVARSOUT="sedout,sedcon,sedinp,wevap,winfilt,rivout,rivsto,rivdph,rivvel,fldout,fldsto,flddph,fldfrc,fldare,sfcelv,outflw,storge,pthflw,pthout,maxsto,maxflw,maxdph" # list output variable (comma separated)
+CVARSOUT = "sedout,sedcon,sedinp,outflw,flddph,fldfrc,fldare,runoff,outflw_ocean"               ! Comma-separated list of output variables to save 
+COUTTAG  = "test"! Output Tag Name for each experiment
+LOUTVEC  = .FALSE.                      ! TRUE FOR VECTORIAL OUTPUT, FALSE FOR NX,NY OUTPUT
+LOUTCDF  = .TRUE.                  ! * true for netcdf outptu false for binary
+NDLEVEL  = 1                           ! * NETCDF DEFLATION LEVEL 
+IFRQ_OUT = 1                 ! output data write frequency (hour)
+/

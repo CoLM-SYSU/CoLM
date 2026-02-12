@@ -10,7 +10,7 @@ Help()
 
    echo '---------------------------------------------------------------------------'
    echo 'Syntax: ./create_scripts -p $SourcePath -t $STARTYR -e $ENDYR -f $HEADER'
-   echo '        -c $CONFIG [ -i ${SPINUPSCHEME} ]'
+   echo '        -c $CONFIG [ -i ${SPINUPSCHEME} ] [ -s ]'
    echo '!--------------------------------------------------------------------------'
    echo options:
    echo '  -p|--pathname The path with case name, where you want to create your scripts'
@@ -36,6 +36,8 @@ Help()
    echo 
    echo '  -i|--spinup (optional) ${SPINUPSCHEME} specify the spinup scheme we used in'
    echo '          case.submit. i.e. none, nd, or sasund'
+   echo '  -s|--singlept (optional) ${SINGLEPT} specify if a single site simulation is '
+   echo '          needed.'
    echo
    echo '  -h display command information'
 
@@ -62,6 +64,7 @@ CreateHeader()
    SCRIPTNAME=$2
    HEADER=$3
    CONFIG=$4
+   SINGLEPT=$5
 
    if [ ! -f $HEADER ];then
       echo "ERROR: HEADER file $HEADER does not exist"
@@ -71,8 +74,13 @@ CreateHeader()
    if [ -f $CONFIG ];then
       case ${SCRIPTNAME} in
       mksrf.submit)
-	 EXEC=`awk '/Exe_command/ {print $2}' $CONFIG`
-	 EXEO=`awk '/Exe_opt/ {print $2}' $CONFIG`
+	 if [ "$SINGLEPT" == "YES" ];then
+	    EXEC=''
+	    EXEO=''
+	 else
+   	    EXEC=`awk '/Exe_command/ {print $2}' $CONFIG`
+	    EXEO=`awk '/Exe_opt/ {print $2}' $CONFIG`
+	 fi
          NP=`awk '/NProcesses_mksrf/ {print $2}' $CONFIG`
          NN=`awk '/NNodes_mksrf/ {print $2}' $CONFIG`
          NTPN=`awk '/NTasksPerNode_mksrf/ {print $2}' $CONFIG`
@@ -195,6 +203,10 @@ CreateHeader()
 
       
 #echo NP before create header $NP
+   if [ ${SINGLEPT} == "YES" ];then
+      NP=1
+      NN=1
+   fi
 
      sed "s/<CASENAME>/${CASENAME}/g" ${HEADER} |sed "s/<QUEUE>/${QUEUE}/g" \
    | sed "s/<OUTPUTFILE>/${OUTPUT}.out/g"|sed "s/<ERRORFILE>/${OUTPUT}.err/g" |sed "s/<MEMORY>/${MEM}/g" \
@@ -213,6 +225,7 @@ CreateScripts()
    HEADER=$5
    CONFIG=$6
    SPINUPSCHEME=$7
+   SINGLEPT=$8
 
    RESTENDYR=`expr $ENDYR + 1`
    ILOOP='$iloop'
@@ -231,7 +244,8 @@ CreateScripts()
       echo "#!/bin/bash">mksrf.submit
       NP=240  
    else
-      CreateHeader $CASENAME mksrf.submit $HEADER $CONFIG
+	   echo CreateHeader $CASENAME mksrf.submit $HEADER $CONFIG ${SINGLEPT}
+      CreateHeader $CASENAME mksrf.submit $HEADER $CONFIG ${SINGLEPT}
       if [ ! -z $CONFIG ];then
          NP=`awk '/NProcesses_mksrf/ {print $2}' $CONFIG`
          if [ $NP -gt 0 ] 2>/dev/null;then
@@ -246,6 +260,11 @@ CreateScripts()
          NP=240
       fi
    fi
+   if [ ${SINGLEPT} == "YES" ];then
+      NP=""
+      EXEC=""
+      EXEO=""
+   fi
    cat>>mksrf.submit<<EOF
 cd ${CASEPATH}/${CASENAME}/bld/run/
 ${EXEC} ${EXEO} $NP ./mksrfdata.x ../../input_${CASENAME}.nml > ../../logmksrfdata
@@ -257,7 +276,7 @@ EOF
       echo "#!/bin/bash">init.submit
       NP=24
    else
-      CreateHeader $CASENAME init.submit $HEADER $CONFIG
+      CreateHeader $CASENAME init.submit $HEADER $CONFIG ${SINGLEPT}
       NP=`awk '/NProcesses_mkini/ {print $2}' $CONFIG`
       if [ ! -z $CONFIG ];then
          NP=`awk '/NProcesses_mkini/ {print $2}' $CONFIG`
@@ -273,6 +292,11 @@ EOF
          NP=24
       fi
    fi
+   if [ ${SINGLEPT} == "YES" ];then
+      NP=""
+      EXEC=""
+      EXEO=""
+   fi
    cat>>init.submit<<EOF
 cd ${CASEPATH}/${CASENAME}/bld/run/
 ${EXEC} ${EXEO} $NP ./mkinidata.x ../../input_${CASENAME}.nml > ../../logini
@@ -284,7 +308,7 @@ EOF
       echo "#!/bin/bash">case.submit
       NP=120
    else
-      CreateHeader $CASENAME case.submit $HEADER $CONFIG
+      CreateHeader $CASENAME case.submit $HEADER $CONFIG ${SINGLEPT}
       NP=`awk '/NProcesses_case/ {print $2}' $CONFIG`
       if [ ! -z $CONFIG ];then
          NP=`awk '/NProcesses_case/ {print $2}' $CONFIG`
@@ -299,6 +323,11 @@ EOF
        #  echo $CONFIG does not exist, set the number of processes '$NP' to 120
          NP=120
       fi
+   fi
+   if [ ${SINGLEPT} == "YES" ];then
+      NP=""
+      EXEC=""
+      EXEO=""
    fi
    case ${SPINUPSCHEME} in
       none)
@@ -373,7 +402,7 @@ esac
 }
 
 
-while getopts ":hi:p:t:e:f:c:" options ;
+while getopts ":hsi:p:t:e:f:c:" options ;
 do
     case $options in
       p) CASENAMEPATH="$OPTARG" ;;
@@ -382,10 +411,15 @@ do
       f) HEADER="$OPTARG"       ;;
       c) CONFIG="$OPTARG"       ;;
       i) SPINUPSCHEME="$OPTARG" ;;
+      s) SINGLEPT="YES"         ;;
       h) Help; exit;;
       *) echo "invalid option: $options";exit ;;
     esac
 done
+
+if [ -z "$SINGLEPT" ];then
+   SINGLEPT="NO"
+fi
 
 if [ -z "$SPINUPSCHEME" ];then
    SPINUPSCHEME=none
@@ -450,4 +484,4 @@ mkdir -p $CASEPATH/$CASENAME
 cd $CASEPATH/$CASENAME
 echo CONFIG before createscript $CONFIG
 echo HEADER before createscript $HEADER
-CreateScripts $CASEPATH $CASENAME $STARTYR $ENDYR $HEADER $CONFIG $SPINUPSCHEME
+CreateScripts $CASEPATH $CASENAME $STARTYR $ENDYR $HEADER $CONFIG $SPINUPSCHEME $SINGLEPT

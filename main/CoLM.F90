@@ -331,7 +331,13 @@ PROGRAM CoLM
       CALL CheckEqb_init ()
 
 #if (defined CaMa_Flood)
+#ifdef USEMPI
+            CALL mpi_barrier (p_comm_glb, p_err)
+#endif
       CALL colm_CaMa_init !initialize CaMa-Flood
+#ifdef USEMPI
+      CALL mpi_barrier (p_comm_glb, p_err)
+#endif
 #endif
 
       IF(DEF_USE_OZONEDATA)THEN
@@ -476,11 +482,15 @@ PROGRAM CoLM
 #if (defined CatchLateralFlow)
          CALL lateral_flow (idate(1), deltim)
 #endif
-
 #if (defined CaMa_Flood)
-         CALL colm_CaMa_drv(idate(3)) ! run CaMa-Flood
+#ifdef USEMPI
+            CALL mpi_barrier (p_comm_glb, p_err)
 #endif
-
+         CALL colm_CaMa_drv(idate(3)) ! run CaMa-Flood
+#ifdef USEMPI
+         CALL mpi_barrier (p_comm_glb, p_err)
+#endif
+#endif
 #ifdef DataAssimilation
          CALL run_DA (idate, deltim)
 #endif
@@ -572,9 +582,15 @@ PROGRAM CoLM
             CALL WRITE_TimeVariables_ens (jdate, lc_year, casename, dir_restart)
 #endif
 #if (defined CaMa_Flood)
+#ifdef USEMPI
+            CALL mpi_barrier (p_comm_glb, p_err)
+#endif
             IF (p_is_master) THEN
                CALL colm_cama_write_restart (jdate, lc_year,  casename, dir_restart)
             ENDIF
+#ifdef USEMPI
+            CALL mpi_barrier (p_comm_glb, p_err)
+#endif
 #endif
          ENDIF
 

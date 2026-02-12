@@ -9,9 +9,9 @@
    DEF_domain%edgen = 55.0
    DEF_domain%edgew = 60.0
    DEF_domain%edgee = 150.0
-   DEF_nx_blocks=30
-   DEF_ny_blocks=15
-   DEF_PIO_groupsize=45
+   !DEF_nx_blocks=30
+   !DEF_ny_blocks=15
+   !DEF_PIO_groupsize=45
    DEF_simulation_time%greenwich    = .TRUE.
    DEF_simulation_time%start_year   = 2010
    DEF_simulation_time%start_month  = 1
@@ -48,7 +48,7 @@
 
    DEF_USE_PLANTHYDRAULICS = .false.
 
-   DEF_CaMa_Namelist='/share/home/dq013/zhwei/colm/script/CoLM202X/run/CaMa/cama_flood_China_30km_dam.nml'
+   DEF_CaMa_Namelist='/share/home/dq013/zhwei/colm/script/CoLM202X-sed/run/CaMa/cama_flood_China_30km_sed.nml'
    ! ----- forcing -----
    ! Options :
    ! PRINCETON | GSWP3   | QIAN  | CRUNCEPV4 | CRUNCEPV7 | ERA5LAND | ERA5  | MSWX

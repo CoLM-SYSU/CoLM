@@ -51,10 +51,8 @@ USE CMF_CTRL_TRACER_MOD,     ONLY: CMF_TRACER_NMLIST
 USE CMF_CTRL_OUTPUT_MOD,     ONLY: CMF_OUTPUT_NMLIST
 USE CMF_CTRL_MAPS_MOD,       ONLY: CMF_MAPS_NMLIST
 USE CMF_UTILS_MOD,           ONLY: INQUIRE_FID
-#ifdef sediment
-USE YOS_CMF_INPUT,           ONLY: LSEDOUT
-USE cmf_ctrl_sed_mod,        ONLY: cmf_sed_nmlist
-#endif
+USE YOS_CMF_INPUT,           ONLY: LSEDIMENT
+USE CMF_CTRL_SED_MOD,        ONLY: CMF_SED_NMLIST
 IMPLICIT NONE
 !* local
 CHARACTER(LEN=8)              :: CREG                 !! 
@@ -122,11 +120,9 @@ IF( LTRACE )THEN
   CALL CMF_TRACER_NMLIST
 ENDIF
 
-#ifdef sediment
-IF( LSEDOUT )THEN
-  CALL cmf_sed_nmlist
+IF( LSEDIMENT )THEN
+  CALL CMF_SED_NMLIST
 ENDIF
-#endif
 
 WRITE(LOGNAM,*) "CMF::DRV_INPUT: end reading namelist"
 
@@ -160,10 +156,8 @@ USE CMF_CTRL_RESTART_MOD,    ONLY: CMF_RESTART_INIT
 USE CMF_CTRL_DAMOUT_MOD,     ONLY: CMF_DAMOUT_INIT_IRR,CMF_DAMOUT_INIT_ORG
 USE CMF_CTRL_LEVEE_MOD,      ONLY: CMF_LEVEE_INIT
 USE CMF_CTRL_TRACER_MOD,     ONLY: CMF_TRACER_INIT, CMF_TRACER_OUTPUT_INIT, CMF_TRACER_RESTART_INIT
-#ifdef sediment
-USE YOS_CMF_INPUT,           ONLY: LSEDOUT
-USE cmf_ctrl_sed_mod,        ONLY: cmf_sed_init
-#endif
+USE YOS_CMF_INPUT,           ONLY: LSEDIMENT
+USE CMF_CTRL_SED_MOD,        ONLY: CMF_SED_INIT
 ! import
 USE CMF_CTRL_PHYSICS_MOD,    ONLY: CMF_PHYSICS_FLDSTG
 USE CMF_OPT_OUTFLW_MOD,      ONLY: CMF_CALC_OUTPRE
@@ -254,12 +248,10 @@ IF( LTRACE )THEN
   IF( LRESTART) CALL CMF_TRACER_RESTART_INIT
 ENDIF
 
-#ifdef sediment
 !*** 4e. Optional sediment initialization
-IF( LSEDOUT )THEN
-  CALL cmf_sed_init
+IF( LSEDIMENT )THEN
+  CALL CMF_SED_INIT
 ENDIF
-#endif
 
 !================================================
 !** v4.03 CALC_FLDSTG moved to the top of CTRL_PHYSICS for strict restart configulation (Hatono & Yamazaki)
@@ -304,10 +296,6 @@ USE CMF_CTRL_OUTPUT_MOD,     ONLY: CMF_OUTPUT_END
 USE CMF_CTRL_FORCING_MOD,    ONLY: CMF_FORCING_END
 USE CMF_CTRL_BOUNDARY_MOD,   ONLY: CMF_BOUNDARY_END
 USE CMF_CTRL_TRACER_MOD,     ONLY: CMF_TRACER_OUTPUT_END
-#ifdef sediment
-USE YOS_CMF_INPUT,           ONLY: LSEDOUT
-USE cmf_ctrl_sedout_mod,     ONLY: sediment_output_end
-#endif
 !$ USE OMP_LIB    
 IMPLICIT NONE 
 !==========================================================
@@ -318,9 +306,6 @@ CALL CMF_FORCING_END
 IF( LOUTPUT )THEN
   CALL CMF_OUTPUT_END
   IF( LTRACE ) CALL CMF_TRACER_OUTPUT_END
-#ifdef sediment
-  IF( LSEDOUT ) CALL sediment_output_end
-#endif
 ENDIF
 IF( LSEALEV ) THEN
   CALL CMF_BOUNDARY_END

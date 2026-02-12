@@ -44,12 +44,8 @@ USE CMF_CALC_DIAG_MOD,       ONLY: CMF_DIAG_AVEMAX_OUTPUT, CMF_DIAG_GETAVE_OUTPU
 USE CMF_CTRL_BOUNDARY_MOD,   ONLY: CMF_BOUNDARY_UPDATE
 USE CMF_CTRL_TRACER_MOD,     ONLY: CMF_TRACER_DENSITY, CMF_TRACER_FLUX
 USE CMF_CTRL_TRACER_MOD,     ONLY: CMF_TRACER_OUTPUT_WRITE, CMF_TRACER_RESTART_WRITE
-#ifdef sediment
-USE YOS_CMF_INPUT,           ONLY: LSEDOUT
-USE yos_cmf_sed,             ONLY: step_sed
-USE cmf_ctrl_sedout_mod,     ONLY: cmf_sed_output
-USE cmf_calc_sedflw_mod,     ONLY: cmf_calc_sedflw
-#endif
+USE YOS_CMF_INPUT,           ONLY: LSEDIMENT
+USE CMF_CTRL_SED_MOD,        ONLY: CMF_SED_CALC_FLW, CMF_SED_DIAG_AVEMAX_ADPSTP
 !$ USE OMP_LIB
 IMPLICIT NONE 
 SAVE
@@ -94,12 +90,12 @@ DO ISTEP=1,KSTEPS
     CALL CMF_DAM_DEMAND_UPDATE
   ENDIF
 
-#ifdef sediment
-  !*** 2b.  Advance sediment model integration
-  IF( LSEDOUT .and. MOD(KSTEP,step_sed)==0 )THEN
-    CALL cmf_calc_sedflw
+  !*** 2b.  Accumulate sediment diagnostic variables and advance sediment model
+  IF( LSEDIMENT )THEN
+
+    ! Calculate sediment transport (called every timestep, but internally checks if it's time to calculate)
+    CALL CMF_SED_CALC_FLW
   ENDIF
-#endif
 
   IF( LTRACE )THEN
     CALL CMF_TRACER_FLUX
@@ -119,11 +115,9 @@ DO ISTEP=1,KSTEPS
     !*** write output data
    ! CALL CMF_OUTPUT_WRITE
 
-#ifdef sediment
-  !  IF ( LSEDOUT ) THEN
+  !  IF ( LSEDIMENT ) THEN
   !    CALL cmf_sed_output
   !  ENDIF
-#endif
 
     ! --- Optional: text file output
    ! CALL CMF_OUTTXT_WRTE            !! reservoir operation

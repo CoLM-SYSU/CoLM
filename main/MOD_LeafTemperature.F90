@@ -282,12 +282,6 @@ CONTAINS
         ulrad,      &! upward longwave radiation above the canopy [W/m2]
         hprl,       &! precipitation sensible heat from canopy
         dheatl,     &! vegetation heat change [W/m2]
-!Ozone stress variables
-        o3coefv_sun,&! Ozone stress factor for photosynthesis on sunlit leaf
-        o3coefv_sha,&! Ozone stress factor for photosynthesis on sunlit leaf
-        o3coefg_sun,&! Ozone stress factor for stomata on shaded leaf
-        o3coefg_sha,&! Ozone stress factor for stomata on shaded leaf
-!End ozone stress variables
 
         z0m,        &! effective roughness [m]
         zol,        &! dimensionless height (z/L) used in Monin-Obukhov theory
@@ -298,6 +292,14 @@ CONTAINS
         fm,         &! integral of profile function for momentum
         fh,         &! integral of profile function for heat
         fq           ! integral of profile function for moisture
+
+   real(r8), intent(inout) :: &
+!Ozone stress variables
+        o3coefv_sun,&! Ozone stress factor for photosynthesis on sunlit leaf
+        o3coefv_sha,&! Ozone stress factor for photosynthesis on sunlit leaf
+        o3coefg_sun,&! Ozone stress factor for stomata on shaded leaf
+        o3coefg_sha  ! Ozone stress factor for stomata on shaded leaf
+!End ozone stress variables
 
 !-------------------------- Local Variables ----------------------------
 ! assign iteration parameters
@@ -702,8 +704,8 @@ CONTAINS
 
             IF (DEF_USE_PLANTHYDRAULICS) THEN
 
-               gs0sun = min( 1.e6, 1./(rssun*tl/tprcor) )/ laisun * 1.e6
-               gs0sha = min( 1.e6, 1./(rssha*tl/tprcor) )/ laisha * 1.e6
+               gs0sun = min( 1.e6, 1./(rssun*tl/tprcor) )/ laisun * 1.e6 * o3coefg_sun
+               gs0sha = min( 1.e6, 1./(rssha*tl/tprcor) )/ laisha * 1.e6 * o3coefg_sha
 
                sai = amax1(sai,0.1)
                ! PHS update actual stomata conductance (resistance), assimilation rate
@@ -993,8 +995,8 @@ ENDIF
          lai_old  = lai
          assimsun = assimsun * o3coefv_sun
          assimsha = assimsha * o3coefv_sha
-         rssun    = rssun / o3coefg_sun
-         rssha    = rssha / o3coefg_sha
+!         rssun    = rssun / o3coefg_sun
+!         rssha    = rssha / o3coefg_sha
       ENDIF
 
 ! ======================================================================

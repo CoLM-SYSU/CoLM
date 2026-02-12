@@ -18,7 +18,8 @@ MODULE MOD_BGC_Soil_BiogeochemVerticalProfile
    USE MOD_Precision
    USE MOD_Const_PFT, only: rootfr_p
    USE MOD_BGC_Vars_TimeVariables, only: &
-       nfixation_prof, ndep_prof, altmax_lastyear_indx
+       nfixation_prof, ndep_prof, altmax_lastyear_indx, w_scalar
+   USE MOD_Vars_TimeVariables, only: t_soisno
    USE MOD_BGC_Vars_PFTimeVariables, only: &
        leaf_prof_p, froot_prof_p, croot_prof_p, stem_prof_p, cinput_rootfr_p
    USE MOD_Vars_PFTimeInvariants, only: &
@@ -58,6 +59,7 @@ CONTAINS
    real(r8) :: ndep_prof_sum
    real(r8) :: nfixation_prof_sum
    real(r8) :: delta = 1.e-10
+   real(r8) :: sumprof
 
       surface_prof(:) = 0._r8
       DO j = 1, nl_soil
@@ -119,7 +121,48 @@ CONTAINS
             leaf_prof_p(1,m)  = 1./dz_soi(1)
             stem_prof_p(1,m)  = 1./dz_soi(1)
          ENDIF
+         DO j = 1, nl_soil
+            IF(w_scalar(j,i) .eq. 0._r8 .and. t_soisno(j,i) < 273.15_r8)THEN
+               froot_prof_p(j,m) = 0._r8
+               croot_prof_p(j,m) = 0._r8
+               stem_prof_p (j,m) = 0._r8
+               leaf_prof_p (j,m) = 0._r8
+            ENDIF
+         ENDDO
+         sumprof = sum(froot_prof_p(1:nl_soil,m)*dz_soi(1:nl_soil))
+         IF(sumprof .ne. 0)THEN
+            DO j = 1,nl_soil
+               froot_prof_p(j,m) = froot_prof_p(j,m) / sumprof
+            ENDDO
+         ELSE
+            froot_prof_p(1,m) = 1./dz_soi(1)
+         ENDIF
+         sumprof = sum(croot_prof_p(1:nl_soil,m)*dz_soi(1:nl_soil))
+         IF(sumprof .ne. 0)THEN
+            DO j = 1,nl_soil
+               croot_prof_p(j,m) = croot_prof_p(j,m) / sumprof
+            ENDDO
+         ELSE
+            croot_prof_p(1,m) = 1./dz_soi(1)
+         ENDIF
+         sumprof = sum(stem_prof_p(1:nl_soil,m)*dz_soi(1:nl_soil))
+         IF(sumprof .ne. 0)THEN
+            DO j = 1,nl_soil
+               stem_prof_p(j,m) = stem_prof_p(j,m) / sumprof
+            ENDDO
+         ELSE
+            stem_prof_p(1,m) = 1./dz_soi(1)
+         ENDIF
+         sumprof = sum(leaf_prof_p(1:nl_soil,m)*dz_soi(1:nl_soil))
+         IF(sumprof .ne. 0)THEN
+            DO j = 1,nl_soil
+               leaf_prof_p(j,m) = leaf_prof_p(j,m) / sumprof
+            ENDDO
+         ELSE
+            leaf_prof_p(1,m) = 1./dz_soi(1)
+         ENDIF
       ENDDO
+
 
 
       !! aggregate root profile to column

@@ -963,7 +963,7 @@ CONTAINS
       toa_swrad = S*(rt_R**2)*coszen
 
       ! calculate clearness index
-      IF (toa_swrad.eq.0) THEN
+      IF (toa_swrad < 1.e-7) THEN
          clr_idx = 0
       ELSE
          clr_idx = forc_swrad_g/toa_swrad
@@ -1040,7 +1040,7 @@ CONTAINS
       forc_swrad_c = max(forc_swrad_c, &
                forc_swrad_g * (1._r8 - shortwave_downscaling_limit))
       ! Ensure that the denominator is not 0 during shortwave normalization
-      IF (forc_swrad_c==0.) forc_swrad_c = 0.0001
+      IF (forc_swrad_c < 1.e-4) forc_swrad_c = 0.0001
 
    END SUBROUTINE downscale_shortwave_simple
 

@@ -41,7 +41,6 @@ LOGICAL                         :: LPTHOUT                 !! true: activate bif
 LOGICAL                         :: LDAMOUT                 !! true: activate dam operation (under development)
 LOGICAL                         :: LDAMIRR                 !! true: activate dam irrigation scheme
 LOGICAL                         :: LLEVEE                  !! true: activate levee scheme  (under development)
-
 !~~ used in ECMWF
 LOGICAL                         :: LROSPLIT                !! true: input if surface (Qs) and sub-surface (Qsb) runoff
 LOGICAL                         :: LWEVAP                  !! true: input water evaporation to extract from floodplain
@@ -71,8 +70,8 @@ LOGICAL                         :: LBITSAFE                !! true: for Bit Iden
 LOGICAL                         :: LSTG_ES                 !! true: for Vector Processor optimization (CMF_OPT_FLDSTG_ES) 
 LOGICAL                         :: LSPAMAT                 !! true: quasi sparse matrix to avoid OMP_Atomic (small RAM use added) 
 
-LOGICAL                         :: LSEDOUT                 !! true: sediment scheme                 
 LOGICAL                         :: LTRACE                  !! true: tracer   scheme                 
+LOGICAL                         :: LSEDIMENT               !! true: sediment scheme                 
 
 !================================================
 !*** NAMELIST/NCONF/

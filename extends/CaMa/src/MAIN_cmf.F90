@@ -3,7 +3,6 @@ PROGRAM MAIN_cmf
 !* PURPOSE: CaMa-Flood default stand-alone driver
 !
 ! (C) D.Yamazaki & E. Dutra  (U-Tokyo/FCUL)  Aug 2019
-! Modified by Zhongwang Wei @ SYSU 2022.11.20: no longer used for colm-cama coupling mode
 !
 ! Licensed under the Apache License, Version 2.0 (the "License");
 !   You may not use this file except in compliance with the License.
@@ -14,7 +13,7 @@ PROGRAM MAIN_cmf
 ! See the License for the specific language governing permissions and limitations under the License.
 !==========================================================
 USE PARKIND1,                ONLY: JPRB, JPRM, JPIM
-USE YOS_CMF_INPUT,           ONLY: NXIN, NYIN, DT,DTIN, LTRACE
+USE YOS_CMF_INPUT,           ONLY: NXIN, NYIN, DT,DTIN, LTRACE, LSEDIMENT
 USE YOS_CMF_TIME,            ONLY: NSTEPS
 USE CMF_DRV_CONTROL_MOD,     ONLY: CMF_DRV_INPUT,   CMF_DRV_INIT,    CMF_DRV_END
 USE CMF_DRV_ADVANCE_MOD,     ONLY: CMF_DRV_ADVANCE
@@ -25,11 +24,14 @@ USE CMF_CTRL_TRACER_MOD,     ONLY: CMF_TRACER_FORC_GET, CMF_TRACER_FORC_INTERP
 #ifdef UseMPI_CMF
 USE CMF_CTRL_MPI_MOD,        ONLY: CMF_MPI_INIT, CMF_MPI_END
 #endif
+USE CMF_CTRL_SED_MOD,        ONLY: CMF_SED_FORC_GET
 !** sediment options**
-#ifdef sediment
-USE YOS_CMF_INPUT,           ONLY: LSEDOUT
-USE cmf_ctrl_sedinp_mod,     ONLY: cmf_sed_forcing
-#endif
+! LSEDIMENT is now imported from YOS_CMF_INPUT at the top program level
+! The following use statements are conditional on LSEDIMENT at compile time if -Dsediment is set
+! or at runtime if LSEDIMENT is used in IF blocks.
+! For runtime control, these USE statements would typically not be inside the IF(LSEDIMENT) block
+! but the cmf_sed_forcing call is conditional.
+!USE cmf_ctrl_sedinp_mod,     ONLY: cmf_sed_forcing  ! This USE is fine here if cmf_sed_forcing is only called if LSEDIMENT is true
 !** tracer options**
 !****************************
 IMPLICIT NONE
@@ -46,13 +48,14 @@ CALL CMF_MPI_INIT
 
 !*** 1a. Namelist handling
 CALL CMF_DRV_INPUT
+print *, "CMF_DRV_INPUT called"
 
 !*** 1b. INITIALIZATION
 CALL CMF_DRV_INIT
-
+print *, "CMF_DRV_INIT called"
 !*** 1c. allocate data buffer for input forcing
 ALLOCATE(ZBUFF(NXIN,NYIN,2))
-
+print *, "ZBUFF allocated"
 !============================
 !*** 2. MAIN TEMPORAL LOOP / TIME-STEP (NSTEPS calculated by DRV_INIT)
 
@@ -63,22 +66,24 @@ DO ISTEP=1,NSTEPS,ISTEPADV
   CALL CMF_FORCING_GET(ZBUFF(:,:,:))
   !*  2b Interporlate runoff & send to CaMa-Flood 
   CALL CMF_FORCING_PUT(ZBUFF(:,:,:))
-
+  print *,"CMF_FORCING_PUT called"
   IF( LTRACE )THEN
     CALL CMF_TRACER_FORC_GET
     CALL CMF_TRACER_FORC_INTERP
   ENDIF
  
+    !*  2d Prepare forcing for optional sediment transport in stand-alone mode
+  IF ( LSEDIMENT ) THEN
+    print *, "LSEDIMENT:", LSEDIMENT
+
+    CALL CMF_SED_FORC_GET
+  ENDIF
+  
   !*  2c  Advance CaMa-Flood model for ISTEPADV
   CALL CMF_DRV_ADVANCE(ISTEPADV)
 
 
-#ifdef sediment
-  !*  2d Prepare forcing for optional sediment transport in stand-alone mode
-  IF ( LSEDOUT ) THEN
-    CALL cmf_sed_forcing
-  ENDIF
-#endif
+
 
 ENDDO
 !============================

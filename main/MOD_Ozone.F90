@@ -101,6 +101,7 @@ CONTAINS
 
 
       ! set o3 flux threshold
+      o3_flux_threshold=10._r8
       IF(ivt >= 1 .and. ivt <= 3)THEN  !Needleleaf tree
         o3_flux_threshold=0.8_r8
       ENDIF
@@ -134,14 +135,14 @@ CONTAINS
       IF (lai > lai_thresh) THEN
        ! o3 uptake decay
          IF (isevg(ivt)) THEN
-            leafturn = 1._r8/(leaf_long(ivt)*365._r8*24._r8)
+            leafturn = 2._r8/(leaf_long(ivt)*365._r8*24._r8)
             decay = o3uptake * leafturn * deltim/3600._r8
          ELSE
             decay = o3uptake * max(0._r8,(1._r8-lai_old/lai)) 
          ENDIF
          
          !cumulative uptake (mmol m^-2)
-         o3uptake = max(0._r8, o3uptake + o3fluxperdt - decay)
+         o3uptake = min(90._r8, max(0._r8, o3uptake + o3fluxperdt - decay))
 
       ELSE
          o3uptake = 0._r8
@@ -222,7 +223,7 @@ CONTAINS
 
       CALL mg2p_ozone%build_arealweighted (grid_ozone, landpatch)
 
-      itime = (idate(3) - 1800) / 10800 + (idate(2) - 1) * 8 + 1
+      itime = (idate(3) - 1800) / 10800 + (min(idate(2),365) - 1) * 8 + 1
 
       CALL ncio_read_block_time (file_ozone, 'OZONE', grid_ozone, itime, f_ozone)
       forc_ozone = forc_ozone

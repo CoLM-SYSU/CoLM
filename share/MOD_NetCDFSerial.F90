@@ -108,7 +108,8 @@ MODULE MOD_NetCDFSerial
       MODULE procedure ncio_write_serial_real8_4d
       MODULE procedure ncio_write_serial_real8_5d
    END INTERFACE ncio_write_serial
-
+   
+   PUBLIC :: ncio_write_serial
    PUBLIC :: ncio_write_time
    PUBLIC :: ncio_write_lastdim
 

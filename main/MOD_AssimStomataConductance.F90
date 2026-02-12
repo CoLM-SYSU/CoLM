@@ -769,8 +769,13 @@ CONTAINS
 !-----------------------------------------------------------------------
 
          co2s = co2a - 1.37*assimn/gbh2o                  ! mol mol-1
+         co2st = min( co2s, co2a )
+         co2st = max( co2st,1.e-5 )
 
-         pco2in = ( co2s - 1.6 * assimn / gsh2o )*psrf    ! pa
+         assmt = max( 1.e-12, assimn )
+
+
+         pco2in = ( co2s - 1.6 * assmt / gsh2o )*psrf    ! pa
 
          eyy(ic) = pco2i - pco2in                         ! pa
 

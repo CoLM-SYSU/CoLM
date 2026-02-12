@@ -16,8 +16,8 @@ echo `hostname`
 
 echo "start: ${SYEAR}" `date`  >> log.txt
 
-mpirun  -np 720  ./mksrfdata.x China_Grid_30km_IGBP_VG_CaMa.nml  &> China_Grid_30km_IGBP_VG_CaMa_mksrfdata.log	
-mpirun  -np 720  ./mkinidata.x  China_Grid_30km_IGBP_VG_CaMa.nml  &> China_Grid_30km_IGBP_VG_CaMa_mkinidata.log	
+#mpirun  -np 720  ./mksrfdata.x China_Grid_30km_IGBP_VG_CaMa.nml  &> China_Grid_30km_IGBP_VG_CaMa_mksrfdata.log	
+#mpirun  -np 720  ./mkinidata.x  China_Grid_30km_IGBP_VG_CaMa.nml  &> China_Grid_30km_IGBP_VG_CaMa_mkinidata.log	
 mpirun  -np 1 ./colm.x China_Grid_30km_IGBP_VG_CaMa.nml : -np 671 ./colm.x China_Grid_30km_IGBP_VG_CaMa.nml &> China_Grid_30km_IGBP_VG_CaMa_colm.log
 
 #time ./${EXE}                  >> log.txt

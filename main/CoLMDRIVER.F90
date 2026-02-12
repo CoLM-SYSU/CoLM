@@ -74,7 +74,7 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
          steps_in_one_deltim = 1
          ! deltim need to be within 1800s for water body with snow in order to avoid large
          ! temperature fluctuations due to rapid snow heat conductance
-         IF(m == WATERBODY .and. snowdp(i) > 0.0) steps_in_one_deltim = ceiling(deltim/1800.)
+         IF(m == WATERBODY) steps_in_one_deltim = ceiling(deltim/1800.)
          deltim_phy = deltim/steps_in_one_deltim
 
          ! For non urban patch or slab urban
@@ -140,6 +140,7 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
                thermk(i),       extkb(i),        extkd(i),        vegwp(1:,i),     &
                gs0sun(i),       gs0sha(i),       &
              ! Ozone Stress Variables
+               o3coefv_sun(i),  o3coefv_sha(i),  o3coefg_sun(i),  o3coefg_sha(i),  &
                lai_old(i),      o3uptakesun(i),  o3uptakesha(i),  forc_ozone(i),   &
              ! End ozone stress variables
              ! WUE stomata model parameter

@@ -37,7 +37,7 @@ USE YOS_CMF_INPUT,      ONLY: TMPNAM,   NSETFILE,   CSETFILE
 USE YOS_CMF_INPUT,      ONLY: LADPSTP,  LFPLAIN,  LKINE,    LFLDOUT,  LPTHOUT,  LDAMOUT,  LDAMIRR,&
                             & LROSPLIT, LGDWDLY,  LSLPMIX,  LMEANSL,  LSEALEV,  LOUTPUT,  &
                             & LRESTART, LSTOONLY, LGRIDMAP, LLEAPYR,  LMAPEND,  LBITSAFE, &
-                            & LSTG_ES,  LLEVEE,   LOUTINS,  LOUTINI,  LSEDOUT,  LTRACE,   &
+                            & LSTG_ES,  LLEVEE,   LOUTINS,  LOUTINI,  LSEDIMENT,  LTRACE,   &
                             & LSLOPEMOUTH,LWEVAP,LWINFILT, LWEVAPFIX,LWINFILTFIX,LWEXTRACTRIV,       LSPAMAT
 ! dimention & time
 USE YOS_CMF_INPUT,      ONLY: CDIMINFO, DT,       NX,NY,    NLFP,     NXIN,NYIN,    INPN, &
@@ -53,7 +53,7 @@ CHARACTER(LEN=8)              :: CREG                 !!
 NAMELIST/NRUNVER/  LADPSTP,  LFPLAIN,  LKINE,    LFLDOUT,  LPTHOUT,  LDAMOUT,  LDAMIRR,&
                    LROSPLIT, LGDWDLY,  LSLPMIX,  LMEANSL,  LSEALEV,  LOUTPUT,      &
                    LRESTART, LSTOONLY, LGRIDMAP, LLEAPYR,  LMAPEND,  LBITSAFE,     &
-                   LSTG_ES,  LLEVEE,   LSEDOUT,  LTRACE,   LOUTINS,  LSLOPEMOUTH,  &
+                   LSTG_ES,  LLEVEE,   LSEDIMENT,  LTRACE,   LOUTINS,  LSLOPEMOUTH,  &
                    LWEVAP,  LWINFILT,  LWEVAPFIX,LWINFILTFIX,LWEXTRACTRIV,  LOUTINI,  LSPAMAT
 
 NAMELIST/NDIMTIME/ CDIMINFO, DT, IFRQ_INP
@@ -81,7 +81,7 @@ LPTHOUT  = .FALSE.           !! true: activate bifurcation scheme
 LDAMOUT  = .FALSE.           !! true: activate dam operation
 LDAMIRR  = .FALSE.           !! true: activate water withdrawals for irrigation  (under development)
 LLEVEE   = .FALSE.           !! true: activate levee scheme  (under development)
-LSEDOUT  = .FALSE.           !! true: activate sediment transport (under development)
+LSEDIMENT  = .FALSE.           !! true: activate sediment transport (under development)
 LTRACE   = .FALSE.           !! true: activate tracer             (under development)
 LOUTINS  = .FALSE.           !! true: diagnose instantaneous discharge
 LSPAMAT  = .TRUE.            !! true: use quasi sparse matrix (fast but additional memory req)
@@ -127,7 +127,7 @@ WRITE(LOGNAM,*) "LPTHOUT ",  LPTHOUT
 WRITE(LOGNAM,*) "LDAMOUT ",  LDAMOUT
 WRITE(LOGNAM,*) "LDAMIRR ",  LDAMIRR
 WRITE(LOGNAM,*) "LLEVEE  ",  LLEVEE
-WRITE(LOGNAM,*) "LSEDOUT ",  LSEDOUT
+WRITE(LOGNAM,*) "LSEDIMENT ",  LSEDIMENT
 WRITE(LOGNAM,*) "LTRACE  ",  LTRACE
 WRITE(LOGNAM,*) "LOUTINS ",  LOUTINS
 WRITE(LOGNAM,*) ""

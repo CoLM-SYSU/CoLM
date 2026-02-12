@@ -549,7 +549,6 @@ END FUNCTION INQUIRE_FID
 !+
 !+
 !==========================================================
-#ifdef UseCDF_CMF
 SUBROUTINE NCERROR(STATUS,STRING)
 !! NETCDF error handling 
 USE NETCDF
@@ -564,7 +563,6 @@ IF ( STATUS /= 0 ) THEN
   STOP 10
 ENDIF
 END SUBROUTINE NCERROR
-#endif
 !####################################################################
 
 !####################################################################

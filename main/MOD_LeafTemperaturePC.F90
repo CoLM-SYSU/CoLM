@@ -1192,8 +1192,8 @@ CONTAINS
 
                IF (DEF_USE_PLANTHYDRAULICS) THEN
 
-                  gs0sun(i) = min( 1.e6, 1./(rssun(i)*tl(i)/tprcor) )/ laisun(i) * 1.e6
-                  gs0sha(i) = min( 1.e6, 1./(rssha(i)*tl(i)/tprcor) )/ laisha(i) * 1.e6
+                  gs0sun(i) = min( 1.e6, 1./(rssun(i)*tl(i)/tprcor) )/ laisun(i) * 1.e6 * o3coefg_sun(i)
+                  gs0sha(i) = min( 1.e6, 1./(rssha(i)*tl(i)/tprcor) )/ laisha(i) * 1.e6 * o3coefg_sha(i)
 
                   CALL PlantHydraulicStress_twoleaf (nl_soil     ,nvegwcs      ,z_soi        ,&
                         dz_soi       ,rootfr(:,i)  ,psrf         ,qsatl(i)     ,qaf(clev)    ,&
@@ -1744,14 +1744,14 @@ ENDIF
          DO i = ps, pe
             p = pftclass(i)
             CALL CalcOzoneStress(o3coefv_sun(i),o3coefg_sun(i),forc_ozone,psrf,th,ram,&
-                                 rssun(i),rbsun,lai(i),lai_old(i),p,o3uptakesun(i),sabv(i),deltim)
+                                 rssun(i),rb(i),lai(i),lai_old(i),p,o3uptakesun(i),sabv(i),deltim)
             CALL CalcOzoneStress(o3coefv_sha(i),o3coefg_sha(i),forc_ozone,psrf,th,ram,&
-                                 rssha(i),rbsha,lai(i),lai_old(i),p,o3uptakesha(i),sabv(i),deltim)
+                                 rssha(i),rb(i),lai(i),lai_old(i),p,o3uptakesha(i),sabv(i),deltim)
             lai_old(i) = lai(i)
             assimsun(i) = assimsun(i) * o3coefv_sun(i)
             assimsha(i) = assimsha(i) * o3coefv_sha(i)
-            rssun   (i) = rssun   (i) / o3coefg_sun(i)
-            rssha   (i) = rssha   (i) / o3coefg_sha(i)
+!            rssun   (i) = rssun   (i) / o3coefg_sun(i)
+!            rssha   (i) = rssha   (i) / o3coefg_sha(i)
          ENDDO
       ENDIF
 

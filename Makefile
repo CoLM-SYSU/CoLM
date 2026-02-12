@@ -208,7 +208,6 @@ OBJECTS_CAMA=\
 				  cmf_calc_pthout_mod.o   \
 				  cmf_calc_fldstg_mod.o   \
 				  cmf_calc_stonxt_mod.o   \
-				  cmf_calc_diag_mod.o     \
 				  cmf_opt_outflw_mod.o    \
 				  cmf_ctrl_tracer_mod.o   \
 				  cmf_ctrl_mpi_mod.o      \
@@ -218,6 +217,8 @@ OBJECTS_CAMA=\
 				  cmf_ctrl_boundary_mod.o \
 				  cmf_ctrl_output_mod.o   \
 				  cmf_ctrl_restart_mod.o  \
+				  cmf_ctrl_sed_mod.o      \
+				  cmf_calc_diag_mod.o     \
 				  cmf_ctrl_physics_mod.o  \
 				  cmf_ctrl_time_mod.o     \
 				  cmf_ctrl_maps_mod.o     \

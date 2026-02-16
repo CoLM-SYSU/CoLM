@@ -232,10 +232,10 @@ CONTAINS
                   r_tri_c(j) = decomp_cpools_sourcesink(j,s,i) * dz_soi(j) /deltim + (a_p_0 - adv_flux(j)) * conc_trcr_c(j)
                   r_tri_n(j) = decomp_npools_sourcesink(j,s,i) * dz_soi(j) /deltim + (a_p_0 - adv_flux(j)) * conc_trcr_n(j)
                   IF(DEF_USE_SASU .or. DEF_USE_DiagMatrix)THEN
-                     upperVX_c_vr_acc(j,s,i) = upperVX_c_vr_acc(j,s,i) -  c_tri(j)          / dz_soi(j) * deltim * conc_trcr_c(j+1)! upwards transfer
-                     diagVX_c_vr_acc (j,s,i) = diagVX_c_vr_acc (j,s,i) + (b_tri(j) - a_p_0) / dz_soi(j) * deltim * conc_trcr_c(j)! EXIT flux
-                     upperVX_n_vr_acc(j,s,i) = upperVX_n_vr_acc(j,s,i) -  c_tri(j)          / dz_soi(j) * deltim * conc_trcr_n(j+1)! upwards transfer
-                     diagVX_n_vr_acc (j,s,i) = diagVX_n_vr_acc (j,s,i) + (b_tri(j) - a_p_0) / dz_soi(j) * deltim * conc_trcr_n(j)! EXIT flux
+                     upperVX_c_vr_acc(j,s,i) = upperVX_c_vr_acc(j,s,i) -  c_tri(j) / dz_soi(j) * deltim * conc_trcr_c(j+1)! upwards transfer
+                     diagVX_c_vr_acc (j,s,i) = diagVX_c_vr_acc (j,s,i) -  c_tri(j) / dz_soi(j) * deltim * conc_trcr_c(j)! EXIT flux
+                     upperVX_n_vr_acc(j,s,i) = upperVX_n_vr_acc(j,s,i) -  c_tri(j) / dz_soi(j) * deltim * conc_trcr_n(j+1)! upwards transfer
+                     diagVX_n_vr_acc (j,s,i) = diagVX_n_vr_acc (j,s,i) -  c_tri(j) / dz_soi(j) * deltim * conc_trcr_n(j)! EXIT flux
                   ENDIF
                ELSEIF (j < nl_soil+1) THEN
 
@@ -252,9 +252,12 @@ CONTAINS
                         IF(j .ne. nl_soil)THEN
                            upperVX_c_vr_acc(j,s,i) = upperVX_c_vr_acc(j,s,i) - c_tri(j) / dz_soi(j) * deltim * conc_trcr_c(j+1)
                            upperVX_n_vr_acc(j,s,i) = upperVX_n_vr_acc(j,s,i) - c_tri(j) / dz_soi(j) * deltim * conc_trcr_n(j+1)
+                           diagVX_c_vr_acc(j,s,i)  = diagVX_c_vr_acc(j,s,i) + (b_tri(j) - a_p_0) / dz_soi(j) * deltim * conc_trcr_c(j)
+                           diagVX_n_vr_acc(j,s,i)  = diagVX_n_vr_acc(j,s,i) + (b_tri(j) - a_p_0) / dz_soi(j) * deltim * conc_trcr_n(j)
+                        ELSE
+                           diagVX_c_vr_acc(j,s,i)  = diagVX_c_vr_acc (j,s,i) - a_tri(j) / dz_soi(j) * deltim * conc_trcr_c(j)
+                           diagVX_n_vr_acc(j,s,i)  = diagVX_n_vr_acc (j,s,i) - a_tri(j) / dz_soi(j) * deltim * conc_trcr_n(j)
                         ENDIF
-                        diagVX_c_vr_acc(j,s,i) = diagVX_c_vr_acc(j,s,i) + (b_tri(j) - a_p_0) / dz_soi(j) * deltim * conc_trcr_c(j)
-                        diagVX_n_vr_acc(j,s,i) = diagVX_n_vr_acc(j,s,i) + (b_tri(j) - a_p_0) / dz_soi(j) * deltim * conc_trcr_n(j)
                      ELSE
                         IF(j .eq. nbedrock + 1 .and. j .ne. nl_soil .and. j .gt. 1)THEN
                            diagVX_c_vr_acc(j-1,s,i) = diagVX_c_vr_acc(j-1,s,i) + a_tri(j) / dz_soi(j-1) * deltim * conc_trcr_c(j-1)

@@ -1,5 +1,6 @@
 #include <define.h>
 
+#ifdef HYPERSPECTRAL
 MODULE MOD_Albedo_HiRes
 
 !-----------------------------------------------------------------------
@@ -44,9 +45,9 @@ CONTAINS
                       alb_hires  ,&
                       dir_frac   , dif_frac,             &
                       reflectance, transmittance,        &
-                      soil_alb, kw, nw, porsl,           &   
+                      soil_alb, kw, nw, porsl,           &
                       reflectance_out, transmittance_out,&
-                      doy, patchlatr, patchlonr         ,& 
+                      doy, patchlatr, patchlonr         ,&
                       ! new parameters for urban
                       urban_albedo, mean_albedo         ,&
                       lat_north, lat_south, lon_west, lon_east)
@@ -159,8 +160,8 @@ CONTAINS
         t_soisno     ( maxsnl+1:1 ), &! soil + snow layer temperature [K]
         dz_soisno    ( maxsnl+1:1 ), &! layer thickness (m)
 
-        dir_frac     (211)    ,&! 
-        dif_frac     (211)    ,&! 
+        dir_frac     (211)    ,&!
+        dif_frac     (211)    ,&!
         reflectance  (0:15,211,2)  ,&! reflectance   (PFT, wavelength, dir/dif)
         transmittance(0:15,211,2)  ,&! transmittance (PFT, wavelength, dir/dif)
         soil_alb     (211)    ,&! soil albedo [-]
@@ -192,7 +193,7 @@ CONTAINS
 
    real(r8), intent(out) :: &
         alb_hires        (211, 2) ,&! high resolution albedo, (wavelength, dir/dif)
-        reflectance_out  (211, 0:15) ,&! 
+        reflectance_out  (211, 0:15) ,&!
         transmittance_out(211, 0:15)
 
    real(r8), intent(out) :: &
@@ -238,7 +239,7 @@ CONTAINS
       snal1,           &! alb for NIR, incident on new snow (zen angle<60) [-]
       upscat,          &! upward scattered fraction for direct beam [-]
       tran(2,3)         ! canopy transmittances for solar radiation
-   
+
 !-------------------------- Local high resolution variables ----------------------------
    real(r8) ::                 &!
 
@@ -250,8 +251,8 @@ CONTAINS
 
       ! ground
       albg_hires(211, 2)      ,&
-      
-      ! soil 
+
+      ! soil
       albsoi_hires(211, 2)      ,&
 
       ! snow
@@ -274,7 +275,7 @@ CONTAINS
 
       INTEGER, PARAMETER, DIMENSION(6) :: band_index = (/ &
          1, 30, 60, 80, 110, 212   &! 400, 700, 1000, 1200, 1500, 2500 nm
-      /) 
+      /)
 
    real(r8) :: smc
    integer  :: i, j, ibnd, start_index, end_index  ! index for 5 bands [idx]
@@ -447,7 +448,7 @@ END IF
             CALL calculate_wgt_variable(albg_hires(:,2), fsds_vis_dif_frac, fsds_nir_dif_frac, albg(1,2), albg(2,2))
 
          ELSE
-            
+
             ! calculate high res soil albedos
             albg_hires(1 :29 ,1) = albg(1,1)
             albg_hires(30:211,1) = albg(2,1)
@@ -466,7 +467,7 @@ END IF
 
       ELSE IF(patchtype == 1) THEN       !urban
 
-         ! select constant albedo for urban       
+         ! select constant albedo for urban
          lat = rad2deg(patchlatr)
          lon = rad2deg(patchlonr)
 
@@ -662,19 +663,19 @@ END IF
             CALL calculate_wgt_variable(ssun_hires(:,1), fsds_vis_dir_frac, fsds_nir_dir_frac, ssun(1,1), ssun(2,1))
             CALL calculate_wgt_variable(ssun_hires(:,2), fsds_vis_dif_frac, fsds_nir_dif_frac, ssun(1,2), ssun(2,2))
 
-            CALL calculate_wgt_variable(ssha_hires(:,1), fsds_vis_dir_frac, fsds_nir_dir_frac, ssha(1,1), ssha(2,1))   
+            CALL calculate_wgt_variable(ssha_hires(:,1), fsds_vis_dir_frac, fsds_nir_dir_frac, ssha(1,1), ssha(2,1))
             CALL calculate_wgt_variable(ssha_hires(:,2), fsds_vis_dif_frac, fsds_nir_dif_frac, ssha(1,2), ssha(2,2))
 
             alb_hires(:,:) = albv_hires(:,:)
-               
+
             ! ! two-band albedo
             ! CALL twostream (chil,rho,tau,green,lai,sai,fwet_snow,&
             !                czen,albg,albv,tran,thermk,extkb,extkd,ssun,ssha)
-            
+
             ! 08/31/2023, yuan: to be consistent with PFT and PC
             !albv(:,:) = (1.-  wt)*albv(:,:) + wt*albsno(:,:)
             !alb (:,:) = (1.-fveg)*albg(:,:) + fveg*albv(:,:)
-            
+
             ! alb(:,:) = albv(:,:)
 
 #endif
@@ -715,7 +716,7 @@ END IF
       ! convert alb(:,:) = albv(:,:) -> hyperspectral
       CALL calculate_wgt_variable(albv_hires(:,1), fsds_vis_dir_frac, fsds_nir_dir_frac, alb(1,1), alb(2,1))
       CALL calculate_wgt_variable(albv_hires(:,2), fsds_vis_dif_frac, fsds_nir_dif_frac, alb(1,2), alb(2,2))
-      
+
       alb_hires(:,:) = albv_hires(:,:)
 #endif
 
@@ -1778,8 +1779,8 @@ END IF
       extkb = extkbd
 
    END SUBROUTINE twostream_mod
-   
-   
+
+
    SUBROUTINE twostream_hires_mod ( chil, rho, tau, green, lai, sai, fwet_snow, &
               coszen, albg, albv, tran, thermk, extkb, extkd, ssun, ssha )
 
@@ -2266,7 +2267,7 @@ END IF
       deallocate ( albv_p )
 
    END SUBROUTINE twostream_wrap
-   
+
    SUBROUTINE twostream_hires_wrap ( ipatch, coszen, albg, &
               albv, tran, ssun, ssha, &
               reflectance, transmittance  ,&
@@ -2289,7 +2290,7 @@ END IF
       USE MOD_Vars_PFTimeVariables
       USE MOD_HighRes_Parameters , only: update_params_PROSPECT!, satellite_PROSPECT
       USE MOD_Namelist, only: DEF_HighResVeg, DEF_PROSPECT!, DEF_Satellite_Params
-      
+
       IMPLICIT NONE
 
       ! parameters
@@ -2319,13 +2320,13 @@ END IF
             ssun(211,2),     &! sunlit canopy absorption for solar radiation
             ssha(211,2)       ! shaded canopy absorption for solar radiation,
                               ! normalized by the incident flux
-            
+
       real(r8), intent(inout) :: &
             reflectance_out  (211,0:15), &! leaf reflectance
             transmittance_out(211,0:15)   ! leaf transmittance
 
       integer :: i, p, ps, pe, iwl
-      real(r8) :: reflectance_p  (211, 2)  
+      real(r8) :: reflectance_p  (211, 2)
       real(r8) :: transmittance_p(211, 2)
 
       real(r8), allocatable :: tran_p(:,:,:)
@@ -2550,8 +2551,8 @@ END IF
    real(r8), intent(in) :: mss_cnc_dst3  ( maxsnl+1:0 ) ! mass concentration of dust aerosol species 3 (col,lyr) [kg/kg]
    real(r8), intent(in) :: mss_cnc_dst4  ( maxsnl+1:0 ) ! mass concentration of dust aerosol species 4 (col,lyr) [kg/kg]
 
-   real(r8)   , intent(in) :: dir_frac  ( numhires ) ! 
-   real(r8)   , intent(in) :: dif_frac  ( numhires ) ! 
+   real(r8)   , intent(in) :: dir_frac  ( numhires ) !
+   real(r8)   , intent(in) :: dif_frac  ( numhires ) !
 
    real(r8), intent(out) :: albgrd       ( numrad )     ! ground albedo (direct)
    real(r8), intent(out) :: albgri       ( numrad )     ! ground albedo (diffuse)
@@ -2606,7 +2607,7 @@ END IF
    integer , parameter :: nband =numrad          ! number of solar radiation waveband classes
    INTEGER, PARAMETER, DIMENSION(6) :: band_index = (/ &
       1, 30, 60, 80, 110, 212   &! 400, 700, 1000, 1200, 1500, 2500 nm
-   /) 
+   /)
 
    !-----------------------------------------------------------------------
 
@@ -3307,7 +3308,7 @@ END IF
       REAL(r8) :: Rwet_k(211, 7)
       REAL(r8) :: kw_tmp(211, 7), numerator_tmp(211, 7), denominator_tmp(211, 7), dot_product_result(211)
 
-      ! ===== Start of executable code ===== 
+      ! ===== Start of executable code =====
       nk = SIZE(k_arr)
 
       mu = (soil_moisture - 5.0) / smc
@@ -3351,22 +3352,23 @@ END IF
     INTEGER, PARAMETER :: num_nir = 182 ! 700 - 2500 nm
 
     real(r8), intent(in) :: variable(211)
-    real(r8), intent(in) :: frac_vis(num_vis) 
-    real(r8), intent(in) :: frac_nir(num_nir) 
+    real(r8), intent(in) :: frac_vis(num_vis)
+    real(r8), intent(in) :: frac_nir(num_nir)
 
     real(r8), intent(out) :: variable_vis
     real(r8), intent(out) :: variable_nir
 
     real(r8), parameter :: eps = 1.0e-12_r8
     real(r8) :: sum_vis, sum_nir
- 
+
     sum_vis = SUM(frac_vis)
     sum_nir = SUM(frac_nir)
- 
+
    variable_vis = SUM(frac_vis * variable(1:num_vis)) / sum_vis
    variable_nir = SUM(frac_nir * variable(num_vis+1:211)) / sum_nir
 
   END SUBROUTINE calculate_wgt_variable
 
 END MODULE MOD_Albedo_HiRes
+#endif
 ! --------- EOP ----------

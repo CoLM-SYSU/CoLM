@@ -85,7 +85,8 @@ CONTAINS
          IF (psi > smpmin_hr) THEN
             w_scalar(j,i) = (log(smpmin_hr/psi)/log(smpmin_hr/smpmax_hr))
          ELSE
-            w_scalar(j,i) = 0._r8
+            w_scalar(j,i) = 0.001_r8
+         ! update froot_prof_p for root carbon turnover when soil is frozen
          ENDIF
       ENDDO
 

@@ -502,7 +502,6 @@ PROGRAM CoLM
             CALL grid_riverlake_flow (idate(1), deltim)
          ENDIF
 #endif
-
 #if (defined CaMa_Flood)
 #ifdef USEMPI
          CALL mpi_barrier (p_comm_glb, p_err)
@@ -512,7 +511,6 @@ PROGRAM CoLM
          CALL mpi_barrier (p_comm_glb, p_err)
 #endif
 #endif
-
 #ifdef DataAssimilation
          CALL run_DA (idate, deltim, dolai, doalb, dosst, oroflag)
 #endif

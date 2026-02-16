@@ -40,8 +40,10 @@ MODULE MOD_Vars_PFTimeVariables
    real(r8), allocatable :: ssun_p   (:,:,:) !sunlit canopy absorption for solar radiation (0-1)
    real(r8), allocatable :: ssha_p   (:,:,:) !shaded canopy absorption for solar radiation (0-1)
 
+#ifdef HYPERSPECTRAL
    real(r8), allocatable :: ssun_hires_p (:,:,:) !sunlit canopy absorption for solar radiation (0-1)
    real(r8), allocatable :: ssha_hires_p (:,:,:) !shaded canopy absorption for solar radiation (0-1)
+#endif
 
    real(r8), allocatable :: thermk_p     (:) !canopy gap fraction for tir radiation
    real(r8), allocatable :: fshade_p     (:) !canopy shade fraction for tir radiation
@@ -115,8 +117,10 @@ CONTAINS
             allocate (ssun_p   (2,2,numpft)) ; ssun_p   (:,:,:) = spval !sunlit canopy absorption for solar radiation (0-1)
             allocate (ssha_p   (2,2,numpft)) ; ssha_p   (:,:,:) = spval !shaded canopy absorption for solar radiation (0-1)
 
+#ifdef HYPERSPECTRAL
             allocate (ssun_hires_p (211,2,numpft)) ; ssun_hires_p   (:,:,:) = spval !sunlit canopy absorption for solar radiation (0-1)
             allocate (ssha_hires_p (211,2,numpft)) ; ssha_hires_p   (:,:,:) = spval !shaded canopy absorption for solar radiation (0-1)
+#endif
 
             allocate (thermk_p     (numpft)) ; thermk_p     (:) = spval !canopy gap fraction for tir radiation
             allocate (fshade_p     (numpft)) ; fshade_p     (:) = spval !canopy shade fraction for tir radiation
@@ -178,8 +182,10 @@ CONTAINS
       CALL ncio_read_vector (file_restart, 'ssun_p   ',  2,2, landpft, ssun_p )
       CALL ncio_read_vector (file_restart, 'ssha_p   ',  2,2, landpft, ssha_p )
 
+#ifdef HYPERSPECTRAL
       CALL ncio_read_vector (file_restart, 'ssun_hires_p   ',  211,2, landpft, ssun_hires_p )
       CALL ncio_read_vector (file_restart, 'ssha_hires_p   ',  211,2, landpft, ssha_hires_p )
+#endif
 
       CALL ncio_read_vector (file_restart, 'thermk_p ',  landpft, thermk_p    )
       CALL ncio_read_vector (file_restart, 'fshade_p ',  landpft, fshade_p    )
@@ -251,8 +257,10 @@ ENDIF
       CALL ncio_write_vector (file_restart, 'ssun_p   ', 'band', 2, 'rtyp', 2, 'pft', landpft, ssun_p, compress)
       CALL ncio_write_vector (file_restart, 'ssha_p   ', 'band', 2, 'rtyp', 2, 'pft', landpft, ssha_p, compress)
 
+#ifdef HYPERSPECTRAL
       CALL ncio_write_vector (file_restart, 'ssun_hires_p', 'wavelength', 211, 'rtyp', 2, 'pft', landpft, ssun_hires_p, compress)
       CALL ncio_write_vector (file_restart, 'ssha_hires_p', 'wavelength', 211, 'rtyp', 2, 'pft', landpft, ssha_hires_p, compress)
+#endif
 
       CALL ncio_write_vector (file_restart, 'thermk_p ', 'pft', landpft, thermk_p , compress)
       CALL ncio_write_vector (file_restart, 'fshade_p ', 'pft', landpft, fshade_p , compress)
@@ -307,8 +315,10 @@ ENDIF
             deallocate (ssun_p         )  ! sunlit canopy absorption for solar radiation (0-1)
             deallocate (ssha_p         )  ! shaded canopy absorption for solar radiation (0-1)
 
+#ifdef HYPERSPECTRAL
             deallocate (ssun_hires_p   )  ! sunlit canopy absorption for solar radiation (0-1)
             deallocate (ssha_hires_p   )  ! shaded canopy absorption for solar radiation (0-1)
+#endif
 
             deallocate (thermk_p       )  ! canopy gap fraction for tir radiation
             deallocate (fshade_p       )  ! canopy gap fraction for tir radiation
@@ -1143,6 +1153,10 @@ IF(DEF_USE_OZONESTRESS)THEN
       CALL ncio_write_vector (file_restart, 'lai_old    ', 'patch', landpatch, lai_old    , compress)
       CALL ncio_write_vector (file_restart, 'o3uptakesun', 'patch', landpatch, o3uptakesun, compress)
       CALL ncio_write_vector (file_restart, 'o3uptakesha', 'patch', landpatch, o3uptakesha, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefv_sun', 'patch', landpatch, o3coefv_sun, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefv_sha', 'patch', landpatch, o3coefv_sha, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefg_sun', 'patch', landpatch, o3coefg_sun, compress)
+      CALL ncio_write_vector (file_restart, 'o3coefg_sha', 'patch', landpatch, o3coefg_sha, compress)
 ENDIF
       CALL ncio_write_vector (file_restart, 't_grnd  '   , 'patch', landpatch, t_grnd    , compress)                    ! ground surface temperature [K]
       CALL ncio_write_vector (file_restart, 'tleaf   '   , 'patch', landpatch, tleaf     , compress)                    ! leaf temperature [K]
@@ -1355,6 +1369,10 @@ IF(DEF_USE_OZONESTRESS)THEN
       CALL ncio_read_vector (file_restart, 'lai_old    ', landpatch, lai_old    )
       CALL ncio_read_vector (file_restart, 'o3uptakesun', landpatch, o3uptakesun)
       CALL ncio_read_vector (file_restart, 'o3uptakesha', landpatch, o3uptakesha)
+      CALL ncio_read_vector (file_restart, 'o3coefv_sun', landpatch, o3coefv_sun)
+      CALL ncio_read_vector (file_restart, 'o3coefv_sha', landpatch, o3coefv_sha)
+      CALL ncio_read_vector (file_restart, 'o3coefg_sun', landpatch, o3coefg_sun)
+      CALL ncio_read_vector (file_restart, 'o3coefg_sha', landpatch, o3coefg_sha)
 ENDIF
       CALL ncio_read_vector (file_restart, 'alb     '   , 2, 2, landpatch, alb  ) ! averaged albedo [-]
       CALL ncio_read_vector (file_restart, 'ssun    '   , 2, 2, landpatch, ssun ) ! sunlit canopy absorption for solar radiation (0-1)

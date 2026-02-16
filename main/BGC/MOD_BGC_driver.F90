@@ -87,7 +87,7 @@
       CALL CNZeroFluxes(i, ps, pe, nl_soil, ndecomp_pools, ndecomp_transitions)
       CALL CNNFixation(i,idate)
       CALL CNMResp(i, ps, pe, nl_soil, npcropmin)
-      CALL decomp_rate_constants_bgc(i,nl_soil,z_soi)
+      CALL decomp_rate_constants_bgc(i, nl_soil, z_soi)
       CALL SoilBiogeochemPotential(i,nl_soil,ndecomp_pools,ndecomp_transitions)
       CALL SoilBiogeochemVerticalProfile(i,ps,pe,nl_soil,nl_soil_full,nbedrock,zmin_bedrock,z_soi,dz_soi)
       IF(DEF_USE_NITRIF)THEN
@@ -127,7 +127,7 @@
       CALL SoilBiogeochemLittVertTransp(i,deltim,nl_soil,nl_soil_full,ndecomp_pools,nbedrock,z_soi,zi_soi,dz_soi)
   
       ! update vegetation pools from gap mortality
-      CALL CNGapMortality(i, ps, pe, nl_soil,npcropmin)
+      CALL CNGapMortality(i, ps, pe, nl_soil, npcropmin)
       CALL CStateUpdate2(i, ps, pe, deltim, nl_soil)
       CALL NStateUpdate2(i, ps, pe, deltim, nl_soil, dz_soi)
   
@@ -151,8 +151,8 @@
       CALL CNDriverSummarizeFluxes(i,ps,pe,nl_soil,dz_soi,ndecomp_transitions,ndecomp_pools,deltim)
   
       IF( .not. skip_balance_check(i) )THEN
-         CALL CBalanceCheck(i,ps,pe,deltim,dlat,dlon)
-         CALL NBalanceCheck(i,deltim,dlat,dlon)
+         CALL CBalanceCheck(i,ps,pe,nl_soil,dz_soi,deltim,dlat,dlon)
+         CALL NBalanceCheck(i,ps,pe,deltim,dlat,dlon)
   
   
       ELSE

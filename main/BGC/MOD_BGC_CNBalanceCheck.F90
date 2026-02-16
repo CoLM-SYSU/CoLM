@@ -35,9 +35,21 @@ MODULE MOD_BGC_CNBalanceCheck
        deadstemc_xfer_p, livecrootc_xfer_p, deadcrootc_xfer_p, gresp_xfer_p, xsmrpool_p, &
        grainc_p, grainc_storage_p, grainc_xfer_p, ctrunc_p, totvegc_p, cropseedc_deficit_p
    USE MOD_BGC_Vars_1DPFTFluxes, only: &
-       grainc_to_food_p
+       grainc_to_food_p, &
+       leafc_to_litter_p          , frootc_to_litter_p              , livestemc_to_litter_p, &
+       m_leafc_to_litter_p        , m_leafc_storage_to_litter_p     , m_leafc_xfer_to_litter_p     , &
+       m_frootc_to_litter_p       , m_frootc_storage_to_litter_p    , m_frootc_xfer_to_litter_p    , &
+       m_livestemc_to_litter_p    , m_livestemc_storage_to_litter_p , m_livestemc_xfer_to_litter_p , &
+       m_deadstemc_to_litter_p    , m_deadstemc_storage_to_litter_p , m_deadstemc_xfer_to_litter_p , &
+       m_livecrootc_to_litter_p   , m_livecrootc_storage_to_litter_p, m_livecrootc_xfer_to_litter_p, &
+       m_deadcrootc_to_litter_p   , m_deadcrootc_storage_to_litter_p, m_deadcrootc_xfer_to_litter_p, &
+       m_gresp_storage_to_litter_p, m_gresp_xfer_to_litter_p
    USE MOD_SPMD_Task
-   USE MOD_Vars_PFTimeInvariants, only: pftclass
+   USE MOD_Vars_PFTimeInvariants, only: pftclass, pftfrac
+
+   USE MOD_BGC_Vars_1DFluxes, only: &
+       gap_mortality_to_met_c, gap_mortality_to_cel_c, gap_mortality_to_lig_c, gap_mortality_to_cwdc  , &
+       phenology_to_met_c, phenology_to_cel_c, phenology_to_lig_c
    
    IMPLICIT NONE
    
@@ -74,7 +86,7 @@ CONTAINS
  
    END SUBROUTINE BeginCNBalance
  
-   SUBROUTINE CBalanceCheck(i,ps,pe,deltim,dlat,dlon)
+   SUBROUTINE CBalanceCheck(i,ps,pe,nl_soil,dz_soi,deltim,dlat,dlon)
  
    ! !DESCRIPTION:
    ! CBalanceCheck tests the carbon balance of each time step, which meet C balance equation:
@@ -92,10 +104,15 @@ CONTAINS
    real(r8),intent(in) :: deltim ! time step in seconds
    real(r8),intent(in) :: dlat   ! latitude (degree)
    real(r8),intent(in) :: dlon   ! longitude (degree)
+   integer, intent(in) :: nl_soil
+   real(r8),intent(in) :: dz_soi(nl_soil)
  
 !Local variables
    real(r8),parameter :: cerror = 1.e-7_r8
    real(r8) :: col_cinputs, col_coutputs, col_errcb
+   real(r8) :: veg_to_litter, phen_to_litter, gap_leaf_to_litter, gap_froot_to_litter, &
+               gap_livestem_to_litter, gap_deadstem_to_litter, gap_livecroot_to_litter, &
+               gap_deadcroot_to_litter, gap_gresp_to_litter, gap_veg_to_litter, phen_veg_to_litter
    integer m
  
       col_endcb(i)     = totcolc(i)
@@ -110,6 +127,29 @@ CONTAINS
       col_errcb = (col_cinputs - col_coutputs)*deltim - &
                  (col_endcb(i) - col_begcb(i))
   
+      phen_to_litter          = sum(pftfrac(ps:pe)*(leafc_to_litter_p       (ps:pe) + frootc_to_litter_p(ps:pe) &
+                                                  + livestemc_to_litter_p(ps:pe)))
+      gap_leaf_to_litter      = sum(pftfrac(ps:pe)*(m_leafc_to_litter_p     (ps:pe) + m_leafc_storage_to_litter_p(ps:pe) &
+                                                  + m_leafc_xfer_to_litter_p(ps:pe)))
+      gap_froot_to_litter     = sum(pftfrac(ps:pe)*(m_frootc_to_litter_p    (ps:pe) + m_frootc_storage_to_litter_p(ps:pe)&
+                                                  + m_frootc_xfer_to_litter_p(ps:pe)))
+      gap_livestem_to_litter  = sum(pftfrac(ps:pe)*(m_livestemc_to_litter_p (ps:pe) + m_livestemc_storage_to_litter_p(ps:pe)&
+                                                  + m_livestemc_xfer_to_litter_p(ps:pe)))
+      gap_deadstem_to_litter  = sum(pftfrac(ps:pe)*(m_deadstemc_to_litter_p (ps:pe) + m_deadstemc_storage_to_litter_p(ps:pe)&
+                                                  + m_deadstemc_xfer_to_litter_p(ps:pe)))
+      gap_livecroot_to_litter = sum(pftfrac(ps:pe)*(m_livecrootc_to_litter_p(ps:pe) + m_livecrootc_storage_to_litter_p(ps:pe)&
+                                                  + m_livecrootc_xfer_to_litter_p(ps:pe)))
+      gap_deadcroot_to_litter = sum(pftfrac(ps:pe)*(m_deadcrootc_to_litter_p(ps:pe) + m_deadcrootc_storage_to_litter_p(ps:pe)&
+                                                  + m_deadcrootc_xfer_to_litter_p(ps:pe)))
+      gap_gresp_to_litter     = sum(pftfrac(ps:pe)*(m_gresp_storage_to_litter_p(ps:pe)+m_gresp_xfer_to_litter_p(ps:pe)))
+
+      gap_veg_to_litter       = sum((gap_mortality_to_met_c(1:nl_soil,i) + gap_mortality_to_cel_c(1:nl_soil,i)&
+                                  +  gap_mortality_to_lig_c(1:nl_soil,i) + gap_mortality_to_cwdc (1:nl_soil,i))*dz_soi(1:nl_soil))
+      phen_veg_to_litter      = sum((phenology_to_met_c    (1:nl_soil,i) + phenology_to_cel_c    (1:nl_soil,i)&
+                                  +  phenology_to_lig_c    (1:nl_soil,i))*dz_soi(1:nl_soil))
+      veg_to_litter           =  phen_to_litter         + gap_leaf_to_litter      + gap_froot_to_litter     + gap_livestem_to_litter &
+                               + gap_deadstem_to_litter + gap_livecroot_to_litter + gap_deadcroot_to_litter + gap_gresp_to_litter
+
       IF(abs(col_errcb) > cerror) THEN
          write(*,*)'column cbalance error    = ', col_errcb, i, p_iam_glb
          write(*,*)'Latdeg,Londeg='             , dlat, dlon
@@ -127,15 +167,21 @@ CONTAINS
             write(*,*)'vegc,livecrootc         = ',livecrootc_p(m)+livecrootc_storage_p(m)+livecrootc_xfer_p(m)
             write(*,*)'vegc,deadcrootc         = ',deadcrootc_p(m)+deadcrootc_storage_p(m)+deadcrootc_xfer_p(m)
             write(*,*)'grainc                  = ',grainc_p(m)+grainc_storage_p(m)+grainc_xfer_p(m)+cropseedc_deficit_p(m)
-            write(*,*)'grwoth respiration c    = ',gresp_storage_p(m)+gresp_xfer_p(m)+xsmrpool_p(m)
+            write(*,*)'growth respiration c    = ',gresp_storage_p(m)+gresp_xfer_p(m)+xsmrpool_p(m)
          ENDDO
+         write(*,*)'--------veg output to litter-------------'
+         write(*,*)'veg to soil and litter   = ', veg_to_litter, phen_to_litter, gap_leaf_to_litter, gap_froot_to_litter, gap_livestem_to_litter, &
+                                                  gap_deadstem_to_litter, gap_livecroot_to_litter, gap_deadcroot_to_litter , gap_gresp_to_litter
+         write(*,*)'--------liter and soil input from veg----'
+         write(*,*)'input to soil and litter = ',gap_veg_to_litter + phen_veg_to_litter
+         write(*,*)'phen, gap to litter      = ',phen_veg_to_litter, gap_veg_to_litter
          write(*,*)'--- Inputs ---'
          write(*,*)'gpp                      = ',gpp(i)*deltim
          write(*,*)'--- Outputs ---'
          write(*,*)'er                       = ',er(i)*deltim
          write(*,*)'ar                       = ',ar(i)*deltim
          write(*,*)'decomp_hr                = ',decomp_hr(i)*deltim
-         write(*,*)'fire_closs           = ',fire_closs(i)*deltim
+         write(*,*)'fire_closs               = ',fire_closs(i)*deltim
          write(*,*)'col_hrv_xsmrpool_to_atm  = ',hrv_xsmrpool_to_atm(i)*deltim
          write(*,*)'wood_harvestc            = ',wood_harvestc(i)*deltim
          write(*,*)'grainc_to_cropprodc      = ',grainc_to_cropprodc(i)*deltim, grainc_to_food_p(ps)*deltim
@@ -149,7 +195,7 @@ CONTAINS
 
    END SUBROUTINE CBalanceCheck
  
-   SUBROUTINE NBalanceCheck(i,deltim,dlat,dlon)
+   SUBROUTINE NBalanceCheck(i,ps,pe,deltim,dlat,dlon)
  
 ! !DESCRIPTION:
 ! NBalanceCheck tests the carbon balance of each time step, which meet N balance equation:
@@ -161,7 +207,7 @@ CONTAINS
 ! !REVISION:
 ! Xingjie Lu, 2022, modify original CLM5 to be compatible with CoLM code structure.
    
-   integer, intent(in) :: i      ! patch index
+   integer, intent(in) :: i,ps,pe      ! patch index
    real(r8),intent(in) :: deltim ! time step in seconds
    real(r8),intent(in) :: dlat   ! latitude (degree)
    real(r8),intent(in) :: dlon   ! longitude (degree)

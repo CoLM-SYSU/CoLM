@@ -1,0 +1,526 @@
+#!/bin/bash
+#./create_test_standard 
+
+Help()
+{
+#DISPLAY help
+   echo "-------------------- Usage --------------------------------"
+   echo "Descripion: create standard test cases"
+
+   echo !---------------------------------------------------------
+   echo 'Syntax: ./create_test_standard -n $TestPath' [ -r Site ]
+   echo !---------------------------------------------------------
+   echo options:
+   echo '-n The path of the test'
+   echo '-r Whether to start a global test (-r Global) or site test '
+   echo '(-r Site). If -r is not present, global test will be the default'
+   echo -h display command information
+
+}
+
+CreateTestStandard()
+{
+   TestName=$(basename "$1")
+   TestPath=$(dirname "$1")
+   Region=$2
+   SiteList=$3
+   Case01=True
+   Case02=True
+   Case03=False
+   Case04=True
+   Case05=True
+   Case06=True
+   Case07=True
+   Case08=True
+   Case09=True
+   Case11=True
+   Case12=True
+   Case16=False
+   Case17=False
+   Case32=False
+   Case33=False
+   Case34=False
+   Case35=False
+
+   mkdir -p $TestPath/$TestName/
+   
+   while read line
+   do
+      SiteName=$(echo "$line" | awk '{print $1}')
+      if [ "$Case01" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s usgs -m cb -n ${TestPath}/${TestName}/${SiteName}/Case01"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s usgs -m cb -n ${TestPath}/${TestName}/${SiteName}/Case01
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case01/case.submit
+      fi
+   
+      if [ "$Case02" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m cb -n ${TestPath}/${TestName}/${SiteName}/Case02"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m cb -n ${TestPath}/${TestName}/${SiteName}/Case02
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS =.true.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case02/case.submit
+      fi
+         
+      if [ "$Case04" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m cb -n ${TestPath}/${TestName}/Case04"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m cb -n ${TestPath}/${TestName}/${SiteName}/Case04
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case04/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case04/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case02/landdata ${TestPath}/${TestName}/${SiteName}/Case04/landdata
+      fi
+         
+      if [ "$Case05" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m vg -n ${TestPath}/${TestName}/${SiteName}/Case05"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m vg -n ${TestPath}/${TestName}/${SiteName}/Case05
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case05/case.submit
+      fi
+         
+      if [ "$Case06" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m vg -n ${TestPath}/${TestName}/${SiteName}/Case06"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s igbp -m vg -n ${TestPath}/${TestName}/${SiteName}/Case06
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case06/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case06/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case05/landdata ${TestPath}/${TestName}/${SiteName}/Case06/landdata
+      fi
+         
+      if [ "$Case07" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case07"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case07
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 0' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case07/case.submit
+      fi
+         
+      if [ "$Case08" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case08"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case08
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case08/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case08/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case08/landdata
+      fi
+         
+      if [ "$Case09" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case09"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case09
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case09/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case09/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case09/landdata
+      fi
+         
+      if [ "$Case11" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case11"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case11
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case11/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case11/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case11/landdata
+      fi
+         
+      if [ "$Case12" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case12"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -n ${TestPath}/${TestName}/${SiteName}/Case12
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case12/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case12/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case12/landdata
+      fi
+         
+      if [ "$Case16" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16.nml
+         sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/landdata
+   
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -n ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -n ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/landdata
+      fi
+         
+      if [ "$Case17" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -b -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -b -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/landdata
+   
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -b -n ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pc -m vg -b -n ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case07/landdata ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/landdata
+      fi
+      
+      if [ "$Case32" == "True" ];then
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -p -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -p -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/case.submit
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+   
+         echo "./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -p -n ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/"
+         ./create_newcase -g single_${SiteName} -L ${SiteList} -s pft -m vg -b -p -n ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/landdata ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/landdata
+      fi
+         
+      if [ "$Case33" == "True" ];then
+         echo "./create_newcase -t 1850 -e 1850 -s pc -m vg -b -p -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/"
+         ./create_newcase -t 1850 -e 1850 -s pc -m vg -b -p -i sasund -n ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/landdata ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/landdata
+   
+         echo "./create_newcase -t 1850 -e 2023 -s pc -m vg -b -p -n ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/"
+         ./create_newcase -t 1850 -e 2023 -s pc -m vg -b -p -n ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/
+         sed -i '41a\   DEF_USE_VariablySaturatedFlow = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_Runoff_SCHEME = 3' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_RSS_SCHEME = 5' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_SUPERCOOL_WATER = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_PLANTHYDRAULICS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i 's\24:00:00\167:00:00\g' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/case.submit
+         rm -rf ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/landdata
+         ln -sf ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/landdata ${TestPath}/${TestName}/Case33/Case33-Hist/landdata
+      fi
+   done < ${SiteList}
+
+}
+
+
+while getopts ":hn:r:L:" options ;
+do
+    case $options in
+      n) TestPathName=$OPTARG ;;
+      r) Region=$OPTARG ;;
+      L) SiteList=$OPTARG ;;
+      h) Help; exit;;
+      *) echo "invalid option: $@";exit ;;
+    esac
+done
+
+#argument vacant check
+
+if [ -z "${TestPathName}" ];then
+   echo 
+   echo 'Error: "-n" is missing'
+   echo
+   Help
+   exit
+else
+   if [ -z "${Region}" ];then
+      echo
+      echo Note: '$Region is missing, assume to start a global test'
+      Region=Global
+      if [ ! -z "${SiteList}" ];then
+	 echo Warning: -L option ${SiteList} is ignored since -r option is absent
+      fi
+   else
+#argument correction check
+      if [ $Region == "Site" ];then
+         echo Note: 'Start a site test'
+	 if [ -z "${SiteList}" ];then
+	    echo Error: -L option is absent when -r Site is present
+	    exit
+	 else
+            if [ -f "${SiteList}" ];then
+	       echo Note: use SiteList $SiteList to create site tests
+            else
+               echo Error: SiteList file ${SiteList} is not found
+	       exit
+	    fi
+	 fi
+      else
+         if [ $Region == "Global" ];then
+            echo Note: 'Start a global test'
+         else
+            echo Error: '$Region option "' $Region '"is invalid'
+            Help
+            exit
+         fi
+         if [ ! -z "${SiteList}" ];then
+	    echo Warning: -L option ${SiteList} is ignored since -r Sites option is absent
+         fi
+	 SiteList=Null
+      fi
+   fi
+fi
+
+#check current location
+#if [ ! -f create_test_standard ];then
+#   echo 'Please change directory to run/script to run create_test_standard'
+#else
+   echo creating test $TestPathName $Region $SiteList
+   CreateTestStandard $TestPathName $Region $SiteList
+#fi
+

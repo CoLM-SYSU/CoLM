@@ -75,6 +75,7 @@ SUBROUTINE CoLMMAIN ( &
            reflectance_out , transmittance_out,&
 #endif
            !Ozone stress variables
+           o3coefv_sun,  o3coefv_sha,  o3coefg_sun,  o3coefg_sha,  &
            lai_old,      o3uptakesun,  o3uptakesha,  forc_ozone,   &
            !End ozone stress variables
            !WUE stomata model parameter
@@ -407,6 +408,10 @@ SUBROUTINE CoLMMAIN ( &
         o3uptakesun ,&! Ozone does, sunlit leaf (mmol O3/m^2)
         o3uptakesha ,&! Ozone does, shaded leaf (mmol O3/m^2)
         forc_ozone  ,&
+        o3coefv_sun ,&! Ozone stress factor for photosynthesis on sunlit leaf
+        o3coefv_sha ,&! Ozone stress factor for photosynthesis on sunlit leaf
+        o3coefg_sun ,&! Ozone stress factor for stomata on shaded leaf
+        o3coefg_sha ,&! Ozone stress factor for stomata on shaded leaf
         !End ozone stress variables
         !WUE stomata model parameter
         lambda      ,&! Marginal water cost of carbon gain ((mol h2o) (mol co2)-1)
@@ -846,6 +851,7 @@ SUBROUTINE CoLMMAIN ( &
               psi50_sun         ,psi50_sha         ,psi50_xyl         ,psi50_root        ,&
               ck                ,vegwp             ,gs0sun            ,gs0sha            ,&
               !Ozone stress variables
+              o3coefv_sun       ,o3coefv_sha       ,o3coefg_sun       ,o3coefg_sha       ,&
               lai_old           ,o3uptakesun       ,o3uptakesha       ,forc_ozone        ,&
               !End ozone stress variables
               !WUE stomata model parameter

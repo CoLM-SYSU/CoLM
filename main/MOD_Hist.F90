@@ -1323,15 +1323,15 @@ ENDIF
              a_ar, file_hist, 'f_ar', itime_in_file, sumarea, filter, &
              'autotrophic respiration','gC/m2/s')
 
-         ! CWD production
-         CALL write_history_variable_2d ( DEF_hist_vars%cwdprod , &
-             a_cwdprod, file_hist, 'f_cwdprod', itime_in_file, sumarea, filter, &
-             'CWD production','gC/m2/s')
-
-         ! CWD decomposition
-         CALL write_history_variable_2d ( DEF_hist_vars%cwddecomp , &
-             a_cwddecomp, file_hist, 'f_cwddecomp', itime_in_file, sumarea, filter, &
-             'CWD decomposition','gC/m2/s')
+!         ! CWD production
+!         CALL write_history_variable_2d ( DEF_hist_vars%cwdprod , &
+!             a_cwdprod, file_hist, 'f_cwdprod', itime_in_file, sumarea, filter, &
+!             'CWD production','gC/m2/s')
+!
+!         ! CWD decomposition
+!         CALL write_history_variable_2d ( DEF_hist_vars%cwddecomp , &
+!             a_cwddecomp, file_hist, 'f_cwddecomp', itime_in_file, sumarea, filter, &
+!             'CWD decomposition','gC/m2/s')
 
          ! heterotrophic respiration
          CALL write_history_variable_2d ( DEF_hist_vars%hr , &

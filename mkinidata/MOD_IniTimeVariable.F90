@@ -41,6 +41,8 @@ CONTAINS
                      ,patchlatr, patchlonr&
                      ,urban_albedo, mean_albedo, lat_north, lat_south, lon_east, lon_west&
 #endif
+!Ozone Variables
+                     ,o3coefv_sun,o3coefv_sha,o3coefg_sun,o3coefg_sha&
 #if (defined BGC)
                      ,use_cnini, totlitc, totsomc, totcwdc, decomp_cpools, decomp_cpools_vr, ctrunc_veg, ctrunc_soil, ctrunc_vr &
                      ,totlitn, totsomn, totcwdn, decomp_npools, decomp_npools_vr, ntrunc_veg, ntrunc_soil, ntrunc_vr &
@@ -242,6 +244,11 @@ CONTAINS
          fm,                     &! integral of profile function for momentum
          fh,                     &! integral of profile function for heat
          fq                       ! integral of profile function for moisture
+    real(r8), intent(out) ::      &
+         o3coefv_sun,            &! Ozone stress factor for photosynthesis on sunlit leaf
+         o3coefv_sha,            &! Ozone stress factor for photosynthesis on sunlit leaf
+         o3coefg_sun,            &! Ozone stress factor for stomata on shaded leaf
+         o3coefg_sha              ! Ozone stress factor for stomata on shaded leaf
 
 #ifdef BGC
    real(r8),intent(out) ::      &
@@ -872,6 +879,10 @@ CONTAINS
             IF(DEF_USE_OZONESTRESS)THEN
                o3uptakesun_p         (ps:pe) = 0._r8
                o3uptakesha_p         (ps:pe) = 0._r8
+               o3coefv_sun_p         (ps:pe) = 1._r8
+               o3coefv_sha_p         (ps:pe) = 1._r8
+               o3coefg_sun_p         (ps:pe) = 1._r8
+               o3coefg_sha_p         (ps:pe) = 1._r8
             ENDIF
             leafc_xfer_p             (ps:pe) = 0.0
             frootc_xfer_p            (ps:pe) = 0.0
@@ -1266,6 +1277,10 @@ CONTAINS
       fm    = alog(30.)
       fh    = alog(30.)
       fq    = alog(30.)
+      o3coefv_sun = 1.0
+      o3coefv_sha = 1.0
+      o3coefg_sun = 1.0
+      o3coefg_sha = 1.0
 
    END SUBROUTINE IniTimeVar
    !-----------------------------------------------------------------------

@@ -1290,6 +1290,7 @@ ENDIF
          wice_soisno(lb) = 0.
          wliq_soisno(lb) = wliq_soisno(lb) + wgdif
       ENDIF
+
       wliq_soisno(lb) = wliq_soisno(lb) + (pg_rain + qsdew - qseva)*deltim
       IF (wliq_soisno(lb) < 0.) THEN
          wice_soisno(lb) = wice_soisno(lb) + wliq_soisno(lb)
@@ -1493,8 +1494,13 @@ ENDIF
          wice_soisno(lb) = 0.
          wliq_soisno(lb) = wliq_soisno(lb) + wgdif
       ENDIF
+
       wliq_soisno(lb) = wliq_soisno(lb) + (pg_rain + qsdew - qseva)*deltim
-      wliq_soisno(lb) = max(0., wliq_soisno(lb))
+      IF (wliq_soisno(lb) < 0.) THEN
+         wice_soisno(lb) = wice_soisno(lb) + wliq_soisno(lb)
+         wice_soisno(lb) = max(wice_soisno(lb), 0.)
+         wliq_soisno(lb) = 0.
+      ENDIF
 
 ! Porosity and partial volume
       DO j = lb, 0

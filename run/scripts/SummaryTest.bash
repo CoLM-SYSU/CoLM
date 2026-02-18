@@ -22,7 +22,7 @@ Help()
 
 SummaryTest()
 {
-   ROOT=`awk '/ROOT/ {print $2}' machine.config`
+   ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../../
    TestName=$(basename "$1")
    TestPath=$(dirname "$1")
 

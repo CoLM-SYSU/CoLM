@@ -252,7 +252,8 @@ if [ ! -f machine.config ];then
    echo machine.config does not exist
    exit
 fi
-ROOT=`awk '/ROOT/ {print $2}' machine.config`
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../../
+
 CONFIG=$ROOT/run/scripts/machine.config
 RAWDATA=`awk '/RAWDATA/ {print $2}' $CONFIG`
 RUNTIME=`awk '/RUNTIME/ {print $2}' $CONFIG`

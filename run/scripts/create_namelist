@@ -176,7 +176,8 @@ cat>${CASEPATH}/${CASENAME}/${NMLNAME}<<EOF
 /
 EOF
 if [ ${SITELIST} == Null ];then
-   ForcingPATH=$(awk -v s="FORCINGPATH" '$1 == s {print $2}' ${OLD_PWD}/machine.config)
+   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+   ForcingPATH=$(awk -v s="FORCINGPATH" '$1 == s {print $2}' ${SCRIPT_DIR}/machine.config)
    case ${Forcing} in
 	   GSWP3) ForcingPATHNAME=${ForcingPATH}/GSWP3/;;
            CRUJRA) ForcingPATHNAME=${ForcingPATH}/crujra_v2.5/;;
@@ -186,16 +187,17 @@ if [ ${SITELIST} == Null ];then
 	   CRUNCEPV7) ForcingPATHNAME=${ForcingPATH}/cruncep_v7/;;
 	   *) echo Error: wrong Forcing name ${Forcing}; exit ;;
    esac
-   ROOTPATH=$(awk -v s="ROOT" '$1 == s {print $2}' ${OLD_PWD}/machine.config)
+   ROOTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../../
    sed -i "10i\ DEF_nx_blocks = ${NX_BLOCK}"   ${CASEPATH}/${CASENAME}/${NMLNAME}
    sed -i "11i\ DEF_ny_blocks = ${NY_BLOCK}"   ${CASEPATH}/${CASENAME}/${NMLNAME}
    sed -i "12i\ DEF_PIO_groupsize = ${NGROUP}" ${CASEPATH}/${CASENAME}/${NMLNAME}
    mkdir -p ${CASEPATH}/${CASENAME}/bld/run/
    cp -p ${ROOTPATH}/run/forcing/${Forcing}.nml  ${CASEPATH}/${CASENAME}/bld/run/${Forcing}.nml
-   echo $ForcingPATH ${OLD_PWD}/machine.config
+   echo $ForcingPATH ${SCRIPT_DIR}/machine.config
    sed -i "s/DEF_dir_forcing.*/DEF_dir_forcing = '${ForcingPATHNAME//\//\\/}'/g" ${CASEPATH}/${CASENAME}/bld/run/${Forcing}.nml
 else
-   ForcingPATH=$(awk -v s="FORCINGPATH" '$1 == s {print $2}' ${OLD_PWD}/machine.config)
+   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+   ForcingPATH=$(awk -v s="FORCINGPATH" '$1 == s {print $2}' ${SCRIPT_DIR}/machine.config)
    SITEDATA="'"${ForcingPATH}/$(awk -v s="$SITENAME" '$1 == s {print $7}' ${SITELIST})"'"
    echo SITEDATA $SITEDATA
    sed -i "10i\ SITE_fsitedata = ${SITEDATA}          " ${CASEPATH}/${CASENAME}/${NMLNAME}
@@ -244,7 +246,6 @@ do
       *) echo "invalid option: $option";exit ;;
     esac
 done
-
 if [ -z "${SITENAME}" ];then
    if [ -z "${SITELIST}" ];then
       echo
@@ -639,6 +640,5 @@ else
       exit 1
    fi
 fi
-
 CreateNamelist $CASEPATH $CASENAME $NMLNAME $startyr $endyr $RAWDATA $RUNTIME $reslon $reslat $Forcing $ISUSESASU $LandMask $EDGES $EDGEN $EDGEW $EDGEE $NX_BLOCK $NY_BLOCK $NGROUP $SITENAME $SITELIST
 

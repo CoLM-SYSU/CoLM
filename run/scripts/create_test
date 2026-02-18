@@ -182,7 +182,7 @@ CreateTest()
    Mode=$3
    TestType=$4
    RestTime=$5
-   ROOT=`awk '/ROOT/ {print $2}' machine.config`
+   ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"../../
    BatchSystem=`awk '/BatchSystem/ {print $2}' machine.config`
    Queue=`awk '/Queue_case/ {print $2}' machine.config`
 

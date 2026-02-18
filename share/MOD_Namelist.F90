@@ -290,8 +290,8 @@ MODULE MOD_Namelist
    logical :: DEF_USE_BEDROCK               = .false.
 
    ! ----- Ozone stress -----
-   logical :: DEF_USE_OZONESTRESS = .false.
-   logical :: DEF_USE_OZONEDATA   = .false.
+   logical :: DEF_USE_OZONESTRESS = .true.
+   logical :: DEF_USE_OZONEDATA   = .true.
 
    ! ----- SNICAR model related -----
    logical :: DEF_USE_SNICAR                  = .false.

@@ -1,4 +1,4 @@
-ROOT=`awk '/ROOT/ {print $2}' machine.config`
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../../
 if [ $# -eq 2 ];then
    if [ "${1:0:1}" == '/' ];then
       CASENAME1=`echo "${1##*/}"`

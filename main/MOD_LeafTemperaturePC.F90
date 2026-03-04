@@ -1182,7 +1182,7 @@ CONTAINS
                     psrf       ,po2m       ,pco2m     ,pco2a     ,eah       ,&
                     ei(i)      ,tl(i)      ,parsha(i) ,&
 !Ozone stress variables
-                    o3coefv_sun(i),     o3coefg_sun(i),&
+                    o3coefv_sha(i),     o3coefg_sha(i),&
 !End ozone stress variables
 !WUE stomata model parameter
                     lambda(i)                                               ,&
@@ -1752,6 +1752,13 @@ ENDIF
             assimsha(i) = assimsha(i) * o3coefv_sha(i)
 !            rssun   (i) = rssun   (i) / o3coefg_sun(i)
 !            rssha   (i) = rssha   (i) / o3coefg_sha(i)
+         ENDDO
+      ELSE
+         DO i = ps, pe
+            o3coefv_sun(i) = 1.0_r8
+            o3coefg_sun(i) = 1.0_r8
+            o3coefv_sha(i) = 1.0_r8
+            o3coefg_sha(i) = 1.0_r8
          ENDDO
       ENDIF
 

@@ -58,8 +58,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
          sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case01/input_Case01.nml
@@ -77,8 +77,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS =.true.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
          sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case02/input_Case02.nml
@@ -96,8 +96,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
          sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case04/input_Case04.nml
@@ -117,8 +117,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
          sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case05/input_Case05.nml
@@ -136,8 +136,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
          sed -i 's\DEF_LAI_CHANGE_YEARLY = .false.\DEF_LAI_CHANGE_YEARLY = .false.\g' ${TestPath}/${TestName}/${SiteName}/Case06/input_Case06.nml
@@ -157,8 +157,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case07/input_Case07.nml
@@ -177,8 +177,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case08/input_Case08.nml
@@ -199,8 +199,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case09/input_Case09.nml
@@ -221,8 +221,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case11/input_Case11.nml
@@ -243,8 +243,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case12/input_Case12.nml
@@ -265,8 +265,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case16/input_Case16.nml
          sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup.nml
@@ -279,8 +279,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case16/input_Case16.nml
          sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-spinup/input_Case16-spinup-SASU.nml
@@ -299,8 +299,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case16/input_Case16.nml
          sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case16/Case16-Hist/input_Case16-Hist.nml
@@ -321,8 +321,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case17/input_Case17.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup.nml
@@ -335,8 +335,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case17/input_Case17.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-spinup/input_Case17-spinup-SASU.nml
@@ -355,8 +355,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case17/input_Case17.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case17/Case17-Hist/input_Case17-Hist.nml
@@ -377,8 +377,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case32/input_Case32.nml
          sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup.nml
@@ -391,8 +391,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case32/input_Case32.nml
          sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-spinup/input_Case32-spinup-SASU.nml
@@ -409,8 +409,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case32/input_Case32.nml
          sed -i '41a\   DEF_FAST_PC = .false.' ${TestPath}/${TestName}/${SiteName}/Case32/Case32-Hist/input_Case32-Hist.nml
@@ -431,8 +431,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case33/input_Case33.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup.nml
@@ -445,8 +445,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case33/input_Case33.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-spinup/input_Case33-spinup-SASU.nml
@@ -465,8 +465,8 @@ CreateTestStandard()
          sed -i '41a\   DEF_USE_WUEST = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
          sed -i '41a\   DEF_SPLIT_SOILSNOW = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
          sed -i '41a\   DEF_USE_SNICAR = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
-         sed -i '41a\   DEF_USE_OZONESTRESS = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
-         sed -i '41a\   DEF_USE_OZONEDATA = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_OZONESTRESS = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
+         sed -i '41a\   DEF_USE_OZONEDATA = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
          sed -i '41a\   DEF_USE_IRRIGATION = .false.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml
          sed -i '32a\   DEF_simulation_time%spinup_repeat = 10' ${TestPath}/${TestName}/${SiteName}/Case33/input_Case33.nml
          sed -i '41a\   DEF_FAST_PC = .true.' ${TestPath}/${TestName}/${SiteName}/Case33/Case33-Hist/input_Case33-Hist.nml

@@ -997,6 +997,11 @@ ENDIF
          assimsha = assimsha * o3coefv_sha
 !         rssun    = rssun / o3coefg_sun
 !         rssha    = rssha / o3coefg_sha
+      ELSE
+         o3coefv_sun = 1.0_r8
+         o3coefg_sun = 1.0_r8
+         o3coefv_sha = 1.0_r8
+         o3coefg_sha = 1.0_r8
       ENDIF
 
 ! ======================================================================

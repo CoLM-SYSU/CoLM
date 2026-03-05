@@ -381,6 +381,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=36
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       Global_Grid_50km_USGS_VG)
 	 IsDefBGC="#undef"
@@ -411,6 +412,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=54
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       Global_Grid_50km_IGBP_VG)
 	 IsDefBGC="#undef"
@@ -441,6 +443,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=54
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       Global_Grid_2x2_PFT_VG_BGC)
 	 IsDefBGC="#define"
@@ -472,6 +475,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=15
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       Global_Grid_2x2_PFT_VG_BGC-spinup)
 	 IsDefBGC="#define"
@@ -505,6 +509,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=15
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       Global_Grid_2x2_PC_VG_BGC)
 	 IsDefBGC="#define"
@@ -535,6 +540,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=15
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       Global_Grid_2x2_PFT_VG_BGC_CROP)
 	 IsDefBGC="#define"
@@ -566,6 +572,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=24
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       Global_Grid_50km_PFT_VG_CaMa)
 	 IsDefBGC="#undef"
@@ -597,6 +604,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=36
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       RegGuangdong_Grid_10km_PFT_VG_BGC_CROP)
 	 IsDefBGC="#define"
@@ -628,6 +636,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=63
 	 SITENAME=Null
 	 SITELIST=Null
+	 Forcing=CRUJRA
 	 ;;
       SinglePt_US-Bo1_PC_VG)
 	 IsDefBGC="#undef"
@@ -659,6 +668,7 @@ if [ ! -z "$ConfigName" ]; then
 	 nGroup=Null
 	 SITENAME=US-Bo1
 	 SITELIST=SiteList
+	 Forcing=CRUJRA
 	 if [ ! -f $SITELIST ];then
             echo "Error: site list $SITELIST does not exist"
 	    exit 1

@@ -554,6 +554,8 @@ CONTAINS
          ENDIF
 
          ldew  = 0.
+         ldew_rain  = 0.
+         ldew_snow  = 0.
          qintr = 0.
          qintr_rain = 0.
          qintr_snow = 0.
@@ -661,7 +663,7 @@ CONTAINS
 
             ! assume no fall down of the intercepted snowfall in a time step
             ! drainage
-            tex_rain = (prc_rain+prl_rain+qflx_irrig_sprinkler)*deltim * fpi + max(0., ldew - satcap)
+            tex_rain = (prc_rain+prl_rain+qflx_irrig_sprinkler)*deltim * fpi + ldew - satcap
             tex_rain = max(tex_rain, 0. )
             ! Ensure physical constraint: tex_rain + tti_rain <= total rain input
             tex_rain = min( tex_rain, (prc_rain+prl_rain+qflx_irrig_sprinkler)*deltim - tti_rain )
@@ -723,6 +725,8 @@ CONTAINS
          ENDIF
 
          ldew  = 0.
+         ldew_rain  = 0.
+         ldew_snow  = 0.
          qintr = 0.
          qintr_rain = 0.
          qintr_snow = 0.
@@ -2293,8 +2297,8 @@ CONTAINS
    real(r8), intent(in)    :: forc_t     !air temperature
    real(r8), intent(in)    :: z0m        !roughness length
    real(r8), intent(in)    :: hu         !forcing height of U
-   real(r8), intent(in)    :: ldew_rain  !depth of water on foliage [mm]
-   real(r8), intent(in)    :: ldew_snow  !depth of water on foliage [mm]
+   real(r8), intent(inout) :: ldew_rain  !depth of water on foliage [mm]
+   real(r8), intent(inout) :: ldew_snow  !depth of water on foliage [mm]
    real(r8), intent(in)    :: prc_rain   !convective ranfall [mm/s]
    real(r8), intent(in)    :: prc_snow   !convective snowfall [mm/s]
    real(r8), intent(in)    :: prl_rain   !large-scale rainfall [mm/s]
@@ -2398,6 +2402,8 @@ CONTAINS
       pg_rain = pg_rain_tmp
       pg_snow = pg_snow_tmp
       ldew    = sum( ldew_p(ps:pe) * pftfrac(ps:pe))
+      ldew_rain = sum( ldew_rain_p(ps:pe) * pftfrac(ps:pe))
+      ldew_snow = sum( ldew_snow_p(ps:pe) * pftfrac(ps:pe))
       qintr   = sum(qintr_p(ps:pe) * pftfrac(ps:pe))
       qintr_rain = sum(qintr_rain_p(ps:pe) * pftfrac(ps:pe))
       qintr_snow = sum(qintr_snow_p(ps:pe) * pftfrac(ps:pe))

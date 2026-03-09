@@ -4738,8 +4738,10 @@ ENDIF
             ENDIF
          ENDIF
 
-         IF (p_is_io) CALL allocate_block_data (ghist, sumarea_one)
-         IF (p_is_io) CALL flush_block_data (sumarea_one, 1.)
+         IF (HistForm == 'Gridded') THEN
+            IF (p_is_io) CALL allocate_block_data (ghist, sumarea_one)
+            IF (p_is_io) CALL flush_block_data (sumarea_one, 1.)
+         ENDIF
 
          CALL write_history_variable_2d ( DEF_hist_vars%riv_height, a_wdsrf_ucat_pch,   &
             file_hist, 'f_wdpth_ucat_regrid', itime_in_file, sumarea_ucat, filter_ucat, &

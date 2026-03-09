@@ -1175,71 +1175,259 @@ ENDIF
       ELSEIF (DEF_Interception_scheme .eq. 2) THEN !CLM4.5
          ldew = max(0., ldew-evplwet*deltim)
 
+         ! account for vegetation snow and update ldew_rain, ldew_snow, ldew
+         IF ( DEF_VEG_SNOW ) THEN
+            IF (tl > tfrz) THEN
+               qevpl = max (evplwet, 0.)
+               qdewl = abs (min (evplwet, 0.) )
+               qsubl = 0.
+               qfrol = 0.
+
+               IF (qevpl > ldew_rain/deltim) THEN
+                  qsubl = qevpl - ldew_rain/deltim
+                  qevpl = ldew_rain/deltim
+               ENDIF
+            ELSE
+               qevpl = 0.
+               qdewl = 0.
+               qsubl = max (evplwet, 0.)
+               qfrol = abs (min (evplwet, 0.) )
+
+               IF (qsubl > ldew_snow/deltim) THEN
+                  qevpl = qsubl - ldew_snow/deltim
+                  qsubl = ldew_snow/deltim
+               ENDIF
+            ENDIF
+
+            ldew_rain = ldew_rain + (qdewl-qevpl)*deltim
+            ldew_snow = ldew_snow + (qfrol-qsubl)*deltim
+
+            ldew = ldew_rain + ldew_snow
+         ENDIF
+
       ELSEIF (DEF_Interception_scheme .eq. 3) THEN !CLM5
-         IF (ldew_rain .gt. evplwet*deltim) THEN
-            ldew_rain = ldew_rain-evplwet*deltim
-            ldew_snow = ldew_snow
-            ldew=ldew_rain+ldew_snow
-         ELSE
-            ldew_rain = 0.0
-            ldew_snow = max(0., ldew-evplwet*deltim)
-            ldew      = ldew_snow
+         ldew = max(0., ldew-evplwet*deltim)
+
+         ! account for vegetation snow and update ldew_rain, ldew_snow, ldew
+         IF ( DEF_VEG_SNOW ) THEN
+            IF (tl > tfrz) THEN
+               qevpl = max (evplwet, 0.)
+               qdewl = abs (min (evplwet, 0.) )
+               qsubl = 0.
+               qfrol = 0.
+
+               IF (qevpl > ldew_rain/deltim) THEN
+                  qsubl = qevpl - ldew_rain/deltim
+                  qevpl = ldew_rain/deltim
+               ENDIF
+            ELSE
+               qevpl = 0.
+               qdewl = 0.
+               qsubl = max (evplwet, 0.)
+               qfrol = abs (min (evplwet, 0.) )
+
+               IF (qsubl > ldew_snow/deltim) THEN
+                  qevpl = qsubl - ldew_snow/deltim
+                  qsubl = ldew_snow/deltim
+               ENDIF
+            ENDIF
+
+            ldew_rain = ldew_rain + (qdewl-qevpl)*deltim
+            ldew_snow = ldew_snow + (qfrol-qsubl)*deltim
+
+            ldew = ldew_rain + ldew_snow
          ENDIF
 
       ELSEIF (DEF_Interception_scheme .eq. 4) THEN !Noah-MP
-         IF (ldew_rain .gt. evplwet*deltim) THEN
-            ldew_rain = ldew_rain-evplwet*deltim
-            ldew_snow = ldew_snow
-            ldew=ldew_rain+ldew_snow
-         ELSE
-            ldew_rain = 0.0
-            ldew_snow = max(0., ldew-evplwet*deltim)
-            ldew      = ldew_snow
+         ldew = max(0., ldew-evplwet*deltim)
+
+         ! account for vegetation snow and update ldew_rain, ldew_snow, ldew
+         IF ( DEF_VEG_SNOW ) THEN
+            IF (tl > tfrz) THEN
+               qevpl = max (evplwet, 0.)
+               qdewl = abs (min (evplwet, 0.) )
+               qsubl = 0.
+               qfrol = 0.
+
+               IF (qevpl > ldew_rain/deltim) THEN
+                  qsubl = qevpl - ldew_rain/deltim
+                  qevpl = ldew_rain/deltim
+               ENDIF
+            ELSE
+               qevpl = 0.
+               qdewl = 0.
+               qsubl = max (evplwet, 0.)
+               qfrol = abs (min (evplwet, 0.) )
+
+               IF (qsubl > ldew_snow/deltim) THEN
+                  qevpl = qsubl - ldew_snow/deltim
+                  qsubl = ldew_snow/deltim
+               ENDIF
+            ENDIF
+
+            ldew_rain = ldew_rain + (qdewl-qevpl)*deltim
+            ldew_snow = ldew_snow + (qfrol-qsubl)*deltim
+
+            ldew = ldew_rain + ldew_snow
          ENDIF
 
       ELSEIF (DEF_Interception_scheme .eq. 5) THEN !MATSIRO
-         IF (ldew_rain .gt. evplwet*deltim) THEN
-            ldew_rain = ldew_rain-evplwet*deltim
-            ldew_snow = ldew_snow
-            ldew=ldew_rain+ldew_snow
-         ELSE
-            ldew_rain = 0.0
-            ldew_snow = max(0., ldew-evplwet*deltim)
-            ldew      = ldew_snow
+         ldew = max(0., ldew-evplwet*deltim)
+
+         ! account for vegetation snow and update ldew_rain, ldew_snow, ldew
+         IF ( DEF_VEG_SNOW ) THEN
+            IF (tl > tfrz) THEN
+               qevpl = max (evplwet, 0.)
+               qdewl = abs (min (evplwet, 0.) )
+               qsubl = 0.
+               qfrol = 0.
+
+               IF (qevpl > ldew_rain/deltim) THEN
+                  qsubl = qevpl - ldew_rain/deltim
+                  qevpl = ldew_rain/deltim
+               ENDIF
+            ELSE
+               qevpl = 0.
+               qdewl = 0.
+               qsubl = max (evplwet, 0.)
+               qfrol = abs (min (evplwet, 0.) )
+
+               IF (qsubl > ldew_snow/deltim) THEN
+                  qevpl = qsubl - ldew_snow/deltim
+                  qsubl = ldew_snow/deltim
+               ENDIF
+            ENDIF
+
+            ldew_rain = ldew_rain + (qdewl-qevpl)*deltim
+            ldew_snow = ldew_snow + (qfrol-qsubl)*deltim
+
+            ldew = ldew_rain + ldew_snow
          ENDIF
 
       ELSEIF (DEF_Interception_scheme .eq. 6) THEN !VIC
-         IF (ldew_rain .gt. evplwet*deltim) THEN
-            ldew_rain = ldew_rain-evplwet*deltim
-            ldew_snow = ldew_snow
-            ldew=ldew_rain+ldew_snow
-         ELSE
-            ldew_rain = 0.0
-            ldew_snow = max(0., ldew-evplwet*deltim)
-            ldew      = ldew_snow
+         ldew = max(0., ldew-evplwet*deltim)
+
+         ! account for vegetation snow and update ldew_rain, ldew_snow, ldew
+         IF ( DEF_VEG_SNOW ) THEN
+            IF (tl > tfrz) THEN
+               qevpl = max (evplwet, 0.)
+               qdewl = abs (min (evplwet, 0.) )
+               qsubl = 0.
+               qfrol = 0.
+
+               IF (qevpl > ldew_rain/deltim) THEN
+                  qsubl = qevpl - ldew_rain/deltim
+                  qevpl = ldew_rain/deltim
+               ENDIF
+            ELSE
+               qevpl = 0.
+               qdewl = 0.
+               qsubl = max (evplwet, 0.)
+               qfrol = abs (min (evplwet, 0.) )
+
+               IF (qsubl > ldew_snow/deltim) THEN
+                  qevpl = qsubl - ldew_snow/deltim
+                  qsubl = ldew_snow/deltim
+               ENDIF
+            ENDIF
+
+            ldew_rain = ldew_rain + (qdewl-qevpl)*deltim
+            ldew_snow = ldew_snow + (qfrol-qsubl)*deltim
+
+            ldew = ldew_rain + ldew_snow
          ENDIF
+
       ELSEIF (DEF_Interception_scheme .eq. 7) THEN !JULES
-            IF (ldew_rain .gt. evplwet*deltim) THEN
-               ldew_rain = ldew_rain-evplwet*deltim
-               ldew_snow = ldew_snow
-               ldew=ldew_rain+ldew_snow
+         ldew = max(0., ldew-evplwet*deltim)
+
+         ! account for vegetation snow and update ldew_rain, ldew_snow, ldew
+         IF ( DEF_VEG_SNOW ) THEN
+            IF (tl > tfrz) THEN
+               qevpl = max (evplwet, 0.)
+               qdewl = abs (min (evplwet, 0.) )
+               qsubl = 0.
+               qfrol = 0.
+
+               IF (qevpl > ldew_rain/deltim) THEN
+                  qsubl = qevpl - ldew_rain/deltim
+                  qevpl = ldew_rain/deltim
+               ENDIF
             ELSE
-               ldew_rain = 0.0
-               ldew_snow = max(0., ldew-evplwet*deltim)
-               ldew      = ldew_snow
+               qevpl = 0.
+               qdewl = 0.
+               qsubl = max (evplwet, 0.)
+               qfrol = abs (min (evplwet, 0.) )
+
+               IF (qsubl > ldew_snow/deltim) THEN
+                  qevpl = qsubl - ldew_snow/deltim
+                  qsubl = ldew_snow/deltim
+               ENDIF
             ENDIF
-      ELSEIF (DEF_Interception_scheme .eq. 8) THEN !JULES
-            IF (ldew_rain .gt. evplwet*deltim) THEN
-               ldew_rain = ldew_rain-evplwet*deltim
-               ldew_snow = ldew_snow
-               ldew=ldew_rain+ldew_snow
+
+            ldew_rain = ldew_rain + (qdewl-qevpl)*deltim
+            ldew_snow = ldew_snow + (qfrol-qsubl)*deltim
+
+            ldew = ldew_rain + ldew_snow
+         ENDIF
+
+      ELSEIF (DEF_Interception_scheme .eq. 8) THEN !CoLM202X
+         ldew = max(0., ldew-evplwet*deltim)
+
+         ! account for vegetation snow and update ldew_rain, ldew_snow, ldew
+         IF ( DEF_VEG_SNOW ) THEN
+            IF (tl > tfrz) THEN
+               qevpl = max (evplwet, 0.)
+               qdewl = abs (min (evplwet, 0.) )
+               qsubl = 0.
+               qfrol = 0.
+
+               IF (qevpl > ldew_rain/deltim) THEN
+                  qsubl = qevpl - ldew_rain/deltim
+                  qevpl = ldew_rain/deltim
+               ENDIF
             ELSE
-               ldew_rain = 0.0
-               ldew_snow = max(0., ldew-evplwet*deltim)
-               ldew      = ldew_snow
+               qevpl = 0.
+               qdewl = 0.
+               qsubl = max (evplwet, 0.)
+               qfrol = abs (min (evplwet, 0.) )
+
+               IF (qsubl > ldew_snow/deltim) THEN
+                  qevpl = qsubl - ldew_snow/deltim
+                  qsubl = ldew_snow/deltim
+               ENDIF
             ENDIF
+
+            ldew_rain = ldew_rain + (qdewl-qevpl)*deltim
+            ldew_snow = ldew_snow + (qfrol-qsubl)*deltim
+
+            ldew = ldew_rain + ldew_snow
+         ENDIF
       ELSE
          CALL abort
+      ENDIF
+
+      ! Bug fix: When DEF_VEG_SNOW is false, only ldew is updated above
+      ! (via ldew = max(0., ldew - evplwet*deltim)), but ldew_rain/ldew_snow
+      ! remain unchanged. Downstream interception routines (schemes 1, 3-8)
+      ! resync ldew = ldew_rain + ldew_snow at entry, which would silently
+      ! revert the evaporation adjustment. Fix by scaling components proportionally.
+      IF (.not. DEF_VEG_SNOW) THEN
+         IF (ldew_rain + ldew_snow > 1.e-10) THEN
+            ldew_rain = ldew * (ldew_rain / (ldew_rain + ldew_snow))
+            ldew_snow = ldew - ldew_rain
+         ELSEIF (ldew > 0.) THEN
+            ! Components were zero but ldew > 0 (condensation case)
+            IF (tl > tfrz) THEN
+               ldew_rain = ldew
+               ldew_snow = 0.
+            ELSE
+               ldew_rain = 0.
+               ldew_snow = ldew
+            ENDIF
+         ELSE
+            ldew_rain = 0.
+            ldew_snow = 0.
+         ENDIF
       ENDIF
 
       IF ( DEF_VEG_SNOW ) THEN

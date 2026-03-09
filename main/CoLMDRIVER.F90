@@ -187,6 +187,7 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
                fseng(i),        fevpg(i),        olrg(i),         fgrnd(i),        &
                trad(i),         tref(i),         qref(i),         t2m_wmo(i),      &
                frcsat(i),       rsur(i),         rsur_se(i),      rsur_ie(i),      &
+               rsub(i),                                                            &
                rnof(i),         qintr(i),        qinfl(i),        qlayer(0:,i),    &
                lake_deficit(i), qdrip(i),        rst(i),          assim(i),        &
                respc(i),        sabvsun(i),      sabvsha(i),      sabg(i),         &
@@ -357,6 +358,7 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
             emis(i)         ,z0m(i)          ,zol(i)          ,rib(i)          ,&
             ustar(i)        ,qstar(i)        ,tstar(i)        ,fm(i)           ,&
             fh(i)           ,fq(i)           ,forc_hpbl(i)                      )
+            rsub(i) = rnof(i) - rsur(i)
          ENDIF
 
 #endif

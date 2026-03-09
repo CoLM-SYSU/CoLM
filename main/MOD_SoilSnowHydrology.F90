@@ -48,7 +48,8 @@ CONTAINS
               qfros       ,qseva_soil  ,qsdew_soil  ,qsubl_soil  ,qfros_soil  ,&
               qseva_snow  ,qsdew_snow  ,qsubl_snow  ,qfros_snow  ,fsno        ,&
               rsur        ,rnof        ,qinfl       ,pondmx      ,ssi         ,&
-              wimp        ,smpmin      ,zwt         ,wdsrf       ,wa          ,qcharge     ,&
+              wimp        ,smpmin      ,zwt         ,wdsrf       ,wa          ,&
+              qcharge                                                         ,&
 #if (defined CaMa_Flood)
               flddepth    ,fldfrc      ,qinfl_fld                             ,&
 #endif
@@ -511,8 +512,9 @@ ENDIF
               qsubl       ,qfros       ,qseva_soil  ,qsdew_soil  ,qsubl_soil  ,&
               qfros_soil  ,qseva_snow  ,qsdew_snow  ,qsubl_snow  ,qfros_snow  ,&
               fsno        ,frcsat      ,rsur        ,rsur_se     ,rsur_ie     ,&
-              rnof        ,qinfl       ,qlayer      ,ssi         ,pondmx      ,&
-              wimp        ,zwt         ,wdsrf       ,wa          ,wetwat      ,&
+              rsubst      ,rnof        ,qinfl       ,qlayer      ,ssi         ,&
+              pondmx      ,wimp        ,zwt         ,wdsrf       ,wa          ,&
+              wetwat                                                          ,&
 #if (defined CaMa_Flood)
               flddepth    ,fldfrc      ,qinfl_fld                             ,&
 #endif
@@ -640,6 +642,7 @@ ENDIF
         rsur             , &! surface runoff (mm h2o/s)
         rsur_se          , &! saturation excess surface runoff (mm h2o/s)
         rsur_ie          , &! infiltration excess surface runoff (mm h2o/s)
+        rsubst           , &! subsurface runoff (mm h2o/s)
         rnof             , &! total runoff (mm h2o/s)
         qinfl            , &! infiltration rate (mm h2o/s)
         qlayer(0:nl_soil)   ! water flux between soil layer [mm h2o/s]
@@ -676,7 +679,6 @@ ENDIF
        eff_porosity(1:nl_soil), &! effective porosity = porosity - vol_ice
        gwat              , &! net water input from top (mm/s)
        drainmax          , &! drainage max (mm h2o/s)
-       rsubst            , &! subsurface runoff (mm h2o/s)
        vol_liq(1:nl_soil), &! partial volume of liquid water in layer
        vol_ice(1:nl_soil), &! partial volume of ice lens in layer
        icefrac(1:nl_soil)   ! ice fraction (-)

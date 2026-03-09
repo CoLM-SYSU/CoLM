@@ -2099,12 +2099,6 @@ CONTAINS
 #ifndef CatchLateralFlow
             CALL acc1d (rsur_se , a_rsur_se )
             CALL acc1d (rsur_ie , a_rsur_ie )
-
-            WHERE ((rsur /= spval) .and. (rnof /= spval))
-               rsub = rnof - rsur
-            ELSEWHERE
-               rsub = spval
-            END WHERE
 #endif
             CALL acc1d (rsub          , a_rsub           )
             CALL acc1d (rnof          , a_rnof           )

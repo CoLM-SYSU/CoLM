@@ -104,7 +104,7 @@ CONTAINS
             allocate (sbuff (pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -131,9 +131,15 @@ CONTAINS
          CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
          IF (.not. any_data_exists) THEN
-            write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
-            IF (.not. present(defval)) THEN
-               CALL CoLM_stop ()
+            IF (p_iam_io == p_root) THEN
+               IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
+                  CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
@@ -211,7 +217,7 @@ CONTAINS
             allocate (sbuff (pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -238,9 +244,15 @@ CONTAINS
          CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
          IF (.not. any_data_exists) THEN
-            write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
-            IF (.not. present(defval)) THEN
-               CALL CoLM_stop ()
+            IF (p_iam_io == p_root) THEN
+               IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
+                  CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
@@ -318,7 +330,7 @@ CONTAINS
             allocate (sbuff (pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -349,9 +361,15 @@ CONTAINS
          CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
          IF (.not. any_data_exists) THEN
-            write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
-            IF (.not. present(defval)) THEN
-               CALL CoLM_stop ()
+            IF (p_iam_io == p_root) THEN
+               IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
+                  CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
@@ -430,7 +448,7 @@ CONTAINS
             allocate (sbuff (pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -457,9 +475,15 @@ CONTAINS
          CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
          IF (.not. any_data_exists) THEN
-            write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
-            IF (.not. present(defval)) THEN
-               CALL CoLM_stop ()
+            IF (p_iam_io == p_root) THEN
+               IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
+                  CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
@@ -539,7 +563,7 @@ CONTAINS
             allocate (sbuff (ndim1, pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -566,9 +590,15 @@ CONTAINS
          CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
          IF (.not. any_data_exists) THEN
-            write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
-            IF (.not. present(defval)) THEN
-               CALL CoLM_stop ()
+            IF (p_iam_io == p_root) THEN
+               IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
+                  CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
@@ -648,7 +678,7 @@ CONTAINS
             allocate (sbuff (ndim1,ndim2, pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -675,9 +705,15 @@ CONTAINS
          CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
          IF (.not. any_data_exists) THEN
-            write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
-            IF (.not. present(defval)) THEN
-               CALL CoLM_stop ()
+            IF (p_iam_io == p_root) THEN
+               IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
+                  CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
@@ -757,7 +793,7 @@ CONTAINS
             allocate (sbuff (ndim1,ndim2,ndim3, pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -784,9 +820,15 @@ CONTAINS
          CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
          IF (.not. any_data_exists) THEN
-            write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
-            IF (.not. present(defval)) THEN
-               CALL CoLM_stop ()
+            IF (p_iam_io == p_root) THEN
+               IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
+                  CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
@@ -867,7 +909,7 @@ CONTAINS
             allocate (sbuff (ndim1,ndim2,ndim3,ndim4, pixelset%vecgs%vlen(iblk,jblk)))
             CALL get_filename_block (filename, iblk, jblk, fileblock)
 
-            IF (ncio_var_exist(fileblock,dataname)) THEN
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
                CALL ncio_read_serial (fileblock, dataname, sbuff)
                any_data_exists = .true.
             ELSEIF (present(defval)) THEN
@@ -886,50 +928,56 @@ CONTAINS
             rdata(:,:,:,:,istt:iend) = sbuff
 #endif
 
-               deallocate (sbuff)
+            deallocate (sbuff)
 
-            ENDDO
+         ENDDO
 
 #ifdef USEMPI
-            CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
+         CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_io, p_err)
 #endif
-            IF (.not. any_data_exists) THEN
-               write(*,*) 'Warning : restart data '//trim(dataname)//' in '//trim(filename)//' not found.'
+         IF (.not. any_data_exists) THEN
+            IF (p_iam_io == p_root) THEN
                IF (.not. present(defval)) THEN
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found.'
                   CALL CoLM_stop ()
+               ELSE
+                  write(*,*) 'Warning : restart data '//trim(dataname) &
+                     //' in '//trim(filename)//' not found, default value is used.'
                ENDIF
             ENDIF
          ENDIF
+      ENDIF
 
 #ifdef USEMPI
-         IF (p_is_worker) THEN
+      IF (p_is_worker) THEN
 
-            DO iblkgrp = 1, pixelset%nblkgrp
-               iblk = pixelset%xblkgrp(iblkgrp)
-               jblk = pixelset%yblkgrp(iblkgrp)
+         DO iblkgrp = 1, pixelset%nblkgrp
+            iblk = pixelset%xblkgrp(iblkgrp)
+            jblk = pixelset%yblkgrp(iblkgrp)
 
-               IF (pixelset%vecgs%vlen(iblk,jblk) > 0) THEN
-                  allocate (rbuff (ndim1,ndim2,ndim3,ndim4, pixelset%vecgs%vlen(iblk,jblk)))
-               ELSE
-                  allocate (rbuff(1,1,1,1,1))
-               ENDIF
+            IF (pixelset%vecgs%vlen(iblk,jblk) > 0) THEN
+               allocate (rbuff (ndim1,ndim2,ndim3,ndim4, pixelset%vecgs%vlen(iblk,jblk)))
+            ELSE
+               allocate (rbuff(1,1,1,1,1))
+            ENDIF
 
-               CALL mpi_scatterv ( &
-                  MPI_RNULL_P, MPI_INULL_P, MPI_INULL_P, MPI_REAL8, & ! insignificant on workers
-                  rbuff, ndim1 * ndim2 * ndim3 * ndim4 * pixelset%vecgs%vlen(iblk,jblk), MPI_REAL8, &
-                  p_root, p_comm_group, p_err)
+            CALL mpi_scatterv ( &
+               MPI_RNULL_P, MPI_INULL_P, MPI_INULL_P, MPI_REAL8, & ! insignificant on workers
+               rbuff, ndim1 * ndim2 * ndim3 * ndim4 * pixelset%vecgs%vlen(iblk,jblk), MPI_REAL8, &
+               p_root, p_comm_group, p_err)
 
-               IF (pixelset%vecgs%vlen(iblk,jblk) > 0) THEN
-                  istt = pixelset%vecgs%vstt(iblk,jblk)
-                  iend = pixelset%vecgs%vend(iblk,jblk)
-                  rdata(:,:,:,:,istt:iend) = rbuff
-               ENDIF
+            IF (pixelset%vecgs%vlen(iblk,jblk) > 0) THEN
+               istt = pixelset%vecgs%vstt(iblk,jblk)
+               iend = pixelset%vecgs%vend(iblk,jblk)
+               rdata(:,:,:,:,istt:iend) = rbuff
+            ENDIF
 
-               IF (allocated(rbuff)) deallocate (rbuff)
+            IF (allocated(rbuff)) deallocate (rbuff)
 
-            ENDDO
+         ENDDO
 
-         ENDIF
+      ENDIF
 #endif
 
    END SUBROUTINE ncio_read_vector_real8_5d

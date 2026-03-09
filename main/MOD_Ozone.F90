@@ -14,8 +14,8 @@ Module MOD_Ozone
 ! !REVISIONS:
 !  2022, Xingjie Lu: revised the CLM5 code to be compatible with CoLM
 !        code structure.
-!  2024, Fang Li : used the new ozone stress parameterization scheme 
-!        based on Li et al. (2024; GMD)  
+!  2024, Fang Li : used the new ozone stress parameterization scheme
+!        based on Li et al. (2024; GMD)
 !-----------------------------------------------------------------------
 
    USE MOD_Precision
@@ -74,7 +74,7 @@ CONTAINS
    real(r8) :: leafturn       ! leaf turnover time / mortality rate (per hour)
    real(r8) :: decay          ! o3uptake decay rate based on leaf lifetime (mmol m^-2)
    real(r8) :: lai_thresh     ! LAI threshold for LAIs that asymptote and don't
-   real(r8) :: o3_flux_threshold !threshold below which o3flux is set to 0 (nmol m^-2 s^-1)  
+   real(r8) :: o3_flux_threshold !threshold below which o3flux is set to 0 (nmol m^-2 s^-1)
 
    real(r8), parameter :: ko3 = 1.51_r8  !F. Li
 
@@ -87,9 +87,9 @@ CONTAINS
 
       ! calculate instantaneous flux
       o3flux = o3concnmolm3/ (ko3*rs+ rb + ram)
-      
-      ! set lai_thresh    
-       IF (isevg(ivt)) THEN  
+
+      ! set lai_thresh
+       IF (isevg(ivt)) THEN
          lai_thresh=0._r8 !so evergreens grow year-round
        ELSE  ! for deciduous vegetation
         IF(ivt == 10)THEN !temperate shrub
@@ -106,7 +106,7 @@ CONTAINS
         o3_flux_threshold=0.8_r8
       ENDIF
       IF(ivt >= 4 .and. ivt <= 8)THEN  !Broadleaf tree
-        o3_flux_threshold=1.0_r8   
+        o3_flux_threshold=1.0_r8
       ENDIF
       IF(ivt >= 9 .and. ivt <= 11)THEN !Shrub
         o3_flux_threshold=6.0_r8
@@ -138,9 +138,9 @@ CONTAINS
             leafturn = 2._r8/(leaf_long(ivt)*365._r8*24._r8)
             decay = o3uptake * leafturn * deltim/3600._r8
          ELSE
-            decay = o3uptake * max(0._r8,(1._r8-lai_old/lai)) 
+            decay = o3uptake * max(0._r8,(1._r8-lai_old/lai))
          ENDIF
-         
+
          !cumulative uptake (mmol m^-2)
          o3uptake = min(90._r8, max(0._r8, o3uptake + o3fluxperdt - decay))
 
@@ -226,7 +226,6 @@ CONTAINS
       itime = (idate(3) - 1800) / 10800 + (min(idate(2),365) - 1) * 8 + 1
 
       CALL ncio_read_block_time (file_ozone, 'OZONE', grid_ozone, itime, f_ozone)
-      forc_ozone = forc_ozone
 #ifdef RangeCheck
       CALL check_block_data ('Ozone', f_ozone)
 #endif
@@ -265,7 +264,6 @@ CONTAINS
 #endif
 
          CALL mg2p_ozone%grid2pset (f_ozone, forc_ozone)
-         forc_ozone = forc_ozone
 #ifdef RangeCheck
          CALL check_vector_data ('Ozone', forc_ozone)
 #endif

@@ -31,6 +31,7 @@ MODULE MOD_CheckEquilibrium
    real(r8), allocatable :: prcp_year (:)
    real(r8), allocatable :: et_year   (:)
    real(r8), allocatable :: rnof_year (:)
+   real(r8), allocatable :: rchg_year (:)
 
    real(r8), allocatable :: patcharea (:)  ! m^2
 
@@ -82,6 +83,7 @@ CONTAINS
             allocate (prcp_year (numpatch));   prcp_year(:) = spval;
             allocate (et_year   (numpatch));   et_year  (:) = spval;
             allocate (rnof_year (numpatch));   rnof_year(:) = spval;
+            allocate (rchg_year (numpatch));   rchg_year(:) = spval;
 
          ENDIF
       ENDIF
@@ -170,6 +172,7 @@ CONTAINS
       IF (allocated(prcp_year)) deallocate(prcp_year)
       IF (allocated(et_year  )) deallocate(et_year  )
       IF (allocated(rnof_year)) deallocate(rnof_year)
+      IF (allocated(rchg_year)) deallocate(rchg_year)
       IF (allocated(patcharea)) deallocate(patcharea)
 
    END SUBROUTINE CheckEqb_final
@@ -184,7 +187,7 @@ CONTAINS
    USE MOD_LandPatch,           only: numpatch
    USE MOD_Vars_Global,         only: nl_soil
    USE MOD_Vars_1DForcing,      only: forc_prc, forc_prl
-   USE MOD_Vars_1DFluxes,       only: fevpa, rnof
+   USE MOD_Vars_1DFluxes,       only: fevpa, rnof, rsur
    USE MOD_Vars_TimeInvariants, only: patchtype, patchmask
    USE MOD_Vars_TimeVariables,  only: wdsrf, ldew, scv, wetwat, wliq_soisno, &
                                       wice_soisno, wa, zwt
@@ -206,6 +209,7 @@ CONTAINS
    integer  :: ncid, time_id, str_id, varid
    real(r8) :: totaldtws, totalprcp, pct_dtws_prcp
 
+   real(r8), allocatable     :: rchg   (:)
    real(r8), allocatable     :: dtws   (:)
    logical,  allocatable     :: filter (:)
    real(r8), allocatable     :: vecone (:)
@@ -220,6 +224,16 @@ CONTAINS
             CALL add_spv (forc_prl, prcp_year, deltim)
             CALL add_spv (fevpa,    et_year,   deltim)
             CALL add_spv (rnof,     rnof_year, deltim)
+
+            allocate (rchg (numpatch))
+            rchg = spval
+            WHERE ((forc_prc /= spval) .and. (forc_prl /= spval) .and. (fevpa /= spval) .and. (rsur /= spval))
+               rchg = forc_prc + forc_prl - fevpa - rsur
+            END WHERE
+
+            CALL add_spv (rchg, rchg_year, deltim)
+
+            deallocate (rchg)
          ENDIF
       ENDIF
 
@@ -383,6 +397,9 @@ CONTAINS
                rnof_year, filename, 'total_runoff', nyearcheck, sumarea, filter, &
                'total runoff in a year', 'mm')
             CALL map_and_write_check_var ( &
+               rchg_year, filename, 'total_recharge', nyearcheck, sumarea, filter, &
+               'total recharge to ground water in a year', 'mm')
+            CALL map_and_write_check_var ( &
                zwt, filename, 'zwt', nyearcheck, sumarea, filter, &
                'depth to water table', 'm')
 #else
@@ -422,6 +439,15 @@ CONTAINS
                CALL ncio_put_attr (filename, 'total_runoff', 'missing_value', spval)
             ENDIF
 
+            CALL ncio_write_serial_time (filename, 'total_recharge', &
+                                         nyearcheck, rchg_year, 'patch', 'iyear')
+            IF (nyearcheck == 1) THEN
+               CALL ncio_put_attr (filename, 'total_recharge', 'long_name', &
+                  'total recharge to ground water in a year')
+               CALL ncio_put_attr (filename, 'total_recharge', 'units', 'mm')
+               CALL ncio_put_attr (filename, 'total_recharge', 'missing_value', spval)
+            ENDIF
+
             CALL ncio_write_serial_time (filename, 'zwt', &
                                          nyearcheck, zwt, 'patch', 'iyear')
             IF (nyearcheck == 1) THEN
@@ -436,6 +462,7 @@ CONTAINS
             prcp_year(:) = spval
             et_year  (:) = spval
             rnof_year(:) = spval
+            rchg_year(:) = spval
             tws_last = tws_this
          ENDIF
 

@@ -27,7 +27,7 @@ MODULE MOD_BGC_Veg_NutrientCompetition
    USE MOD_Vars_PFTimeInvariants, only: pftclass, pftfrac
 
    USE MOD_BGC_Vars_PFTimeVariables, only: &
-       xsmrpool_p, retransn_p, &
+       xsmrpool_p, retransn_p, tempsum_npp_p, &
        tempsum_potential_gpp_p, tempmax_retransn_p, annmax_retransn_p, annsum_potential_gpp_p, &
 ! crop variables
 #ifdef CROP
@@ -244,6 +244,9 @@ CONTAINS
             gresp_storage = gresp_storage + cpool_to_grainc_storage_p(m)
          ENDIF
          cpool_to_gresp_storage_p(m) = gresp_storage * g1 * (1._r8 - g2)
+
+         tempsum_npp_p(m) = tempsum_npp_p(m) + plant_calloc_p(m)
+
 
       ENDDO ! END patch loop
 

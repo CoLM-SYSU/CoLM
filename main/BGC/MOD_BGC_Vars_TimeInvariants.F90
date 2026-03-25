@@ -481,6 +481,7 @@ CONTAINS
             deallocate (gdp_lf         )
             deallocate (abm_lf         )
             deallocate (peatf_lf       )
+            deallocate (cmb_cmplt_fact )
             deallocate (rice2pdt       )
 
          ENDIF

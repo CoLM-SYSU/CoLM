@@ -270,7 +270,7 @@ CONTAINS
          ELSE
             tref_min_inst_p(m) = min(tref_min_inst_p(m) , tref_p(m))
          ENDIF
-         IF(idate(3) .eq. 84600)THEN
+         IF(idate(3) .eq. 86400 - nint(deltim))THEN
             tref_max_p(m) = tref_max_inst_p(m)
             tref_min_p(m) = tref_min_inst_p(m)
          ENDIF
@@ -512,7 +512,7 @@ CONTAINS
 
               ! IF this is the END of the offset_period, reset phenology
               ! flags and indices
-               IF (offset_counter_p(m) == 0.0_r8) THEN
+               IF (abs(offset_counter_p(m)) .lt. 0.1_r8) THEN
                  ! this code block was originally handled by CALL cn_offset_cleanup(i)
                  ! inlined during vectorization
 
@@ -534,7 +534,7 @@ CONTAINS
 
               ! IF this is the END of the onset period, reset phenology
               ! flags and indices
-               IF (onset_counter_p(m) == 0.0_r8) THEN
+               IF (abs(onset_counter_p(m)) .lt. 0.1_r8) THEN
                  ! this code block was originally handled by CALL cn_onset_cleanup(i)
                  ! inlined during vectorization
 
@@ -709,7 +709,7 @@ CONTAINS
 
            ! IF this is the END of the offset_period, reset phenology
            ! flags and indices
-               IF (offset_counter_p(m) == 0._r8) THEN
+               IF (abs(offset_counter_p(m)) .lt. 0.1_r8) THEN
               ! this code block was originally handled by CALL cn_offset_cleanup(i)
               ! inlined during vectorization
                   offset_flag_p(m) = 0._r8
@@ -730,7 +730,7 @@ CONTAINS
 
            ! IF this is the END of the onset period, reset phenology
            ! flags and indices
-               IF (onset_counter_p(m) == 0.0_r8) THEN
+               IF (abs(onset_counter_p(m)) .lt. 0.1_r8) THEN
               ! this code block was originally handled by CALL cn_onset_cleanup(i)
               ! inlined during vectorization
                   onset_flag_p(m) = 0._r8

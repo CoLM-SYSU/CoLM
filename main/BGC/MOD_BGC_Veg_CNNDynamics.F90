@@ -122,11 +122,15 @@ CONTAINS
 
       tsw  = rwat/rz
       stsw = swat/rz
-      wf = tsw/stsw
+      IF (rz .gt. 0._r8 .and. stsw .gt. 0._r8) THEN
+         wf = tsw/stsw
+      ELSE
+         wf = 0._r8
+      ENDIF
 
       DO m = ps, pe
          ivt = pftclass(m)
-         IF(croplive_p(m) .and. ivt ==  23 .or. ivt == 24 .or. ivt == 77 .or. ivt == 78)THEN
+         IF(croplive_p(m) .and. (ivt ==  23 .or. ivt == 24 .or. ivt == 77 .or. ivt == 78))THEN
 
             ! difference between supply and demand
 

@@ -1072,7 +1072,7 @@ CONTAINS
       CALL ncio_write_vector (file_restart, 'fertnitro_soybean  ' , 'patch', landpatch, fertnitro_soybean  , compress)
       CALL ncio_write_vector (file_restart, 'fertnitro_cotton   ' , 'patch', landpatch, fertnitro_cotton   , compress)
       CALL ncio_write_vector (file_restart, 'fertnitro_rice1    ' , 'patch', landpatch, fertnitro_rice1    , compress)
-      CALL ncio_write_vector (file_restart, 'fertnitro_rice2    ' , 'patch', landpatch, fertnitro_rice1    , compress)
+      CALL ncio_write_vector (file_restart, 'fertnitro_rice2    ' , 'patch', landpatch, fertnitro_rice2    , compress)
       CALL ncio_write_vector (file_restart, 'fertnitro_sugarcane' , 'patch', landpatch, fertnitro_sugarcane, compress)
 #endif
 
@@ -1136,7 +1136,7 @@ CONTAINS
       CALL ncio_read_vector (file_restart, 'sminn_vr             ',   nl_soil, landpatch, sminn_vr   )
       CALL ncio_read_vector (file_restart, 'smin_no3_vr          ',   nl_soil, landpatch, smin_no3_vr)
       CALL ncio_read_vector (file_restart, 'smin_nh4_vr          ',   nl_soil, landpatch, smin_nh4_vr)
-      CALL ncio_read_vector (file_restart, 'lag_npp              ', landpatch, lag_npp, defval =1.0  )
+      CALL ncio_read_vector (file_restart, 'lag_npp              ', landpatch, lag_npp, defval =spval  )
 
       IF(DEF_USE_NITRIF)THEN
          CALL ncio_read_vector (file_restart, 'tCONC_O2_UNSAT       ',   nl_soil, landpatch, tconc_o2_unsat         )
@@ -1226,7 +1226,7 @@ CONTAINS
       CALL ncio_read_vector (file_restart, 'fertnitro_soybean  ' , landpatch, fertnitro_soybean  )
       CALL ncio_read_vector (file_restart, 'fertnitro_cotton   ' , landpatch, fertnitro_cotton   )
       CALL ncio_read_vector (file_restart, 'fertnitro_rice1    ' , landpatch, fertnitro_rice1    )
-      CALL ncio_read_vector (file_restart, 'fertnitro_rice2    ' , landpatch, fertnitro_rice1    )
+      CALL ncio_read_vector (file_restart, 'fertnitro_rice2    ' , landpatch, fertnitro_rice2    )
       CALL ncio_read_vector (file_restart, 'fertnitro_sugarcane' , landpatch, fertnitro_sugarcane)
 #endif
 
@@ -1530,7 +1530,7 @@ CONTAINS
       CALL check_vector_data ('fertnitro_soybean  ' , fertnitro_soybean  )
       CALL check_vector_data ('fertnitro_cotton   ' , fertnitro_cotton   )
       CALL check_vector_data ('fertnitro_rice1    ' , fertnitro_rice1    )
-      CALL check_vector_data ('fertnitro_rice2    ' , fertnitro_rice1    )
+      CALL check_vector_data ('fertnitro_rice2    ' , fertnitro_rice2    )
       CALL check_vector_data ('fertnitro_sugarcane' , fertnitro_sugarcane)
 #endif
       CALL check_vector_data ('lag_npp    ' , lag_npp    )

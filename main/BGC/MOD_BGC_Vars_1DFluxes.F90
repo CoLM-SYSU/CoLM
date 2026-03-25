@@ -532,6 +532,7 @@ CONTAINS
             deallocate (f_n2o_nit_vr             )
             deallocate (f_n2o_denit_vr           )
             deallocate (pot_f_nit_vr             )
+            deallocate (pot_f_denit_vr           )
             deallocate (n2_n2o_ratio_denit_vr    )
             deallocate (ndep_to_sminn            )
             deallocate (ffix_to_sminn            )

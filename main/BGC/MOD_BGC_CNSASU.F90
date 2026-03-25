@@ -218,7 +218,7 @@ CONTAINS
    real(r8),dimension(1:ndecomp_pools_vr,1)                        :: soilmatrixn_cap
 
     ! Save the C and N pool size at begin of each year, which are used to calculate C and N capacity at end of each year.
-      IF (idate(2) .eq. 1 .and. idate(3) .eq. 1800)THEN  
+      IF (idate(2) .eq. 1 .and. idate(3) .eq. deltim)THEN  
          DO m = ps, pe
             leafc0_p             (m) = max(leafc_p             (m),epsi)
             leafc0_storage_p     (m) = max(leafc_storage_p     (m),epsi)
@@ -272,7 +272,7 @@ CONTAINS
          ENDDO
       ENDIF
   
-      IF(idate(2) .eq. 365 .and. idate(3) .eq. 84600)THEN
+      IF(idate(2) .eq. 365 .and. idate(3) .eq. 86400 - deltim)THEN
          ! Copy C transfers from sparse matrix to 2D temporary variables tran_acc and tran_nacc
          ! Calculate the C and N transfer rate by dividing CN transfer by base value saved at begin of each year.
            
@@ -612,17 +612,17 @@ CONTAINS
   
             ! upper triadiagnonal entries for N
             AK_soil_nacc((i_met_lit-1)*nl_soil+j,(i_met_lit-1)*nl_soil+j+1) &
-                = upperVX_n_vr_acc(j,i_met_lit,i) / decomp0_cpools_vr(j+1,i_met_lit,i)
+                = upperVX_n_vr_acc(j,i_met_lit,i) / decomp0_npools_vr(j+1,i_met_lit,i)
             AK_soil_nacc((i_cel_lit-1)*nl_soil+j,(i_cel_lit-1)*nl_soil+j+1) &
-                = upperVX_n_vr_acc(j,i_cel_lit,i) / decomp0_cpools_vr(j+1,i_cel_lit,i)
+                = upperVX_n_vr_acc(j,i_cel_lit,i) / decomp0_npools_vr(j+1,i_cel_lit,i)
             AK_soil_nacc((i_lig_lit-1)*nl_soil+j,(i_lig_lit-1)*nl_soil+j+1) &
-                = upperVX_n_vr_acc(j,i_lig_lit,i) / decomp0_cpools_vr(j+1,i_lig_lit,i)
+                = upperVX_n_vr_acc(j,i_lig_lit,i) / decomp0_npools_vr(j+1,i_lig_lit,i)
             AK_soil_nacc((i_soil1  -1)*nl_soil+j,(i_soil1  -1)*nl_soil+j+1) &
-                = upperVX_n_vr_acc(j,i_soil1  ,i) / decomp0_cpools_vr(j+1,i_soil1  ,i)
+                = upperVX_n_vr_acc(j,i_soil1  ,i) / decomp0_npools_vr(j+1,i_soil1  ,i)
             AK_soil_nacc((i_soil2  -1)*nl_soil+j,(i_soil2  -1)*nl_soil+j+1) &
-                = upperVX_n_vr_acc(j,i_soil2  ,i) / decomp0_cpools_vr(j+1,i_soil2  ,i)
+                = upperVX_n_vr_acc(j,i_soil2  ,i) / decomp0_npools_vr(j+1,i_soil2  ,i)
             AK_soil_nacc((i_soil3  -1)*nl_soil+j,(i_soil3  -1)*nl_soil+j+1) &
-                = upperVX_n_vr_acc(j,i_soil3  ,i) / decomp0_cpools_vr(j+1,i_soil3  ,i)
+                = upperVX_n_vr_acc(j,i_soil3  ,i) / decomp0_npools_vr(j+1,i_soil3  ,i)
   
             ! lower triadiagnonal entries for N
             AK_soil_nacc((i_met_lit-1)*nl_soil+j+1,(i_met_lit-1)*nl_soil+j) &
@@ -688,7 +688,7 @@ CONTAINS
                DO j = 1, nl_soil
                   IF((soilmatrixc_cap(j+(k-1)*nl_soil,1)/decomp0_cpools_vr(j,k,i) .gt. 100 .and. soilmatrixc_cap(j+(k-1)*nl_soil,1) .gt. 1.e+5_r8  &
                  .or. soilmatrixn_cap(j+(k-1)*nl_soil,1)/decomp0_npools_vr(j,k,i) .gt. 100 .and. soilmatrixn_cap(j+(k-1)*nl_soil,1) .gt. 1.e+3_r8) &
-                 .or. i .eq. i_cwd .and. (soilmatrixc_cap(j+(k-1)*nl_soil,1)/decomp0_cpools_vr(j,k,i) .gt. 100 .and. soilmatrixc_cap(j+(k-1)*nl_soil,1) .gt. 1.e+5_r8  &
+                 .or. k .eq. i_cwd .and. (soilmatrixc_cap(j+(k-1)*nl_soil,1)/decomp0_cpools_vr(j,k,i) .gt. 100 .and. soilmatrixc_cap(j+(k-1)*nl_soil,1) .gt. 1.e+5_r8  &
                  .or. soilmatrixn_cap(j+(k-1)*nl_soil,1)/decomp0_npools_vr(j,k,i) .gt. 100 .and. soilmatrixn_cap(j+(k-1)*nl_soil,1) .gt. 1.e+3_r8) )THEN
                      soilmatrixc_cap(j+(k-1)*nl_soil,1) = decomp_cpools_vr(j,k,i)
                      soilmatrixn_cap(j+(k-1)*nl_soil,1) = decomp_npools_vr(j,k,i)

@@ -64,8 +64,8 @@ CONTAINS
    real(r8) :: residual_smin_no3
    real(r8) :: residual_plant_ndemand
    real(r8) :: sminn_to_plant_new
-   real(r8) :: actual_immob = 0
-   real(r8) :: potential_immob = 0
+   real(r8) :: actual_immob
+   real(r8) :: potential_immob
    integer  :: ivt, ps, pe, m
    !-----------------------------------------------------------------------
 
@@ -187,6 +187,8 @@ CONTAINS
          ENDDO
 
          ! sum up N fluxes to immobilization
+         actual_immob = 0._r8
+         potential_immob = 0._r8
          DO j = 1, nl_soil
             actual_immob    = actual_immob    + actual_immob_vr(j,i) * dz_soi(j)
             potential_immob = potential_immob + potential_immob_vr(j,i) * dz_soi(j)

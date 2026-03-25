@@ -20,7 +20,7 @@ MODULE MOD_BGC_CNNStateUpdate1
    USE MOD_Precision
    USE MOD_Vars_PFTimeInvariants, only: pftclass
    USE MOD_Const_PFT, only: woody
-   USE MOD_Namelist, only: DEF_USE_SASU
+   USE MOD_Namelist, only: DEF_USE_SASU, DEF_USE_DiagMatrix
    USE MOD_BGC_Vars_TimeInvariants, only: &
    ! bgc constants
             donor_pool, receiver_pool, i_met_lit, i_cel_lit, i_lig_lit, i_cwd, i_soil1, i_soil2, i_soil3
@@ -150,7 +150,7 @@ CONTAINS
 
       ENDDO
 
-      IF(DEF_USE_SASU)THEN
+      IF(DEF_USE_SASU .or. DEF_USE_DiagMatrix)THEN
          DO j=1,nl_soil
             I_met_n_vr_acc(j,i) = I_met_n_vr_acc(j,i) + phenology_to_met_n(j,i) * deltim
             I_cel_n_vr_acc(j,i) = I_cel_n_vr_acc(j,i) + phenology_to_cel_n(j,i) * deltim
@@ -184,7 +184,7 @@ CONTAINS
             grainn_p(m)          = grainn_p(m)         + grainn_xfer_to_grainn_p(m)*deltim
             grainn_xfer_p(m)     = grainn_xfer_p(m)    - grainn_xfer_to_grainn_p(m)*deltim
          ENDIF
-         IF(DEF_USE_SASU)THEN
+         IF(DEF_USE_SASU .or. DEF_USE_DiagMatrix)THEN
             AKX_leafn_xf_to_leafn_p_acc  (m) = AKX_leafn_xf_to_leafn_p_acc  (m) + leafn_xfer_to_leafn_p  (m) * deltim
             AKX_frootn_xf_to_frootn_p_acc(m) = AKX_frootn_xf_to_frootn_p_acc(m) + frootn_xfer_to_frootn_p(m) * deltim
             AKX_leafn_xf_exit_p_acc      (m) = AKX_leafn_xf_exit_p_acc      (m) + leafn_xfer_to_leafn_p  (m) * deltim
@@ -237,7 +237,7 @@ CONTAINS
                               - crop_seedn_to_leaf_p(m) * deltim &
                               + grainn_to_seed_p(m) * deltim
          ENDIF
-         IF(DEF_USE_SASU)THEN
+         IF(DEF_USE_SASU .or. DEF_USE_DiagMatrix)THEN
             AKX_leafn_exit_p_acc       (m) = AKX_leafn_exit_p_acc       (m) + leafn_to_litter_p  (m) * deltim
             AKX_frootn_exit_p_acc      (m) = AKX_frootn_exit_p_acc      (m) + frootn_to_litter_p (m) * deltim
             AKX_leafn_to_retransn_p_acc(m) = AKX_leafn_to_retransn_p_acc(m) + leafn_to_retransn_p(m) * deltim
@@ -288,7 +288,7 @@ CONTAINS
             grainn_p(m)             = grainn_p(m)             + npool_to_grainn_p(m)*deltim
             grainn_storage_p(m)     = grainn_storage_p(m)     + npool_to_grainn_storage_p(m)*deltim
          ENDIF
-         IF(DEF_USE_SASU)THEN
+         IF(DEF_USE_SASU .or. DEF_USE_DiagMatrix)THEN
             IF(plant_nalloc_p(m) .ne. 0)THEN
                f_retr_in_nall = retransn_to_npool_p(m) / plant_nalloc_p(m)
                AKX_retransn_exit_p_acc        (m) = AKX_retransn_exit_p_acc        (m) &

@@ -201,7 +201,7 @@ CONTAINS
                   IF ( diffus(j+1) > 0._r8 .and. diffus(j) > 0._r8) THEN
                      d_p1 = 1._r8 / ((1._r8 - w_p1) / diffus(j) + w_p1 / diffus(j+1)) ! Harmonic mean of diffus
                   ELSE
-                     d_p1 = (1._r8 - w_m1) * diffus(j) + w_p1 * diffus(j+1) ! Arithmetic mean of diffus
+                     d_p1 = (1._r8 - w_p1) * diffus(j) + w_p1 * diffus(j+1) ! Arithmetic mean of diffus
                   ENDIF
                   d_m1_zm1(j) = d_m1 / dz_node(j)
                   d_p1_zp1(j) = d_p1 / dz_node(j+1)
@@ -321,7 +321,7 @@ CONTAINS
                   conc_trcr_c(j) * (dz_soi(j) / dz_soi(nbedrock))
                decomp_cpools_vr(j,s,i) = 0._r8
                decomp_npools_vr(nbedrock,s,i) = decomp_npools_vr(nbedrock,s,i) + &
-                  conc_trcr_c(j) * (dz_soi(j) / dz_soi(nbedrock))
+                  conc_trcr_n(j) * (dz_soi(j) / dz_soi(nbedrock))
                decomp_npools_vr(j,s,i) = 0._r8
             ENDIF
          ENDDO

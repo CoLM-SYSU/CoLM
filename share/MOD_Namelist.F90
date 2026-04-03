@@ -333,6 +333,25 @@ MODULE MOD_Namelist
    integer  :: DEF_Reservoir_Method         = 0
    real(r8) :: DEF_GRIDBASED_ROUTING_MAX_DT = 3600.
 
+   ! ----- sediment module -----
+   logical  :: DEF_USE_SEDIMENT        = .false.
+   real(r8) :: DEF_SED_LAMBDA          = 0.4
+   real(r8) :: DEF_SED_LYRDPH          = 0.00005
+   real(r8) :: DEF_SED_DENSITY         = 2.65
+   real(r8) :: DEF_SED_WATER_DENSITY   = 1.0
+   real(r8) :: DEF_SED_VISKIN          = 1.0e-6
+   real(r8) :: DEF_SED_VONKAR          = 0.4
+   real(r8) :: DEF_SED_PSET            = 1.0
+   integer  :: DEF_SED_TOTLYRNUM       = 5
+   real(r8) :: DEF_SED_CFL_ADV         = 0.5
+   real(r8) :: DEF_SED_IGNORE_DPH      = 0.05
+   real(r8) :: DEF_SED_DT_MAX          = 3600.
+   character(len=256) :: DEF_SED_DIAMETER = "0.0002,0.002,0.02"
+   real(r8) :: DEF_SED_PYLD            = 0.01
+   real(r8) :: DEF_SED_PYLDC           = 2.0
+   real(r8) :: DEF_SED_PYLDPC          = 2.0
+   real(r8) :: DEF_SED_DSYLUNIT        = 1.0e-6
+
    ! ----- others -----
    character(len=5)   :: DEF_precip_phase_discrimination_scheme = 'II'
 
@@ -991,6 +1010,14 @@ MODULE MOD_Namelist
       logical :: qresv_in                         = .true.
       logical :: qresv_out                        = .true.
 
+      logical :: sedcon                           = .true.
+      logical :: sedout                           = .true.
+      logical :: bedout                           = .true.
+      logical :: sedinp                           = .true.
+      logical :: netflw                           = .true.
+      logical :: sedlayer                         = .true.
+      logical :: shearvel                         = .false.
+
       logical :: sensors                          = .true.
 
    END type history_var_type
@@ -1137,6 +1164,24 @@ CONTAINS
       DEF_USE_EstimatedRiverDepth,            &
       DEF_Reservoir_Method,                   &
       DEF_GRIDBASED_ROUTING_MAX_DT,           &
+
+      DEF_USE_SEDIMENT,                       &
+      DEF_SED_LAMBDA,                         &
+      DEF_SED_LYRDPH,                         &
+      DEF_SED_DENSITY,                        &
+      DEF_SED_WATER_DENSITY,                  &
+      DEF_SED_VISKIN,                         &
+      DEF_SED_VONKAR,                         &
+      DEF_SED_PSET,                           &
+      DEF_SED_TOTLYRNUM,                      &
+      DEF_SED_CFL_ADV,                        &
+      DEF_SED_IGNORE_DPH,                     &
+      DEF_SED_DT_MAX,                         &
+      DEF_SED_DIAMETER,                       &
+      DEF_SED_PYLD,                           &
+      DEF_SED_PYLDC,                          &
+      DEF_SED_PYLDPC,                         &
+      DEF_SED_DSYLUNIT,                       &
 
       DEF_precip_phase_discrimination_scheme, &
 
@@ -1770,6 +1815,24 @@ CONTAINS
       CALL mpi_bcast (DEF_USE_EstimatedRiverDepth            ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
       CALL mpi_bcast (DEF_Reservoir_Method                   ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
       CALL mpi_bcast (DEF_GRIDBASED_ROUTING_MAX_DT           ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+
+      CALL mpi_bcast (DEF_USE_SEDIMENT                       ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_LAMBDA                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_LYRDPH                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_DENSITY                        ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_WATER_DENSITY                  ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_VISKIN                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_VONKAR                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_PSET                           ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_TOTLYRNUM                      ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_CFL_ADV                        ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_IGNORE_DPH                     ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_DT_MAX                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_DIAMETER                       ,256 ,mpi_character ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_PYLD                           ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_PYLDC                          ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_PYLDPC                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_SED_DSYLUNIT                       ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
 
       CALL mpi_bcast (DEF_HISTORY_IN_VECTOR                  ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
 
@@ -2412,6 +2475,14 @@ CONTAINS
       CALL sync_hist_vars_one (DEF_hist_vars%volresv     , set_defaults)
       CALL sync_hist_vars_one (DEF_hist_vars%qresv_in    , set_defaults)
       CALL sync_hist_vars_one (DEF_hist_vars%qresv_out   , set_defaults)
+
+      CALL sync_hist_vars_one (DEF_hist_vars%sedcon      , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%sedout      , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%bedout      , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%sedinp      , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%netflw      , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%sedlayer    , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%shearvel    , set_defaults)
 
       CALL sync_hist_vars_one (DEF_hist_vars%sensors     , set_defaults)
 

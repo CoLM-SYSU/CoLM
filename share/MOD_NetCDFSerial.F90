@@ -1327,6 +1327,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. present(dimname)) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1369,6 +1370,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. present(dimname)) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1411,6 +1413,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. present(dimname)) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1454,6 +1457,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. present(dimname)) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1530,6 +1534,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1574,6 +1579,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1618,6 +1624,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1662,6 +1669,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1707,6 +1715,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1752,6 +1761,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1796,6 +1806,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name) .and. present(dim3name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1842,6 +1853,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name) .and. present(dim3name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1889,6 +1901,7 @@ CONTAINS
          IF (.not. (present(dim1name) .and. present(dim2name) &
             .and. present(dim3name) .and. present(dim4name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -1938,6 +1951,7 @@ CONTAINS
          IF (.not. (present(dim1name) .and. present(dim2name) .and. present(dim3name) &
             .and. present(dim4name) .and. present(dim5name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -2116,6 +2130,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. present(dim1name)) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -2158,6 +2173,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -2207,6 +2223,7 @@ CONTAINS
       IF (status /= NF90_NOERR) THEN
          IF (.not. (present(dim1name) .and. present(dim2name) .and. present(dim3name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -2257,6 +2274,7 @@ CONTAINS
          IF (.not. (present(dim1name) .and. present(dim2name) &
             .and. present(dim3name) .and. present(dim4name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 
@@ -2310,6 +2328,7 @@ CONTAINS
          IF (.not. (present(dim1name) .and. present(dim2name) &
             .and. present(dim3name) .and. present(dim4name) .and. present(dim5name))) THEN
             write(*,*) 'Warning: no dimension name for ', trim(dataname)
+            CALL nccheck( nf90_close(ncid) )
             RETURN
          ENDIF
 

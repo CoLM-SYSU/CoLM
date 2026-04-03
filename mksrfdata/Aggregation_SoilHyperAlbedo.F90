@@ -77,9 +77,9 @@ SUBROUTINE Aggregation_SoilHyperAlbedo ( &
    ENDIF
 
    DO wl = 400, 2500, 10
-      write(*,'(A, i0, A)') '  Processing wavelength (nm): ', wl, ' ...'
+      IF (p_is_master) write(*,'(A, i0, A)') '  Processing wavelength (nm): ', wl, ' ...'
       write(wavelength,'(i0)') wl
-      
+
       ! Read in the hyper albedo
       IF (p_is_io) THEN
 
@@ -87,7 +87,7 @@ SUBROUTINE Aggregation_SoilHyperAlbedo ( &
          lndname = trim(dir_rawdata)//'/colm_input_ghsad/colm_soil_albedo_'//trim(wavelength)//'nm.nc'
          ! Read in the soil albedo
          CALL ncio_read_block (lndname, 'albedo', gland, a_soil_hyper_alb)
-         
+
          DO iblkme = 1, gblock%nblkme
             iblk = gblock%xblkme(iblkme)
             jblk = gblock%yblkme(iblkme)
@@ -104,7 +104,7 @@ SUBROUTINE Aggregation_SoilHyperAlbedo ( &
 #endif
 
       ENDIF
-      
+
       IF (p_is_worker) THEN
 
          ! allocate 已在循环外完成，移除这里的重复分配

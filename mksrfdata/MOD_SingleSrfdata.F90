@@ -197,6 +197,8 @@ CONTAINS
 #if (defined LULC_IGBP_PFT || defined LULC_IGBP_PC)
    USE MOD_LandPFT
 #endif
+   USE MOD_Mesh, only: numelm
+   USE MOD_LandElm
    IMPLICIT NONE
 
    character(len=*), intent(in) :: fsrfdata
@@ -1395,6 +1397,18 @@ CONTAINS
          ENDIF
 #endif
 
+         numelm = 1
+         allocate (landelm%settyp   (1));  landelm%settyp  (1) = 0
+         allocate (elm_patch%substt (1));  elm_patch%substt(1) = 1
+         allocate (elm_patch%subend (1));  elm_patch%subend(1) = numpatch
+
+         allocate (elm_patch%subfrc (numpatch)); elm_patch%subfrc = 1./numpatch
+#if (defined LULC_IGBP_PFT || defined LULC_IGBP_PC)
+#ifdef CROP
+         elm_patch%subfrc = SITE_pctcrop
+#endif
+#endif
+
       ENDIF
 
    END SUBROUTINE read_surface_data_single
@@ -1414,6 +1428,8 @@ CONTAINS
    USE MOD_LandUrban
    USE MOD_Urban_Const_LCZ
    USE MOD_Vars_Global, only: PI, URBAN
+   USE MOD_Mesh,        only: numelm
+   USE MOD_LandElm
    IMPLICIT NONE
 
    character(len=*), intent(in) :: fsrfdata
@@ -2737,6 +2753,13 @@ ENDIF
 
          allocate (patch2urban (numurban));     patch2urban(1) = 1
          allocate (urban2patch (numurban));     urban2patch(1) = 1
+
+         numelm = 1
+         allocate (landelm%settyp   (1));  landelm%settyp  (1) = 0
+         allocate (elm_patch%substt (1));  elm_patch%substt(1) = 1
+         allocate (elm_patch%subend (1));  elm_patch%subend(1) = numpatch
+         allocate (elm_patch%subfrc (numpatch)); elm_patch%subfrc = 1./numpatch
+
       ENDIF
 
    END SUBROUTINE read_urban_surface_data_single

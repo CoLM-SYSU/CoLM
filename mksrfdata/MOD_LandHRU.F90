@@ -79,7 +79,7 @@ CONTAINS
       IF (p_is_master) THEN
          DO iwork = 0, p_np_worker-1
 
-            CALL mpi_recv (ncat, 1, MPI_INTEGER4, p_address_worker(iwork), mpi_tag_size, &
+            CALL mpi_recv (ncat, 1, MPI_INTEGER, p_address_worker(iwork), mpi_tag_size, &
                p_comm_glb, p_stat, p_err)
 
             IF (ncat > 0) THEN
@@ -90,11 +90,11 @@ CONTAINS
                   p_comm_glb, p_stat, p_err)
 
                nhru = sum(numhru_all_g(catnum))
-               CALL mpi_send (nhru, 1, MPI_INTEGER4, &
+               CALL mpi_send (nhru, 1, MPI_INTEGER, &
                   p_address_worker(iwork), mpi_tag_size, p_comm_glb, p_err)
 
                ibuff = lakeid(catnum)
-               CALL mpi_send (ibuff, ncat, MPI_INTEGER4, &
+               CALL mpi_send (ibuff, ncat, MPI_INTEGER, &
                   p_address_worker(iwork), mpi_tag_data, p_comm_glb, p_err)
 
                deallocate(catnum)
@@ -104,12 +104,12 @@ CONTAINS
       ENDIF
 
       IF (p_is_worker) THEN
-         CALL mpi_send (numelm, 1, MPI_INTEGER4, p_address_master, mpi_tag_size, p_comm_glb, p_err)
+         CALL mpi_send (numelm, 1, MPI_INTEGER, p_address_master, mpi_tag_size, p_comm_glb, p_err)
          IF (numelm > 0) THEN
             allocate (lakeid (numelm))
             CALL mpi_send (landelm%eindex, numelm, MPI_INTEGER8, p_address_master, mpi_tag_data, p_comm_glb, p_err)
-            CALL mpi_recv (numhru, 1,      MPI_INTEGER4, p_address_master, mpi_tag_size, p_comm_glb, p_stat, p_err)
-            CALL mpi_recv (lakeid, numelm, MPI_INTEGER4, p_address_master, mpi_tag_data, p_comm_glb, p_stat, p_err)
+            CALL mpi_recv (numhru, 1,      MPI_INTEGER, p_address_master, mpi_tag_size, p_comm_glb, p_stat, p_err)
+            CALL mpi_recv (lakeid, numelm, MPI_INTEGER, p_address_master, mpi_tag_data, p_comm_glb, p_stat, p_err)
          ELSE
             numhru = 0
          ENDIF

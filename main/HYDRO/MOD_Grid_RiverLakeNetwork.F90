@@ -432,7 +432,7 @@ CONTAINS
       numucat_wrk(0) = numucat
 
       allocate (ucat_data_address (0:0))
-      allocate (ucat_data_address(0)%val (nucat))
+      allocate (ucat_data_address(0)%val (numucat))
       ucat_data_address(0)%val = ucat_ucid
 #endif
 
@@ -1047,7 +1047,7 @@ CONTAINS
                   CALL mpi_send (isend1d, nucat, MPI_INTEGER, p_address_worker(iworker), &
                      mpi_tag_data, p_comm_glb, p_err)
 
-                  deallocate (rsend1d)
+                  deallocate (isend1d)
                ENDIF
             ENDIF
          ENDDO

@@ -206,7 +206,7 @@ CONTAINS
                   start3, count3) )
             ELSE
                CALL nccheck (nf90_get_var(ncid, varid, &
-                  rdata%blk(iblk,jblk)%val(:,1:count3(1),:), start3, count3) )
+                  rdata%blk(iblk,jblk)%val(:,1:count3(2),:), start3, count3) )
 
                start3(2) = 1
                start_mem = count3(2) + 1
@@ -427,14 +427,17 @@ CONTAINS
    ! Local variables
    integer :: start3(3), count3(3)
    integer :: varid, dimid
+   character(len=256), SAVE :: fileopen = 'null'
    integer, SAVE :: ncid, time_dim
    logical, SAVE :: fid = .false.
 
       IF (p_is_io) THEN
          CALL check_ncfile_exist (filename)
 
-         IF (.not. fid) THEN
+         IF ((.not. fid) .or. (trim(fileopen) /= trim(filename))) THEN
             fid = .true.
+            fileopen = trim(filename)
+
             CALL nccheck (nf90_open(trim(filename), NF90_NOWRITE, ncid), trace=trim(filename)//' cannot open')
 
             CALL nccheck (nf90_inq_dimid(ncid, 'time', dimid), trace=trim(filename))

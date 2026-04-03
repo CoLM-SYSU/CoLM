@@ -303,11 +303,11 @@ SUBROUTINE Aggregation_TopographyFactors ( &
 
          DO i = 1, num_pixels
             ! Define the south slope, north slope, abrupt slope and gentle lope of target pixel
-            IF ((asp_one(i).ge.0 .and. asp_one(i).le.90*pi/180) .or. (asp_one(i).ge.270*pi/180 .and. &
-                 asp_one(i).le.360*pi/180).and.(slp_one(i).ge.15*pi/180)) THEN    ! north abrupt slope
+            IF (((asp_one(i).ge.0 .and. asp_one(i).le.90*pi/180) .or. (asp_one(i).ge.270*pi/180 .and. &
+                 asp_one(i).le.360*pi/180)).and.(slp_one(i).ge.15*pi/180)) THEN    ! north abrupt slope
                  type = 1
-            ELSEIF ((asp_one(i).ge.0 .and. asp_one(i).le.90*pi/180) .or. (asp_one(i).ge.270*pi/180 .and. &
-                      asp_one(i).le.360*pi/180).and.(slp_one(i)<15*pi/180)) THEN  ! north gentle slope
+            ELSEIF (((asp_one(i).ge.0 .and. asp_one(i).le.90*pi/180) .or. (asp_one(i).ge.270*pi/180 .and. &
+                      asp_one(i).le.360*pi/180)).and.(slp_one(i)<15*pi/180)) THEN  ! north gentle slope
                  type = 2
             ELSEIF ((asp_one(i).gt.90*pi/180) .and. (asp_one(i).lt.270*pi/180) .and. &
                      (slp_one(i).ge.15*pi/180)) THEN  ! south abrupt slope
@@ -372,67 +372,69 @@ SUBROUTINE Aggregation_TopographyFactors ( &
 
 ! Reduce the dimension of the shadow factor array
 ! Construct a new array with dimensions of sf_curve_patches(azimuth, shadow factor parameters, patches)
-   allocate(sf_curve_patches(num_azimuth,num_zenith_parameter,numpatch))
-   DO a = 1, num_azimuth
-      DO ipatch = 1, numpatch
-         y(:) = sf_lut_patches(a,:,ipatch)
-         x(:) = zenith_angle(:)
+   IF (p_is_worker) THEN
+      allocate(sf_curve_patches(num_azimuth,num_zenith_parameter,numpatch))
+      DO a = 1, num_azimuth
+         DO ipatch = 1, numpatch
+            y(:) = sf_lut_patches(a,:,ipatch)
+            x(:) = zenith_angle(:)
 
-         ! Obtain the last position of y==1
-         DO z = 1, num_zenith-1
-            IF ((y(z)==1.).and.(y(z+1)<1.)) THEN
-               index = z+1
+            ! Obtain the last position of y==1
+            index = 1
+            DO z = 1, num_zenith-1
+               IF ((y(z)==1.).and.(y(z+1)<1.)) THEN
+                  index = z+1
+               ENDIF
+            ENDDO
+
+            ! allocate Allocate memory to dynamic arrays
+            n = num_zenith - index +1
+            allocate(y_train(n))
+            allocate(x_train(n))
+            allocate(y_train_transform(n))
+
+            ! Obtain the predicted value y_train and prediction factor x_train for fitting,
+            ! the form of the fitting function is
+            ! ln(-ln(y_train)) = a1*x_train+a2
+            y_train(:) = y(index:)
+            x_train(:) = x(index:)
+
+            ! Transform y_train to enable linear regression fitting
+            DO i = 1, n
+               IF (y_train(i) <= 0.) y_train(i) = 0.001
+               IF (y_train(i) >= 1.) y_train(i) = 0.999
+            ENDDO
+            y_train_transform(:) = log(-1*log(y_train(:)))
+
+            ! Obtain parameters a1 and a2 using the least squares method
+            x_sum = 0.
+            xy_sum = 0.
+            y_sum = 0.
+            x2_sum = 0.
+            DO z = 1, n
+               xy_sum = xy_sum + x_train(z)*y_train_transform(z)
+               x_sum = x_sum + x_train(z)
+               y_sum = y_sum + y_train_transform(z)
+               x2_sum = x2_sum + x_train(z)*x_train(z)
+            ENDDO
+            IF (n*x2_sum - x_sum*x_sum == 0.) THEN
+               a1 = 0
+               a2 = 0
+            ELSE
+               a1 = (n*xy_sum - x_sum*y_sum)/(n*x2_sum - x_sum*x_sum)
+               a2 = (y_sum - a1*x_sum)/n
             ENDIF
+            sf_curve_patches(a,1,ipatch) = x(index-1) ! Minimum zenith angle at which occlusion begins
+            sf_curve_patches(a,2,ipatch) = a1
+            sf_curve_patches(a,3,ipatch) = a2
+
+            ! deallocate
+            deallocate(y_train)
+            deallocate(x_train)
+            deallocate(y_train_transform)
          ENDDO
-
-         ! allocate Allocate memory to dynamic arrays
-         n = num_zenith - index +1
-         allocate(y_train(n))
-         allocate(x_train(n))
-         allocate(y_train_transform(n))
-
-         ! Obtain the predicted value y_train and prediction factor x_train for fitting,
-         ! the form of the fitting function is
-         ! ln(-ln(y_train)) = a1*x_train+a2
-         y_train(:) = y(index:)
-         x_train(:) = x(index:)
-
-         ! Transform y_train to enable linear regression fitting
-         DO i = 1, n
-            IF (y_train(i) <= 0.) y_train(i) = 0.001
-            IF (y_train(i) >= 1.) y_train(i) = 0.999
-         ENDDO
-         y_train_transform(:) = log(-1*log(y_train(:)))
-
-         ! Obtain parameters a1 and a2 using the least squares method
-         x_sum = 0.
-         xy_sum = 0.
-         y_sum = 0.
-         x2_sum = 0.
-         DO z = 1, n
-            xy_sum = xy_sum + x_train(z)*y_train_transform(z)
-            x_sum = x_sum + x_train(z)
-            y_sum = y_sum + y_train_transform(z)
-            x2_sum = x2_sum + x_train(z)*x_train(z)
-         ENDDO
-         IF (n*x2_sum - x_sum*x_sum == 0.) THEN
-            a1 = 0
-            a2 = 0
-         ELSE
-            a1 = (n*xy_sum - x_sum*y_sum)/(n*x2_sum - x_sum*x_sum)
-            a2 = (y_sum - a1*x_sum)/n
-         ENDIF
-         sf_curve_patches(a,1,ipatch) = x(index-1) ! Minimum zenith angle at which occlusion begins
-         sf_curve_patches(a,2,ipatch) = a1
-         sf_curve_patches(a,3,ipatch) = a2
-
-         ! deallocate
-         deallocate(y_train)
-         deallocate(x_train)
-         deallocate(y_train_transform)
       ENDDO
-   ENDDO
-
+   ENDIF
 
    lndname = trim(landdir)//'/svf_patches.nc'
    CALL ncio_create_file_vector (lndname, landpatch)

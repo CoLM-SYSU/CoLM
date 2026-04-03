@@ -1479,7 +1479,7 @@ SUBROUTINE CoLMMAIN ( &
 
                   ! null data for sea component
                     z_soisno   (:) = 0.0
-                    dz_soisno  (:) = 0.0
+                    dz_soisno  (maxsnl+1:0) = 0.
                     t_soisno   (:) = 0.0
                     t_soisno (1:7) = tssub(1:7)
                     wliq_soisno(:) = 0.0

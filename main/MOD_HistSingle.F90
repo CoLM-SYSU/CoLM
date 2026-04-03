@@ -66,7 +66,7 @@ CONTAINS
          CASE ('MONTHLY')
             secs_write = 31*24*3600
          CASE ('YEARLY')
-            secs_write = 366*31*24*3600
+            secs_write = 366*24*3600
          END select
 
          ntime_mem = ceiling(secs_group / secs_write) + 2

@@ -873,7 +873,12 @@ CONTAINS
          CALL mg2p_forc%part2pset (forc_swrad_part,  forc_swrad )
          CALL mg2p_forc%part2pset (forc_us_part,     forc_us    )
          CALL mg2p_forc%part2pset (forc_vs_part,     forc_vs    )
-         forc_psrf = forc_pbot
+
+         IF (p_is_worker) THEN
+            IF (numpatch > 0) THEN
+               forc_psrf = forc_pbot
+            ENDIF
+         ENDIF
 
          ! wind downscaling
          IF (p_is_worker) THEN

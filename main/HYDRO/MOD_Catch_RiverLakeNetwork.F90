@@ -673,7 +673,10 @@ CONTAINS
             ENDDO
          ENDIF
 
-         IF (numbasin > 0) allocate(bsnfilter (numbasin)); bsnfilter(:) = .true.
+         IF (numbasin > 0) THEN
+            allocate(bsnfilter (numbasin))
+            bsnfilter(:) = .true.
+         ENDIF
 
          CALL pull_from_downstream (riverlen, riverlen_ds, bsnfilter)
          CALL pull_from_downstream (wtsrfelv, wtsrfelv_ds, bsnfilter)

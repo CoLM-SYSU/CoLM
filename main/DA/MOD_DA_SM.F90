@@ -979,9 +979,9 @@ CONTAINS
 
                   allocate (dtemp(ndata, DEF_DA_ENS_NUM))
                   dtemp = pred_smap_tb_h_ogrid_ens(1:ndata, :)
-                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, mpi_tag_data, p_comm_glb, p_err)
+                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, mpi_tag_data, p_comm_glb, p_err)
                   dtemp = pred_smap_tb_v_ogrid_ens(1:ndata, :)
-                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, mpi_tag_data + 1, p_comm_glb, p_err)
+                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, mpi_tag_data + 1, p_comm_glb, p_err)
                   deallocate (dtemp)
                ENDIF
 #endif
@@ -1004,9 +1004,9 @@ CONTAINS
 
                      isrc = rmesg(1)
                      CALL mpi_recv(itemp, ndata, MPI_INTEGER, isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
-                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
+                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
                      pred_smap_tb_h_ogrid_ens(itemp, :) = dtemp
-                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, isrc, mpi_tag_data + 1, p_comm_glb, p_stat, p_err)
+                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, isrc, mpi_tag_data + 1, p_comm_glb, p_stat, p_err)
                      pred_smap_tb_v_ogrid_ens(itemp, :) = dtemp
 
                      deallocate (itemp)
@@ -1014,8 +1014,8 @@ CONTAINS
                   ENDIF
                ENDDO
             ENDIF
-            CALL mpi_bcast(pred_smap_tb_h_ogrid_ens, num_smap_obs*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, p_comm_glb, p_err)
-            CALL mpi_bcast(pred_smap_tb_v_ogrid_ens, num_smap_obs*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, p_comm_glb, p_err)
+            CALL mpi_bcast(pred_smap_tb_h_ogrid_ens, num_smap_obs*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, p_comm_glb, p_err)
+            CALL mpi_bcast(pred_smap_tb_v_ogrid_ens, num_smap_obs*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, p_comm_glb, p_err)
 #endif
          ENDIF
       ENDIF
@@ -1084,9 +1084,9 @@ CONTAINS
 
                   allocate (dtemp(ndata, DEF_DA_ENS_NUM))
                   dtemp = pred_fy3d_tb_h_ogrid_ens(1:ndata, :)
-                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, mpi_tag_data, p_comm_glb, p_err)
+                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, mpi_tag_data, p_comm_glb, p_err)
                   dtemp = pred_fy3d_tb_v_ogrid_ens(1:ndata, :)
-                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, mpi_tag_data + 1, p_comm_glb, p_err)
+                  CALL mpi_send(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, mpi_tag_data + 1, p_comm_glb, p_err)
                   deallocate (dtemp)
                ENDIF
 #endif
@@ -1109,9 +1109,9 @@ CONTAINS
 
                      isrc = rmesg(1)
                      CALL mpi_recv(itemp, ndata, MPI_INTEGER, isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
-                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
+                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
                      pred_fy3d_tb_h_ogrid_ens(itemp, :) = dtemp
-                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_DOUBLE, isrc, mpi_tag_data + 1, p_comm_glb, p_stat, p_err)
+                     CALL mpi_recv(dtemp, ndata*DEF_DA_ENS_NUM, MPI_REAL8, isrc, mpi_tag_data + 1, p_comm_glb, p_stat, p_err)
                      pred_fy3d_tb_v_ogrid_ens(itemp, :) = dtemp
 
                      deallocate (itemp)
@@ -1119,8 +1119,8 @@ CONTAINS
                   ENDIF
                ENDDO
             ENDIF
-            CALL mpi_bcast(pred_fy3d_tb_h_ogrid_ens, num_fy3d_obs*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, p_comm_glb, p_err)
-            CALL mpi_bcast(pred_fy3d_tb_v_ogrid_ens, num_fy3d_obs*DEF_DA_ENS_NUM, MPI_DOUBLE, p_address_master, p_comm_glb, p_err)
+            CALL mpi_bcast(pred_fy3d_tb_h_ogrid_ens, num_fy3d_obs*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, p_comm_glb, p_err)
+            CALL mpi_bcast(pred_fy3d_tb_v_ogrid_ens, num_fy3d_obs*DEF_DA_ENS_NUM, MPI_REAL8, p_address_master, p_comm_glb, p_err)
 #endif
          ENDIF
       ENDIF

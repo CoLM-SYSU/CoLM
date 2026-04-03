@@ -131,7 +131,7 @@ CONTAINS
             ENDDO
 
             this%nyblk = floor(180./(DEF_AverageElementSize/120.*50))
-            this%nyblk = min(this%nxblk,180)
+            this%nyblk = min(this%nyblk,180)
             DO WHILE ((this%nyblk < 180) .and. (mod(180,this%nyblk) /= 0))
                this%nyblk = this%nyblk + 1
             ENDDO
@@ -143,7 +143,7 @@ CONTAINS
 
          ENDIF
 
-         IF ((mod(360,DEF_nx_blocks) /= 0) .or. (mod(180,DEF_ny_blocks) /= 0)) THEN
+         IF ((mod(360,this%nxblk) /= 0) .or. (mod(180,this%nyblk) /= 0)) THEN
             IF (p_is_master) THEN
                write(*,*) 'Number of blocks in longitude should be a factor of 360 '
                write(*,*) ' and Number of blocks in latitude should be a factor of 180.'

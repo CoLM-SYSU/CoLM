@@ -11,6 +11,9 @@ MODULE MOD_Grid_RiverLakeTimeVars
 !-------------------------------------------------------------------------------------
 
    USE MOD_Precision
+#ifdef GridRiverLakeSediment
+   USE MOD_Grid_RiverLakeSediment, only: write_sediment_restart
+#endif
    IMPLICIT NONE
 
    ! -- state variables --
@@ -18,6 +21,9 @@ MODULE MOD_Grid_RiverLakeTimeVars
    real(r8), allocatable :: veloc_riv  (:) ! river velocity            [m/s]
    real(r8), allocatable :: momen_riv  (:) ! unit river momentum       [m^2/s]
    real(r8), allocatable :: volresv    (:) ! reservoir water volume    [m^3]
+
+   ! -- restart file path (saved for deferred sediment restart read) --
+   character(len=512) :: gridriver_restart_file = ''
 
    ! PUBLIC MEMBER FUNCTIONS:
    PUBLIC :: allocate_GridRiverLakeTimeVars
@@ -58,6 +64,8 @@ CONTAINS
 
    character(len=*), intent(in) :: file_restart
 
+      gridriver_restart_file = trim(file_restart)
+
       CALL vector_read_and_scatter (file_restart, wdsrf_ucat, numucat, 'wdsrf_ucat', ucat_data_address)
       CALL vector_read_and_scatter (file_restart, veloc_riv,  numucat, 'veloc_riv',  ucat_data_address)
 
@@ -66,6 +74,9 @@ CONTAINS
             CALL vector_read_and_scatter (file_restart, volresv, numresv, 'volresv', resv_data_address)
          ENDIF
       ENDIF
+
+      ! Note: sediment restart is read separately in grid_sediment_read_restart,
+      ! called from grid_riverlake_flow_init after sediment module is initialized.
 
    END SUBROUTINE READ_GridRiverLakeTimeVars
 
@@ -81,7 +92,6 @@ CONTAINS
    IMPLICIT NONE
 
    character(len=*), intent(in) :: file_restart
-
 
       IF (p_is_master) THEN
          CALL ncio_create_file (trim(file_restart))
@@ -103,6 +113,12 @@ CONTAINS
                volresv, numresv, totalnumresv, resv_data_address, file_restart, 'volresv', 'reservoir')
          ENDIF
       ENDIF
+
+#ifdef GridRiverLakeSediment
+      IF (DEF_USE_SEDIMENT) THEN
+         CALL write_sediment_restart(file_restart)
+      ENDIF
+#endif
 
    END SUBROUTINE WRITE_GridRiverLakeTimeVars
 

@@ -16,6 +16,11 @@ MODULE MOD_Grid_RiverLakeFlow
    USE MOD_Grid_RiverLakeTimeVars
    USE MOD_Grid_Reservoir
    USE MOD_Grid_RiverLakeHist
+#ifdef GridRiverLakeSediment
+   USE MOD_Grid_RiverLakeSediment, only: grid_sediment_init, grid_sediment_calc, &
+      grid_sediment_final, sediment_diag_accumulate, sediment_forcing_put, &
+      read_sediment_restart
+#endif
    IMPLICIT NONE
 
    real(r8), parameter :: RIVERMIN  = 1.e-5_r8
@@ -40,16 +45,16 @@ CONTAINS
       acctime_rnof = 0.
 
       IF (p_is_worker) THEN
-         IF (numucat > 0) THEN
-            allocate (acc_rnof_uc (numucat))
-            acc_rnof_uc = 0.
-         ENDIF
+         ! Allocate on all workers (zero-length if numucat/numpatch=0)
+         ! to avoid passing unallocated arrays to assumed-shape MPI wrappers.
+         allocate (acc_rnof_uc (numucat))
+         acc_rnof_uc = 0.
       ENDIF
 
       ! excluding (patchtype >= 99), virtual patches and those forcing missed
       IF (p_is_worker) THEN
+         allocate (filter_rnof (numpatch))
          IF (numpatch > 0) THEN
-            allocate (filter_rnof (numpatch))
             filter_rnof = patchtype < 99
             filter_rnof = filter_rnof .and. patchmask
             IF (DEF_forcing%has_missing_value) THEN
@@ -58,18 +63,28 @@ CONTAINS
          ENDIF
       ENDIF
 
+#ifdef GridRiverLakeSediment
+      CALL grid_sediment_init()
+      IF (len_trim(gridriver_restart_file) > 0) THEN
+         CALL read_sediment_restart(gridriver_restart_file)
+      ENDIF
+#endif
+
    END SUBROUTINE grid_riverlake_flow_init
 
    ! ---------
    SUBROUTINE grid_riverlake_flow (year, deltime)
 
    USE MOD_Utils
-   USE MOD_Namelist,       only: DEF_Reservoir_Method
+   USE MOD_Namelist,       only: DEF_Reservoir_Method, DEF_USE_SEDIMENT
    USE MOD_Vars_1DFluxes,  only: rnof
    USE MOD_Mesh,           only: numelm
-   USE MOD_LandPatch,      only: elm_patch
+   USE MOD_LandPatch,      only: elm_patch, numpatch
    USE MOD_Const_Physical, only: grav
    USE MOD_Vars_Global,    only: spval
+#ifdef GridRiverLakeSediment
+   USE MOD_Vars_1DForcing, only: forc_prc, forc_prl
+#endif
    IMPLICIT NONE
 
    integer,  intent(in) :: year
@@ -78,9 +93,18 @@ CONTAINS
    ! Local Variables
    integer  :: i, j, irsv, ntimestep
    real(r8) :: dt_this
+   integer  :: sed_clock_start, sed_clock_end, sed_clock_rate
+   real(r8) :: sed_elapsed
 
    real(r8), allocatable :: rnof_gd(:)
    real(r8), allocatable :: rnof_uc(:)
+
+#ifdef GridRiverLakeSediment
+   real(r8), allocatable :: prcp_gd(:)
+   real(r8), allocatable :: prcp_uc(:)
+   real(r8), allocatable :: prcp_pch(:)
+   real(r8), allocatable :: floodarea_sed(:)
+#endif
 
    logical,  allocatable :: is_built_resv(:)
 
@@ -115,8 +139,8 @@ CONTAINS
 
       IF (p_is_worker) THEN
 
-         IF (numinpm > 0) allocate (rnof_gd (numinpm))
-         IF (numucat > 0) allocate (rnof_uc (numucat))
+         allocate (rnof_gd (numinpm))
+         allocate (rnof_uc (numucat))
 
          CALL worker_remap_data_pset2grid (remap_patch2inpm, rnof, rnof_gd, &
             fillvalue = 0., filter = filter_rnof)
@@ -134,8 +158,58 @@ CONTAINS
             acc_rnof_uc = acc_rnof_uc + rnof_uc*1.e-3*deltime
          ENDIF
 
-         IF (allocated(rnof_gd)) deallocate(rnof_gd)
-         IF (allocated(rnof_uc)) deallocate(rnof_uc)
+         deallocate(rnof_gd)
+         deallocate(rnof_uc)
+
+#ifdef GridRiverLakeSediment
+         IF (DEF_USE_SEDIMENT) THEN
+            ! Allocate zero-length arrays on empty workers to avoid passing unallocated
+            ! arrays to assumed-shape dummy arguments in MPI communication routines.
+            IF (numpatch > 0) THEN
+               allocate (prcp_pch (numpatch))
+               prcp_pch = forc_prc + forc_prl
+            ELSE
+               allocate (prcp_pch (0))
+            ENDIF
+            IF (numinpm > 0) THEN
+               allocate (prcp_gd (numinpm))
+            ELSE
+               allocate (prcp_gd (0))
+            ENDIF
+            IF (numucat > 0) THEN
+               allocate (prcp_uc (numucat))
+            ELSE
+               allocate (prcp_uc (0))
+            ENDIF
+
+            CALL worker_remap_data_pset2grid (remap_patch2inpm, prcp_pch, prcp_gd, &
+               fillvalue = 0., filter = filter_rnof)
+
+            IF (numinpm > 0) THEN
+               WHERE (push_ucat2inpm%sum_area > 0)
+                  prcp_gd = prcp_gd / push_ucat2inpm%sum_area
+               END WHERE
+            ENDIF
+
+            CALL worker_push_data (push_inpm2ucat, prcp_gd, prcp_uc, &
+               fillvalue = 0., mode = 'sum')
+
+            ! Convert from area-integrated [mm/s * m²] back to flux density [mm/s].
+            ! push_data(mode='sum') produces area-integrated values (like rnof_uc),
+            ! but the sediment yield formula expects a rate and multiplies by area internally.
+            IF (numucat > 0) THEN
+               WHERE (topo_area > 0._r8)
+                  prcp_uc = prcp_uc / topo_area
+               END WHERE
+            ENDIF
+
+            CALL sediment_forcing_put(prcp_uc, deltime)
+
+            deallocate(prcp_pch)
+            deallocate(prcp_gd)
+            deallocate(prcp_uc)
+         ENDIF
+#endif
 
       ENDIF
 
@@ -566,6 +640,26 @@ CONTAINS
 
             dt_res = dt_res - dt_all
 
+#ifdef GridRiverLakeSediment
+            IF (DEF_USE_SEDIMENT) THEN
+               IF (numucat > 0) THEN
+                  allocate(floodarea_sed(numucat))
+                  DO i = 1, numucat
+                     IF (ucatfilter(i)) THEN
+                        floodarea_sed(i) = floodplain_curve(i)%floodarea(wdsrf_ucat(i))
+                     ELSE
+                        floodarea_sed(i) = 0._r8
+                     ENDIF
+                  ENDDO
+               ELSE
+                  allocate(floodarea_sed(0))
+               ENDIF
+               CALL sediment_diag_accumulate(dt_all, irivsys, ucatfilter, &
+                  veloc_riv, wdsrf_ucat, hflux_fc, floodarea_sed)
+               deallocate(floodarea_sed)
+            ENDIF
+#endif
+
          ENDDO
 
 #ifdef CoLMDEBUG
@@ -606,6 +700,15 @@ CONTAINS
       ENDIF
 #endif
 
+#ifdef GridRiverLakeSediment
+      IF (DEF_USE_SEDIMENT .and. p_is_worker) THEN
+         ! All workers must participate (MPI point-to-point inside push_data).
+         ! fldfrc is now computed inside grid_sediment_calc from per-routing-period
+         ! accumulators (sed_acc_floodarea), not from history-period averages.
+         CALL grid_sediment_calc(acctime_rnof)
+      ENDIF
+#endif
+
       acctime_rnof = 0.
 
       IF (p_is_worker) THEN
@@ -642,6 +745,10 @@ CONTAINS
       IF (DEF_Reservoir_Method > 0) THEN
          CALL reservoir_final ()
       ENDIF
+
+#ifdef GridRiverLakeSediment
+      CALL grid_sediment_final()
+#endif
 
       IF (allocated(acc_rnof_uc)) deallocate(acc_rnof_uc)
       IF (allocated(filter_rnof)) deallocate(filter_rnof)

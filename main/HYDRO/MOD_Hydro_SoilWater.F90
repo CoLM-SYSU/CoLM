@@ -1293,7 +1293,7 @@ CONTAINS
                CASE (BC_DRAINAGE)
                   has_wt(ub) = (wt(ub) >= tol_z)
                CASE (BC_FIX_HEAD)
-                  has_wt(ub) = (lbc_val > psi_s(lb)) .or. (wt(ub) >= tol_z)
+                  has_wt(ub) = (lbc_val > psi_s(ub)) .or. (wt(ub) >= tol_z)
 
                   IF ((has_wt(ub)) .and. (wt(ub) < tol_z)) THEN
                      wt(ub) = 0.01 * (dz(ub)-wf(ub))
@@ -3582,12 +3582,12 @@ CONTAINS
             count_wet2dry_accum  = count_wet2dry_accum  + count_wet2dry
 
 #ifdef USEMPI
-            CALL mpi_send (count_implicit,       1, MPI_INTEGER, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
-            CALL mpi_send (count_explicit,       1, MPI_INTEGER, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
-            CALL mpi_send (count_wet2dry,        1, MPI_INTEGER, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
-            CALL mpi_send (count_implicit_accum, 1, MPI_INTEGER, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
-            CALL mpi_send (count_explicit_accum, 1, MPI_INTEGER, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
-            CALL mpi_send (count_wet2dry_accum,  1, MPI_INTEGER, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
+            CALL mpi_send (count_implicit,       1, MPI_INTEGER8, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
+            CALL mpi_send (count_explicit,       1, MPI_INTEGER8, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
+            CALL mpi_send (count_wet2dry,        1, MPI_INTEGER8, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
+            CALL mpi_send (count_implicit_accum, 1, MPI_INTEGER8, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
+            CALL mpi_send (count_explicit_accum, 1, MPI_INTEGER8, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
+            CALL mpi_send (count_wet2dry_accum,  1, MPI_INTEGER8, p_address_master, mpi_tag_mesg, p_comm_glb, p_err)
 #endif
          ENDIF
       ENDIF
@@ -3596,12 +3596,12 @@ CONTAINS
 
 #ifdef USEMPI
          iwork = p_address_worker(p_root)
-         CALL mpi_recv (count_implicit, 1, MPI_INTEGER, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
-         CALL mpi_recv (count_explicit, 1, MPI_INTEGER, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
-         CALL mpi_recv (count_wet2dry , 1, MPI_INTEGER, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
-         CALL mpi_recv (count_implicit_accum, 1, MPI_INTEGER, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
-         CALL mpi_recv (count_explicit_accum, 1, MPI_INTEGER, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
-         CALL mpi_recv (count_wet2dry_accum , 1, MPI_INTEGER, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
+         CALL mpi_recv (count_implicit,       1, MPI_INTEGER8, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
+         CALL mpi_recv (count_explicit,       1, MPI_INTEGER8, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
+         CALL mpi_recv (count_wet2dry ,       1, MPI_INTEGER8, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
+         CALL mpi_recv (count_implicit_accum, 1, MPI_INTEGER8, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
+         CALL mpi_recv (count_explicit_accum, 1, MPI_INTEGER8, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
+         CALL mpi_recv (count_wet2dry_accum , 1, MPI_INTEGER8, iwork, mpi_tag_mesg, p_comm_glb, p_stat, p_err)
 #endif
 
          write(*,"(/,A,I13,A,I13,A,I13,A)") 'VSF scheme this step: ',    &

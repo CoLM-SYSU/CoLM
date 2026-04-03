@@ -29,6 +29,7 @@ SUBROUTINE Aggregation_SoilBrightness ( &
 #ifdef SrfdataDiag
    USE MOD_SrfdataDiag
 #endif
+   USE MOD_Vars_Global, only: spval
 
    IMPLICIT NONE
 
@@ -129,6 +130,11 @@ SUBROUTINE Aggregation_SoilBrightness ( &
                      a_d_v_refl%blk(iblk,jblk)%val(ix,iy) = soil_d_v_refl( ii )
                      a_s_n_refl%blk(iblk,jblk)%val(ix,iy) = soil_s_n_refl( ii )
                      a_d_n_refl%blk(iblk,jblk)%val(ix,iy) = soil_d_n_refl( ii )
+                  ELSE
+                     a_s_v_refl%blk(iblk,jblk)%val(ix,iy) = spval
+                     a_d_v_refl%blk(iblk,jblk)%val(ix,iy) = spval
+                     a_s_n_refl%blk(iblk,jblk)%val(ix,iy) = spval
+                     a_d_n_refl%blk(iblk,jblk)%val(ix,iy) = spval
                   ENDIF
 
                ENDDO
@@ -171,10 +177,10 @@ SUBROUTINE Aggregation_SoilBrightness ( &
                CALL aggregation_request_data (landpatch, ipatch, gland, &
                   zip = USE_zip_for_aggregation, &
                   data_r8_2d_in1 = a_s_v_refl, data_r8_2d_out1 = soil_one)
-               soil_s_v_alb (ipatch) = median (soil_one, size(soil_one))
+               soil_s_v_alb (ipatch) = median (soil_one, size(soil_one), spval)
 
             ELSE
-               soil_s_v_alb (ipatch) = -1.0e36_r8
+               soil_s_v_alb (ipatch) = spval
             ENDIF
 
          ENDDO
@@ -217,10 +223,10 @@ SUBROUTINE Aggregation_SoilBrightness ( &
                CALL aggregation_request_data (landpatch, ipatch, gland, &
                   zip = USE_zip_for_aggregation, &
                   data_r8_2d_in1 = a_d_v_refl, data_r8_2d_out1 = soil_one)
-               soil_d_v_alb (ipatch) = median (soil_one, size(soil_one))
+               soil_d_v_alb (ipatch) = median (soil_one, size(soil_one), spval)
 
             ELSE
-               soil_d_v_alb (ipatch) = -1.0e36_r8
+               soil_d_v_alb (ipatch) = spval
             ENDIF
 
          ENDDO
@@ -263,10 +269,10 @@ SUBROUTINE Aggregation_SoilBrightness ( &
                CALL aggregation_request_data (landpatch, ipatch, gland, &
                   zip = USE_zip_for_aggregation, &
                   data_r8_2d_in1 = a_s_n_refl, data_r8_2d_out1 = soil_one)
-               soil_s_n_alb (ipatch) = median (soil_one, size(soil_one))
+               soil_s_n_alb (ipatch) = median (soil_one, size(soil_one), spval)
 
             ELSE
-               soil_s_n_alb (ipatch) = -1.0e36_r8
+               soil_s_n_alb (ipatch) = spval
             ENDIF
 
          ENDDO
@@ -309,10 +315,10 @@ SUBROUTINE Aggregation_SoilBrightness ( &
                CALL aggregation_request_data (landpatch, ipatch, gland, &
                   zip = USE_zip_for_aggregation, &
                   data_r8_2d_in1 = a_d_n_refl, data_r8_2d_out1 = soil_one)
-               soil_d_n_alb (ipatch) = median (soil_one, size(soil_one))
+               soil_d_n_alb (ipatch) = median (soil_one, size(soil_one), spval)
 
             ELSE
-               soil_d_n_alb (ipatch) = -1.0e36_r8
+               soil_d_n_alb (ipatch) = spval
             ENDIF
 
          ENDDO
@@ -344,7 +350,7 @@ SUBROUTINE Aggregation_SoilBrightness ( &
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/soil_brightness_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (soil_s_v_alb, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'soil_s_v_alb', compress = 1, write_mode = 'one', create_mode=.true.)
+         spval, lndname, 'soil_s_v_alb', compress = 1, write_mode = 'one', create_mode=.true.)
 #endif
 
       ! (2) Write-out the albedo of visible of the dry soil
@@ -358,7 +364,7 @@ SUBROUTINE Aggregation_SoilBrightness ( &
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/soil_brightness_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (soil_d_v_alb, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'soil_d_v_alb', compress = 1, write_mode = 'one')
+         spval, lndname, 'soil_d_v_alb', compress = 1, write_mode = 'one')
 #endif
 
       ! (3) Write-out the albedo of near infrared of the saturated soil
@@ -372,7 +378,7 @@ SUBROUTINE Aggregation_SoilBrightness ( &
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/soil_brightness_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (soil_s_n_alb, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'soil_s_n_alb', compress = 1, write_mode = 'one')
+         spval, lndname, 'soil_s_n_alb', compress = 1, write_mode = 'one')
 #endif
 
       ! (4) Write-out the albedo of near infrared of the dry soil
@@ -386,7 +392,7 @@ SUBROUTINE Aggregation_SoilBrightness ( &
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/soil_brightness_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (soil_d_n_alb, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'soil_d_n_alb', compress = 1, write_mode = 'one')
+         spval, lndname, 'soil_d_n_alb', compress = 1, write_mode = 'one')
 #endif
 
       ! Deallocate the allocatable array

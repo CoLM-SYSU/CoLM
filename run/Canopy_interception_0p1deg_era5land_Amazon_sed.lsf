@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH -J1
+#SBATCH -p deimos
+#SBATCH -N 5
+#SBATCH -n 320
+#SBATCH --ntasks-per-node=64
+#SBATCH -o log.%j
+#SBATCH -e log.%j
+#SBATCH --exclusive
+##SBATCH -t 7-24:00
+source /HOME/sysu_yjdai2/sysu_yjdai2xy_4/.bashrc-intel
+ulimit -s unlimited
+NP=$SLURM_NPROCS
+#yhrun -n $NP ./mksrfdata.x Canopy_interception_0p1deg_era5land_Amazon_sed.nml  &> runlog-mksrfdata-Canopy_interception_0p1deg_era5land_Amazon_sed
+#yhrun -n $NP ./mkinidata.x Canopy_interception_0p1deg_era5land_Amazon_sed.nml  &> runlog-mkinidata-Canopy_interception_0p1deg_era5land_Amazon_sed
+yhrun -n $NP ./colm.x Canopy_interception_0p1deg_era5land_Amazon_sed.nml  &> runlog-colm-Canopy_interception_0p1deg_era5land_Amazon_sed

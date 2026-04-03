@@ -562,7 +562,7 @@ CONTAINS
 
             allocate (rbuf(xcnt,ycnt))
 
-            CALL mpi_recv (rbuf, xcnt*ycnt, MPI_DOUBLE, &
+            CALL mpi_recv (rbuf, xcnt*ycnt, MPI_REAL8, &
                isrc, check_data_id, p_comm_glb, p_stat, p_err)
 
             vdata (xgdsp+1:xgdsp+xcnt, ygdsp+1:ygdsp+ycnt) = rbuf
@@ -627,7 +627,7 @@ CONTAINS
                   smesg = (/p_iam_glb, ixseg, iyseg/)
                   CALL mpi_send (smesg, 3, MPI_INTEGER, &
                      p_address_master, check_data_id, p_comm_glb, p_err)
-                  CALL mpi_send (sbuf, xcnt*ycnt, MPI_DOUBLE, &
+                  CALL mpi_send (sbuf, xcnt*ycnt, MPI_REAL8, &
                      p_address_master, check_data_id, p_comm_glb, p_err)
 
                   deallocate (sbuf)

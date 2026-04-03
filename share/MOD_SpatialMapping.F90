@@ -519,6 +519,8 @@ CONTAINS
       ENDIF
       CALL this%get_sumarea (this%areagrid, msk)
 
+      IF (allocated(msk)) deallocate(msk)
+
 
 #ifdef USEMPI
       CALL mpi_barrier (p_comm_glb, p_err)
@@ -971,6 +973,7 @@ CONTAINS
       IF (allocated(wwgt)) deallocate(wwgt)
       IF (allocated(ewgt)) deallocate(ewgt)
 
+      IF (allocated(msk)) deallocate(msk)
 
 #ifdef USEMPI
       CALL mpi_barrier (p_comm_glb, p_err)
@@ -1026,7 +1029,7 @@ CONTAINS
 
 #ifdef USEMPI
                idest = p_address_worker(iproc)
-               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
 
                deallocate (gbuff)
@@ -1056,7 +1059,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_io(iproc)
-               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                pbuff(0)%val = gbuff
@@ -1184,7 +1187,7 @@ CONTAINS
          DO iproc = 0, p_np_io-1
             IF (this%glist(iproc)%ng > 0) THEN
                idest = p_address_io(iproc)
-               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
             ENDIF
          ENDDO
@@ -1207,7 +1210,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_worker(iproc)
-               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                gbuff = pbuff(0)%val
@@ -1340,7 +1343,7 @@ CONTAINS
             IF (this%glist(iproc)%ng > 0) THEN
                idest = p_address_io(iproc)
                CALL mpi_send (pbuff(iproc)%val, &
-                  (ub1-lb1+1) * this%glist(iproc)%ng, MPI_DOUBLE, &
+                  (ub1-lb1+1) * this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
 
             ENDIF
@@ -1368,7 +1371,7 @@ CONTAINS
 #ifdef USEMPI
                isrc = p_address_worker(iproc)
                CALL mpi_recv (gbuff, &
-                  (ub1-lb1+1) * this%glist(iproc)%ng, MPI_DOUBLE, &
+                  (ub1-lb1+1) * this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                gbuff = pbuff(0)%val
@@ -1501,7 +1504,7 @@ CONTAINS
          DO iproc = 0, p_np_io-1
             IF (this%glist(iproc)%ng > 0) THEN
                idest = p_address_io(iproc)
-               CALL mpi_send (pbuff(iproc)%val, ndim1 * ndim2 * this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (pbuff(iproc)%val, ndim1 * ndim2 * this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
             ENDIF
          ENDDO
@@ -1532,7 +1535,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_worker(iproc)
-               CALL mpi_recv (gbuff, ndim1 * ndim2 * this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (gbuff, ndim1 * ndim2 * this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                gbuff = pbuff(0)%val
@@ -1643,7 +1646,7 @@ CONTAINS
          DO iproc = 0, p_np_io-1
             IF (this%glist(iproc)%ng > 0) THEN
                idest = p_address_io(iproc)
-               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
             ENDIF
          ENDDO
@@ -1662,7 +1665,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_worker(iproc)
-               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                gbuff = pbuff(0)%val
@@ -1775,7 +1778,7 @@ CONTAINS
             DO iproc = 0, p_np_io-1
                IF (this%glist(iproc)%ng > 0) THEN
                   idest = p_address_io(iproc)
-                  CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+                  CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                      idest, mpi_tag_data, p_comm_glb, p_err)
                ENDIF
             ENDDO
@@ -1792,7 +1795,7 @@ CONTAINS
 
 #ifdef USEMPI
                   isrc = p_address_worker(iproc)
-                  CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+                  CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                      isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                   gbuff = pbuff(0)%val
@@ -1888,7 +1891,7 @@ CONTAINS
          DO iproc = 0, p_np_io-1
             IF (this%glist(iproc)%ng > 0) THEN
                idest = p_address_io(iproc)
-               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
             ENDIF
          ENDDO
@@ -1907,7 +1910,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_worker(iproc)
-               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                gbuff = pbuff(0)%val
@@ -1986,7 +1989,7 @@ CONTAINS
 
 #ifdef USEMPI
                idest = p_address_worker(iproc)
-               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
 
                deallocate (gbuff)
@@ -2007,7 +2010,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_io(iproc)
-               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                pbuff(0)%val = gbuff
@@ -2096,7 +2099,7 @@ CONTAINS
 
 #ifdef USEMPI
                idest = p_address_worker(iproc)
-               CALL mpi_send (gbuff, ndim1 * this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (gbuff, ndim1 * this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
 
                deallocate (gbuff)
@@ -2117,7 +2120,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_io(iproc)
-               CALL mpi_recv (pbuff(iproc)%val, ndim1 * this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (pbuff(iproc)%val, ndim1 * this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                pbuff(0)%val = gbuff
@@ -2304,7 +2307,7 @@ CONTAINS
 
 #ifdef USEMPI
                idest = p_address_worker(iproc)
-               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
 
                deallocate (gbuff)
@@ -2326,7 +2329,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_io(iproc)
-               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                pbuff(0)%val = gbuff
@@ -2415,7 +2418,7 @@ CONTAINS
 
 #ifdef USEMPI
                idest = p_address_worker(iproc)
-               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
 
                deallocate (gbuff)
@@ -2436,7 +2439,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_io(iproc)
-               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                pbuff(0)%val = gbuff
@@ -2513,7 +2516,7 @@ CONTAINS
          DO iproc = 0, p_np_io-1
             IF (this%glist(iproc)%ng > 0) THEN
                idest = p_address_io(iproc)
-               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_send (pbuff(iproc)%val, this%glist(iproc)%ng, MPI_REAL8, &
                   idest, mpi_tag_data, p_comm_glb, p_err)
             ENDIF
          ENDDO
@@ -2532,7 +2535,7 @@ CONTAINS
 
 #ifdef USEMPI
                isrc = p_address_worker(iproc)
-               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_DOUBLE, &
+               CALL mpi_recv (gbuff, this%glist(iproc)%ng, MPI_REAL8, &
                   isrc, mpi_tag_data, p_comm_glb, p_stat, p_err)
 #else
                gbuff = pbuff(0)%val

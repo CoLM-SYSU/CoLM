@@ -298,14 +298,14 @@ CONTAINS
 
                allocate (rbuf (ntyps,xcnt,ycnt))
 
-               CALL mpi_recv (rbuf, ntyps * xcnt * ycnt, MPI_DOUBLE, &
+               CALL mpi_recv (rbuf, ntyps * xcnt * ycnt, MPI_REAL8, &
                   isrc, srf_data_id, p_comm_glb, p_stat, p_err)
 
                DO ityp = 1, ntyps
                   vdata (xgdsp+1:xgdsp+xcnt,ygdsp+1:ygdsp+ycnt,ityp) = rbuf(ityp,:,:)
                ENDDO
 
-               CALL mpi_recv (rbuf(1,:,:), xcnt * ycnt, MPI_DOUBLE, &
+               CALL mpi_recv (rbuf(1,:,:), xcnt * ycnt, MPI_REAL8, &
                   isrc, srf_data_id, p_comm_glb, p_stat, p_err)
 
                vdsum (xgdsp+1:xgdsp+xcnt,ygdsp+1:ygdsp+ycnt) = rbuf(1,:,:)
@@ -440,11 +440,11 @@ CONTAINS
                      allocate (sbuf (ntyps,xcnt,ycnt))
 
                      sbuf = wdata%blk(iblk,jblk)%val(:,xbdsp+1:xbdsp+xcnt,ybdsp+1:ybdsp+ycnt)
-                     CALL mpi_send (sbuf, ntyps*xcnt*ycnt, MPI_DOUBLE, &
+                     CALL mpi_send (sbuf, ntyps*xcnt*ycnt, MPI_REAL8, &
                         p_address_master, srf_data_id, p_comm_glb, p_err)
 
                      sbuf(1,:,:) = wdsum%blk(iblk,jblk)%val(xbdsp+1:xbdsp+xcnt,ybdsp+1:ybdsp+ycnt)
-                     CALL mpi_send (sbuf(1,:,:), xcnt*ycnt, MPI_DOUBLE, &
+                     CALL mpi_send (sbuf(1,:,:), xcnt*ycnt, MPI_REAL8, &
                         p_address_master, srf_data_id, p_comm_glb, p_err)
 
                      deallocate (sbuf)

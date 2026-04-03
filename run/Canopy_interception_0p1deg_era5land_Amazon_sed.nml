@@ -1,0 +1,80 @@
+&nl_colm
+
+   DEF_CASE_NAME = 'Canopy_interception_0p1deg_era5land_Amazon_sed'
+
+   DEF_domain%edges =  -15.0
+   DEF_domain%edgen =  5.0
+   DEF_domain%edgew =  -72.0
+   DEF_domain%edgee = -48.0
+   !DEF_nx_blocks=18
+   !DEF_ny_blocks=9
+   !DEF_PIO_groupsize=36
+   DEF_simulation_time%greenwich     = .TRUE.
+   DEF_simulation_time%start_year    = 1995
+   DEF_simulation_time%start_month   = 1
+   DEF_simulation_time%start_day     = 1
+   DEF_simulation_time%start_sec     = 0
+   DEF_simulation_time%end_year      = 2010
+   DEF_simulation_time%end_month     = 12
+   DEF_simulation_time%end_day       = 31
+   DEF_simulation_time%end_sec       = 0
+   DEF_simulation_time%spinup_year   = 1990
+   DEF_simulation_time%spinup_month  = 1
+   DEF_simulation_time%spinup_day    = 1
+   DEF_simulation_time%spinup_sec    = 0
+   DEF_simulation_time%spinup_repeat = 0
+   DEF_simulation_time%timestep      = 1800.
+
+  ! DEF_PIO_groupsize = 8
+
+   DEF_dir_rawdata = '/XYFS01/HDD_POOL/sysu_yjdai2/SHARE01/CoLMdata/CoLMrawdata/'
+   DEF_dir_runtime = '/XYFS01/HDD_POOL/sysu_yjdai2/SHARE01/CoLMdata/CoLMruntime/'
+   DEF_dir_output  = '/HOME/sysu_yjdai2/sysu_yjdai2xy_4/HDD_POOL/CoLM202X-sed-20250316/cases/'
+
+   DEF_LAI_CHANGE_YEARLY = .false.
+   DEF_Interception_scheme = 1
+   DEF_USE_OZONESTRESS = .false.
+   DEF_USE_OZONEDATA   = .false.
+
+   DEF_UnitCatchment_file = '/HOME/sysu_yjdai2/sysu_yjdai2xy_4/HDD_POOL/grid_routing_data_15min_sed.nc'
+   DEF_Reservoir_Method   = 1
+   DEF_ReservoirPara_file = '/HOME/sysu_yjdai2/sysu_yjdai2xy_4/HDD_POOL/grid_routing_data_15min_sed.nc'
+   DEF_USE_SEDIMENT       = .true.
+   DEF_SED_DIAMETER    = "0.00002,0.0002,0.002"   ! 粉砂/细砂/粗砂 [m]
+   DEF_SED_LAMBDA      = 0.4       ! 孔隙率
+   DEF_SED_LYRDPH      = 0.001   ! 活动层厚度 [m]
+   DEF_SED_DENSITY     = 2.65      ! 泥沙密度 [g/cm3]
+   DEF_SED_TOTLYRNUM   = 3         ! 沉积层数
+   DEF_SED_DT_MAX      = 1800.     ! 泥沙子步最大时长 [s]
+   DEF_SED_PSET        = 0.5       ! 沉降速度系数
+   DEF_SED_PYLD        = 0.01      ! 产沙系数
+   DEF_SED_PYLDC       = 2.0       ! 坡度指数
+   DEF_SED_PYLDPC      = 2.0       ! 降水指数
+   DEF_SED_DSYLUNIT    = 1.0e-6    ! 单位转换
+   DEF_SED_IGNORE_DPH = 0.02       ! 泥沙过程最小有效水深阈值
+
+   ! soil state init
+   DEF_USE_SoilInit  = .true.
+   DEF_file_SoilInit = '/XYFS01/HDD_POOL/sysu_yjdai2/SHARE01/CoLMdata/CoLMruntime/soilstate.nc' 
+   ! ----- land units and land sets -----
+   ! for GRIDBASED
+   DEF_GRIDBASED_lon_res = 0.1
+   DEF_GRIDBASED_lat_res = 0.1
+
+   ! ----- forcing -----
+   ! Options :
+   ! PRINCETON | GSWP3   | QIAN  | CRUNCEPV4 | CRUNCEPV7 | ERA5LAND | ERA5  |  MSWX
+   ! WFDE5     | CRUJRA  | WFDEI | JRA55     | GDAS      | CMFD     | POINT |  JRA3Q
+   DEF_forcing_namelist = '/HOME/sysu_yjdai2/sysu_yjdai2xy_4/HDD_POOL/CoLM202X_20260305/run/forcing/ERA5LAND.nml'
+
+   ! ----- history -----
+   DEF_hist_lon_res = 0.1
+   DEF_hist_lat_res = 0.1
+   DEF_WRST_FREQ = 'MONTHLY' ! write restart file frequency: HOURLY/DAILY/MONTHLY/YEARLY
+   DEF_HIST_FREQ = 'DAILY' ! write history file frequency: HOURLY/DAILY/MONTHLY/YEARLY
+   DEF_HIST_groupby = 'MONTH' ! history in one file: DAY/MONTH/YEAR
+
+   DEF_hist_vars_out_default = .true.
+   !DEF_HIST_vars_namelist = '/HOME/sysu_yjdai2/sysu_yjdai2xy_4/HDD_POOL/CoLM202X_20260305/run/history.nml'
+
+/

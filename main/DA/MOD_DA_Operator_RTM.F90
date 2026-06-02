@@ -1,7 +1,7 @@
 #include <define.h>
 
 #ifdef DataAssimilation
-MODULE MOD_DA_RTM
+MODULE MOD_DA_Operator_RTM
 !-----------------------------------------------------------------------
 ! DESCRIPTION:
 !    Forward modeling of brightness temperature observations
@@ -14,15 +14,15 @@ MODULE MOD_DA_RTM
    USE MOD_Precision
    USE MOD_Const_Physical
    USE MOD_Vars_1DForcing
-   USE MOD_DA_Const
+   USE MOD_DA_Operator_Const
    USE MOD_SPMD_Task
-   USE MOD_Vars_Global, only: nl_soil, nl_lake, N_land_classification
+   USE MOD_Vars_Global, only: nl_soil, nl_lake, N_land_classification, maxsnl, spval, dz_soi
    USE MOD_Namelist
    IMPLICIT NONE
    SAVE
 
 ! public functions
-   PUBLIC   :: forward
+   PUBLIC   :: PM_RTM
 
 ! local variables (parameters depends on frequency and incidence angle of satellite)
    real(r8) :: fghz                       ! frequency of satellite (GHz)
@@ -40,24 +40,20 @@ CONTAINS
 
 !-----------------------------------------------------------------------
 
-   SUBROUTINE forward( &
+   SUBROUTINE PM_RTM ( &
       patchtype, patchclass, dz_sno, &
       forc_topo, htop, &
       tref, t_soisno, tleaf, &
-      wliq_soisno, wice_soisno, h2osoi, &
+      wliq_soisno, wice_soisno, &
       snowdp, lai, sai, &
       wf_clay, wf_sand, wf_silt, BD_all, porsl, &
       sat_theta, sat_fghz, &
-      tb_toa_h, tb_toa_v)
+      tb_toa_h)
 
 !-----------------------------------------------------------------------
 ! DESCRIPTION:
 !   Forward modeling of brightness temperature observations
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
-      USE MOD_Vars_Global, only: nl_soil, nl_lake, maxsnl, spval, dz_soi
-      USE MOD_DA_Const
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -71,7 +67,6 @@ CONTAINS
       real(r8), intent(in)  :: t_soisno(maxsnl + 1:nl_soil)     ! soil temperature [K]
       real(r8), intent(in)  :: wliq_soisno(maxsnl + 1:nl_soil)  ! liquid water in layers [kg/m2]
       real(r8), intent(in)  :: wice_soisno(maxsnl + 1:nl_soil)  ! ice lens in layers [kg/m2]
-      real(r8), intent(in)  :: h2osoi(nl_soil)                  ! volumetric soil water in layers [m3/m3]
       real(r8), intent(in)  :: snowdp                           ! snow depth [meter]
       real(r8), intent(in)  :: lai                              ! leaf area index
       real(r8), intent(in)  :: sai                              ! stem area index
@@ -83,7 +78,7 @@ CONTAINS
       real(r8), intent(in)  :: sat_theta                        ! incidence angle of satellite (rad)
       real(r8), intent(in)  :: sat_fghz                         ! frequency of satellite (GHz)
       real(r8), intent(out) :: tb_toa_h                         ! brightness temperature of top-of-atmosphere for H- polarization
-      real(r8), intent(out) :: tb_toa_v                         ! brightness temperature of top-of-atmosphere for V- polarization
+      !real(r8), intent(out) :: tb_toa_v                         ! brightness temperature of top-of-atmosphere for V- polarization
 
 !----------------------- Local Variables -------------------------------
       logical  :: is_low_veg                  ! flag for low vegetation
@@ -315,9 +310,9 @@ CONTAINS
       END IF
 
       tb_toa_h = tb_toa(1)
-      tb_toa_v = tb_toa(2)
+      !tb_toa_v = tb_toa(2)
 
-   END SUBROUTINE forward
+   END SUBROUTINE PM_RTM
 
 
 !-----------------------------------------------------------------------
@@ -325,8 +320,6 @@ CONTAINS
    SUBROUTINE calc_parameters (sat_theta, sat_fghz)
 
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_DA_Const
       IMPLICIT NONE
 
 !------------------------ Dummy Argument -------------------------------
@@ -357,8 +350,6 @@ CONTAINS
 !   [1] Pellarin, T., et al. (2003), Two-year global simulation of L-band brightness
 !       temperature over land, IEEE Trans. Geosci. Remote Sens., 41, 2135–2139.
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -408,8 +399,6 @@ CONTAINS
 !       Description and calibration against experimental
 !       data sets over crop fields" Remote Sensing of Environment. Vol. 107, pp. 639-655k
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -470,13 +459,13 @@ CONTAINS
          END IF
 
          ! caculate dielectric constant in mixed soil
-         IF (DEF_DA_RTM_diel == 0) THEN
+         IF (DEF_DA_OPERATOR_RTM_DIEL == 0) THEN
             CALL diel_soil_W80 (ew, t_surf, liq_surf, wf_sand_surf, wf_clay_surf, porsl_surf, eps_soil)
-         ELSE IF (DEF_DA_RTM_diel == 1) THEN
+         ELSE IF (DEF_DA_OPERATOR_RTM_DIEL == 1) THEN
             CALL diel_soil_D85 (ew, liq_surf, wf_sand_surf, wf_clay_surf, BD_all_surf, eps_soil)
-         ELSE IF (DEF_DA_RTM_diel == 2) THEN
+         ELSE IF (DEF_DA_OPERATOR_RTM_DIEL == 2) THEN
             CALL diel_soil_M04 (liq_surf, wf_clay_surf, eps_soil)
-         ELSE IF (DEF_DA_RTM_diel == 3) THEN
+         ELSE IF (DEF_DA_OPERATOR_RTM_DIEL == 3) THEN
             CALL diel_soil_M09 (liq_surf, t_surf, wf_clay_surf, eps_soil)
          ENDIF
       END IF
@@ -512,7 +501,6 @@ CONTAINS
 !       temperature in microwave radiometry using in situ temperature
 !       and soil moisture measurements
 !-----------------------------------------------------------------------
-      USE MOD_Precision
       IMPLICIT NONE
 
 ! ------------------------ Dummy Argument ------------------------------
@@ -552,8 +540,6 @@ CONTAINS
 !   [1] Matzler, C. (2006). Thermal Microwave Radiation: Applications
 !       for Remote Sensing p456-461
 !-----------------------------------------------------------------------
-      USE MOD_Const_Physical
-      USE MOD_Precision
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -616,8 +602,6 @@ CONTAINS
 !       frequencies, IEEE Transactions on  Antennas and Propagation,
 !       Vol. AP-25, No. 1, 104-111.
 !-----------------------------------------------------------------------
-      USE MOD_Const_Physical
-      USE MOD_Precision
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -696,8 +680,6 @@ CONTAINS
 !   complex dielectric permittivity of soils as a function of water
 !   content. IEEE Trans. Geosci. Rem. Sens., GE-18, No. 4, 288-295.
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 ! ------------------------ Dummy Argument ------------------------------
@@ -767,8 +749,6 @@ CONTAINS
 !       Dielectric Model for Moist Soils. IEEE Trans. Geosc. Rem. Sens.,
 !       vol 47 (7), 2059-2070. 2009.
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 ! ------------------------ Dummy Argument ------------------------------
@@ -848,8 +828,6 @@ CONTAINS
 !   [2] Mironov et al, Physically and Mineralogically Based Spectroscopic Dielectric
 !       Model for Moist Soils. IEEE Trans. Geosc. Rem. Sens., vol 47 (7), 2059-2070. 2009.
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 ! ------------------------ Dummy Argument ------------------------------
@@ -976,8 +954,6 @@ CONTAINS
 !       IEEE Trans. Geosc. Rem. Sens., vol. 33, p. 1340, November 1995
 
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 ! ------------------------ Dummy Argument ------------------------------
@@ -1020,7 +996,6 @@ CONTAINS
 !       of near-surface soil moisture. Journal of Geophysical Research,
 !       Vol. 82, No. 20, 3108-3118.
 !-----------------------------------------------------------------------
-      USE MOD_Precision
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -1056,8 +1031,6 @@ CONTAINS
 !       A review of recent results and application to the L-band SMOS & SMAP soil moisture retrieval algorithms.
 !       Remote Sensing of Environment, 192, 238-262.
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_DA_Const
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -1085,19 +1058,19 @@ CONTAINS
          END IF
 
          ! calculate rough surface reflectivity (default settings used in [2])
-         IF (DEF_DA_RTM_rough == 0) THEN
+         IF (DEF_DA_OPERATOR_RTM_ROUGH == 0) THEN
             hr(:) = (2.0*kcm*rgh_surf)**2.0
             nrh(:) = 0.0
             nrv(:) = 0.0
-         ELSE IF (DEF_DA_RTM_rough == 1) THEN
+         ELSE IF (DEF_DA_OPERATOR_RTM_ROUGH == 1) THEN
             hr(:) = hr_SMOS
             nrh(:) = 2.0
             nrv(:) = 0.0
-         ELSE IF (DEF_DA_RTM_rough == 2) THEN
+         ELSE IF (DEF_DA_OPERATOR_RTM_ROUGH == 2) THEN
             hr(:) = hr_SMAP
             nrh(:) = 2.0
             nrv(:) = 2.0
-         ELSE IF (DEF_DA_RTM_rough == 3) THEN
+         ELSE IF (DEF_DA_OPERATOR_RTM_ROUGH == 3) THEN
             hr(:) = hr_P16
             nrh(:) = -1.0
             nrv(:) = -1.0
@@ -1123,9 +1096,6 @@ CONTAINS
 !      Theory compared with satellite measurements.
 !      IEEE Transactions on Geoscience and Remote Sensing, 46, 361–375.
 !-----------------------------------------------------------------------
-
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -1183,8 +1153,6 @@ CONTAINS
 !       data sets over crop fields" Remote Sensing of Environment. Vol. 107, pp. 639-655k
 !
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -1242,8 +1210,6 @@ CONTAINS
 !
 !   [4] Microwave remote sensing : active and passive
 !-----------------------------------------------------------------------
-      USE MOD_Precision
-      USE MOD_Const_Physical
       IMPLICIT NONE
 
 !------------------------ Dummy Argument ------------------------------
@@ -1427,5 +1393,5 @@ CONTAINS
 
    END SUBROUTINE snow
 !-----------------------------------------------------------------------
-END MODULE MOD_DA_RTM
+END MODULE MOD_DA_Operator_RTM
 #endif

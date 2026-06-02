@@ -470,17 +470,73 @@ MODULE MOD_Namelist
 ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! ----- Part 13: data assimilation -----
 ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   character(len=256) :: DEF_DA_obsdir     = 'null'
-   logical            :: DEF_DA_TWS        = .false.
-   logical            :: DEF_DA_TWS_GRACE  = .false.
-   logical            :: DEF_DA_SM         = .false.
-   integer            :: DEF_DA_ENS_NUM    = 20
-   logical            :: DEF_DA_ENS_SM     = .false.
-   logical            :: DEF_DA_SM_SMAP    = .false.
-   logical            :: DEF_DA_SM_FY      = .false.
-   logical            :: DEF_DA_SM_SYNOP   = .false.
-   integer            :: DEF_DA_RTM_diel   = 0
-   integer            :: DEF_DA_RTM_rough  = 0
+!---------------------------------------------------------------------------------
+! DEF_DA_OBS_DIR
+!    Root directory of all observation files used by data assimilation.
+!
+! DEF_DA_OBS_SOURCE(:)
+!    Observation source type for each configured observation stream.
+!    Supported examples: 'PM', 'GNOS', 'AM', 'situ', 'GRACE', 'SR'
+!
+! DEF_DA_OBS_SENSOR(:)
+!    Sensor or product name for each observation stream. This name is also used
+!    to locate source-specific observation files when applicable.
+!    Examples: 'SMAP_L1C_D', 'FY3D_L1', 'CYGNSS', 'ISMN', etc.
+!
+! DEF_DA_OBS_VAR(:)
+!    Observed variable name for each stream.
+!    Examples: 'TB', 'SM', 'DDM'.
+!
+! DEF_DA_OBS_TARGET(:)
+!    Assimilation target controlled by each observation stream.
+!    Examples: 'SM' for soil moisture, 'ST' for soil temperature, 'SNOW' for
+!    snow-related variables.
+!
+! DEF_DA_OBS_FGHZ(:)
+!    Sensor frequency in GHz used by observation operators when needed.
+!    Mainly used by passive-microwave brightness temperature operators.
+!
+! DEF_DA_ENS_NUM
+!    Number of ensemble members used by DA.
+!
+! DEF_DA_ENS_SM
+!    Enable ensemble perturbations or ensemble DA workflow for soil moisture.
+!
+! DEF_DA_OPERATOR_RTM_DIEL
+!    Dielectric model option used by the radiative transfer observation operator.
+!
+! DEF_DA_OPERATOR_RTM_ROUGH
+!    Surface roughness model option used by the radiative transfer observation
+!    operator.
+!
+! DEF_DA_ASSIM_SM_DRES
+!    Search radius used to select observations around each target patch for soil
+!    moisture assimilation. Unit follows the current observation search logic.
+!
+! DEF_DA_ASSIM_SM_LOCR
+!    Localization radius used to inflate observation error with patch-observation
+!    distance in soil moisture assimilation.
+!
+! DEF_DA_ASSIM_SM_INFL
+!    Inflation factor used to inflate the analysis ensemble spread after soil
+!    moisture assimilation.
+!---------------------------------------------------------------------------------
+   character(len=256) :: DEF_DA_OBS_DIR            = ''
+   character(len=16)  :: DEF_DA_OBS_SOURCE(10)     = ''
+   character(len=16)  :: DEF_DA_OBS_SENSOR(10)     = ''
+   character(len=16)  :: DEF_DA_OBS_VAR(10)        = ''
+   character(len=16)  :: DEF_DA_OBS_TARGET(10)     = ''
+   real(r8)           :: DEF_DA_OBS_FGHZ(10)       = 1.4
+
+   integer            :: DEF_DA_ENS_NUM            = 20
+   logical            :: DEF_DA_ENS_SM             = .false.  ! (optional)
+
+   integer            :: DEF_DA_OPERATOR_RTM_DIEL  = 0
+   integer            :: DEF_DA_OPERATOR_RTM_ROUGH = 0
+
+   real(r8)           :: DEF_DA_ASSIM_SM_DRES      = 0.4
+   real(r8)           :: DEF_DA_ASSIM_SM_LOCR      = 40.0
+   real(r8)           :: DEF_DA_ASSIM_SM_INFL      = 1.0
 
 ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! ----- Part 14: parameter optimization -----
@@ -912,22 +968,15 @@ MODULE MOD_Namelist
       logical :: t_lake                           = .true.
       logical :: lake_icefrac                     = .true.
 
-      logical :: DA_wliq_h2osoi_5cm               = .true.
-      logical :: DA_wliq_h2osoi_5cm_a             = .true.
-      logical :: DA_t_soisno_5cm                  = .true.
-      logical :: DA_t_soisno_5cm_a                = .true.
-      logical :: DA_wliq_soisno_ens               = .true.
-      logical :: DA_t_soisno_ens                  = .true.
-      logical :: DA_wliq_soisno_5cm_ens_std       = .true.
-      logical :: DA_t_soisno_5cm_ens_std          = .true.
-      logical :: DA_t_brt_smap                    = .true.
-      logical :: DA_t_brt_smap_a                  = .true.
-      logical :: DA_t_brt_smap_ens                = .true.
-      logical :: DA_t_brt_smap_ens_std            = .true.
-      logical :: DA_t_brt_fy3d                    = .true.
-      logical :: DA_t_brt_fy3d_a                  = .true.
-      logical :: DA_t_brt_fy3d_ens                = .true.
-      logical :: DA_t_brt_fy3d_ens_std            = .true.
+      logical :: DA_wliq_soisno_ol                = .false.
+      logical :: DA_wliq_soisno_f                 = .false.
+      logical :: DA_wliq_soisno_a                 = .false.
+      logical :: DA_wliq_soisno_ens               = .false.
+      logical :: hx_ol                            = .false.
+      logical :: hx_f                             = .false.
+      logical :: hx_a                             = .false.
+      logical :: hx_f_ens                         = .false.
+      logical :: hx_a_ens                         = .false.
 
       logical :: litr1c_vr                        = .true.
       logical :: litr2c_vr                        = .true.
@@ -1215,17 +1264,19 @@ CONTAINS
       DEF_UnitCatchment_file,                 &
       DEF_ReservoirPara_file,                 &
 
-      DEF_DA_obsdir,                          &
-      DEF_DA_TWS,                             &
-      DEF_DA_TWS_GRACE,                       &
-      DEF_DA_SM,                              &
+      DEF_DA_OBS_DIR,                         &
+      DEF_DA_OBS_SOURCE,                      &
+      DEF_DA_OBS_SENSOR,                      &
+      DEF_DA_OBS_VAR,                         &
+      DEF_DA_OBS_TARGET,                      &
+      DEF_DA_OBS_FGHZ,                        &
       DEF_DA_ENS_NUM,                         &
       DEF_DA_ENS_SM,                          &
-      DEF_DA_SM_SMAP,                         &
-      DEF_DA_SM_FY,                           &
-      DEF_DA_SM_SYNOP,                        &
-      DEF_DA_RTM_diel,                        &
-      DEF_DA_RTM_rough,                       &
+      DEF_DA_OPERATOR_RTM_DIEL,               &
+      DEF_DA_OPERATOR_RTM_ROUGH,              &
+      DEF_DA_ASSIM_SM_DRES,                   &
+      DEF_DA_ASSIM_SM_LOCR,                   &
+      DEF_DA_ASSIM_SM_INFL,                   &
 
       DEF_Optimize_Baseflow,                  &
 
@@ -1795,17 +1846,19 @@ CONTAINS
       CALL mpi_bcast (DEF_UnitCatchment_file                 ,256 ,mpi_character ,p_address_master ,p_comm_glb ,p_err)
       CALL mpi_bcast (DEF_ReservoirPara_file                 ,256 ,mpi_character ,p_address_master ,p_comm_glb ,p_err)
 
-      CALL mpi_bcast (DEF_DA_obsdir                          ,256 ,mpi_character ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_TWS                             ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_TWS_GRACE                       ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_SM                              ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_DA_OBS_DIR                         ,256 ,mpi_character ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_DA_OBS_SOURCE                      ,160,mpi_character ,p_address_master ,p_comm_glb  ,p_err)
+      CALL mpi_bcast (DEF_DA_OBS_SENSOR                      ,160,mpi_character ,p_address_master ,p_comm_glb  ,p_err)
+      CALL mpi_bcast (DEF_DA_OBS_VAR                         ,160,mpi_character ,p_address_master ,p_comm_glb  ,p_err)
+      CALL mpi_bcast (DEF_DA_OBS_TARGET                      ,160,mpi_character ,p_address_master ,p_comm_glb  ,p_err)
+      CALL mpi_bcast (DEF_DA_OBS_FGHZ                        ,10  ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
       CALL mpi_bcast (DEF_DA_ENS_NUM                         ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
       CALL mpi_bcast (DEF_DA_ENS_SM                          ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_SM_SMAP                         ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_SM_FY                           ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_SM_SYNOP                        ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_RTM_diel                        ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_DA_RTM_rough                       ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_DA_OPERATOR_RTM_DIEL               ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_DA_OPERATOR_RTM_ROUGH              ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_DA_ASSIM_SM_DRES                   ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_DA_ASSIM_SM_LOCR                   ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
+      CALL mpi_bcast (DEF_DA_ASSIM_SM_INFL                   ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
 
       CALL mpi_bcast (DEF_Optimize_Baseflow                  ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
 
@@ -2364,22 +2417,15 @@ CONTAINS
       ENDIF
 
 #ifdef DataAssimilation
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_wliq_h2osoi_5cm        , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_wliq_h2osoi_5cm_a      , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_soisno_5cm           , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_soisno_5cm_a         , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%DA_wliq_soisno_ol         , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%DA_wliq_soisno_f          , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%DA_wliq_soisno_a          , set_defaults)
       CALL sync_hist_vars_one (DEF_hist_vars%DA_wliq_soisno_ens        , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_soisno_ens           , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_wliq_soisno_5cm_ens_std, set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_soisno_5cm_ens_std   , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_smap             , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_smap_a           , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_smap_ens         , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_smap_ens_std     , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_fy3d             , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_fy3d_a           , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_fy3d_ens         , set_defaults)
-      CALL sync_hist_vars_one (DEF_hist_vars%DA_t_brt_fy3d_ens_std     , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%hx_ol                     , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%hx_f                      , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%hx_a                      , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%hx_f_ens                  , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%hx_a_ens                  , set_defaults)
 #endif
 
       CALL sync_hist_vars_one (DEF_hist_vars%t_soisno    , set_defaults)

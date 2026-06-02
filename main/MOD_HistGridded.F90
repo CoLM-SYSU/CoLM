@@ -237,7 +237,7 @@ CONTAINS
 
    SUBROUTINE flux_map_and_write_3d ( &
          acc_vec, file_hist, varname, itime_in_file, dim1name, lb1, ndim1, sumarea, filter, &
-         longname, units)
+         longname, units, filter_3d)
 
    USE MOD_Block
    USE MOD_Vars_1DAccFluxes,  only: nac
@@ -253,19 +253,41 @@ CONTAINS
 
    type(block_data_real8_2d), intent(in) :: sumarea
    logical, intent(in) :: filter(:)
+   logical, intent(in), optional :: filter_3d(:,:)
    character (len=*), intent(in) :: longname
    character (len=*), intent(in) :: units
 
    ! Local variables
    type(block_data_real8_3d) :: flux_xy_3d
+   type(block_data_real8_3d) :: sumarea_3d
+   type(block_data_real8_2d) :: sumarea_one_source
    integer :: iblkme, xblk, yblk, xloc, yloc, i1
    integer :: compress
+   real(r8) :: area_den
 
       IF (p_is_worker)  THEN
          WHERE (acc_vec /= spval)  acc_vec = acc_vec / nac
       ENDIF
       IF (p_is_io) THEN
          CALL allocate_block_data (ghist, flux_xy_3d, ndim1, lb1)
+         IF (present(filter_3d)) THEN
+            CALL allocate_block_data (ghist, sumarea_3d, ndim1, lb1)
+            CALL allocate_block_data (ghist, sumarea_one_source)
+         ENDIF
+      ENDIF
+
+      IF (present(filter_3d)) THEN
+         DO i1 = lb1, lb1 + ndim1 - 1
+            CALL mp2g_hist%get_sumarea(sumarea_one_source, filter_3d(i1,:))
+            IF (p_is_io) THEN
+               DO iblkme = 1, gblock%nblkme
+                  xblk = gblock%xblkme(iblkme)
+                  yblk = gblock%yblkme(iblkme)
+                  sumarea_3d%blk(xblk,yblk)%val(i1,:,:) = &
+                     sumarea_one_source%blk(xblk,yblk)%val(:,:)
+               ENDDO
+            ENDIF
+         ENDDO
       ENDIF
 
       CALL mp2g_hist%pset2grid (acc_vec, flux_xy_3d, spv = spval, msk = filter)
@@ -281,9 +303,19 @@ CONTAINS
                   IF (sumarea%blk(xblk,yblk)%val(xloc,yloc) > 0.00001) THEN
                      DO i1 = flux_xy_3d%lb1, flux_xy_3d%ub1
                         IF (flux_xy_3d%blk(xblk,yblk)%val(i1,xloc,yloc) /= spval) THEN
-                           flux_xy_3d%blk(xblk,yblk)%val(i1,xloc,yloc) &
-                              = flux_xy_3d%blk(xblk,yblk)%val(i1,xloc,yloc) &
-                              / sumarea%blk(xblk,yblk)%val(xloc,yloc)
+                           IF (present(filter_3d)) THEN
+                              area_den = sumarea_3d%blk(xblk,yblk)%val(i1,xloc,yloc)
+                           ELSE
+                              area_den = sumarea%blk(xblk,yblk)%val(xloc,yloc)
+                           ENDIF
+
+                           IF (area_den > 0.00001_r8) THEN
+                              flux_xy_3d%blk(xblk,yblk)%val(i1,xloc,yloc) &
+                                 = flux_xy_3d%blk(xblk,yblk)%val(i1,xloc,yloc) &
+                                 / area_den
+                           ELSE
+                              flux_xy_3d%blk(xblk,yblk)%val(i1,xloc,yloc) = spval
+                           ENDIF
                         ENDIF
                      ENDDO
                   ELSE

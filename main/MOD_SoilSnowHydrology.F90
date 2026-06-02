@@ -7,8 +7,8 @@ MODULE MOD_SoilSnowHydrology
    USE MOD_Namelist, only: DEF_USE_PLANTHYDRAULICS, DEF_USE_SNICAR,        &
                            DEF_URBAN_RUN,           DEF_USE_IRRIGATION,    &
                            DEF_SPLIT_SOILSNOW,      DEF_Runoff_SCHEME,     &
-                           DEF_DA_TWS_GRACE,        DEF_Optimize_Baseflow, &
-                           DEF_USE_Dynamic_Wetland
+                           DEF_Optimize_Baseflow,  &
+                           DEF_USE_Dynamic_Wetland, DEF_DA_OBS_TARGET
 #if (defined CaMa_Flood)
    USE YOS_CMF_INPUT,      only: LWINFILT
 #endif
@@ -547,7 +547,7 @@ ENDIF
    USE MOD_Vars_1DFluxes,       only: fevpg
    USE MOD_Opt_Baseflow,        only: scale_baseflow
 #ifdef DataAssimilation
-   USE MOD_DA_TWS, only: fslp_k
+   USE MOD_DA_Assim_TWS,        only: fslp_k
 #endif
 #ifdef CROP
    USE MOD_Vars_Global, only : irrig_method_paddy, pondmxc
@@ -873,7 +873,7 @@ IF((patchtype<=1) .or. is_dry_lake &
          rsubst = rsubst * scale_baseflow(ipatch)
 
 #ifdef DataAssimilation
-         IF (DEF_DA_TWS_GRACE) THEN
+         IF (ANY(DEF_DA_OBS_TARGET == 'TWS')) THEN
             rsur = max(min(rsur * fslp_k(ipatch), gwat), 0.)
             rsubst = rsubst * fslp_k(ipatch)
          ENDIF

@@ -27,7 +27,7 @@ CONTAINS
 
     SUBROUTINE letkf (&
         num_ens, num_obs, &
-        HA, y, R, infl, &
+        hx, y, R, infl, &
         trans)
 
 !-----------------------------------------------------------------------------
@@ -43,18 +43,18 @@ CONTAINS
 !------------------------ Dummy Arguments ------------------------------------
     integer, intent(in)     :: num_ens                              ! ensemble size
     integer, intent(in)     :: num_obs                              ! number of observations
-    real(r8), intent(in)    :: HA(num_obs, num_ens)                 ! ensemble predicted observation matrix
+    real(r8), intent(in)    :: hx(num_obs, num_ens)                 ! ensemble H(x) matrix
     real(r8), intent(in)    :: y(num_obs)                           ! observation vector
     real(r8), intent(in)    :: R(num_obs)                           ! observation error variance
     real(r8), intent(in)    :: infl                                 ! inflation factor
     real(r8), intent(out)   :: trans(num_ens, num_ens)              ! transform matrix (k x k)
 
 !------------------------ Local Variables ------------------------------------
-    real(r8) :: HA_mean(num_obs)                    ! mean of ensemble predicted observation (l)
-    real(r8) :: dHA(num_obs, num_ens)               ! HA - mean(HA) (l x k)
-    real(r8) :: dHA_t(num_ens, num_obs)             ! transpose of dHA (k x l)
-    real(r8) :: C(num_ens, num_obs)                 ! C = (dHA)^T * (R)^-1 (k x l)
-    real(r8) :: M1(num_ens, num_ens)                ! C * dHA (k x k)
+    real(r8) :: hx_mean(num_obs)                    ! mean of ensemble H(x) (l)
+    real(r8) :: dhx(num_obs, num_ens)               ! hx - mean(hx) (l x k)
+    real(r8) :: dhx_t(num_ens, num_obs)             ! transpose of dhx (k x l)
+    real(r8) :: C(num_ens, num_obs)                 ! C = (dhx)^T * (R)^-1 (k x l)
+    real(r8) :: M1(num_ens, num_ens)                ! C * dhx (k x k)
     real(r8) :: pa_inv(num_ens, num_ens)            ! inverse of background error covariance matrix (k x k)
     real(r8) :: eigval(num_ens)                     ! eigenvalues of pa_inv (k)
     real(r8) :: eigvec(num_ens, num_ens)            ! eigenvectors of pa_inv (k x k)
@@ -75,19 +75,19 @@ CONTAINS
 !-----------------------------------------------------------------------------
 
         ! calculate observation space perturbation
-        HA_mean = sum(HA, dim=2) / size(HA, dim=2)   !(lx1)
+        hx_mean = sum(hx, dim=2) / size(hx, dim=2)   !(lx1)
         DO j = 1, num_ens
-            dHA(:,j) = HA(:,j) - HA_mean !(lxk)
+            dhx(:,j) = hx(:,j) - hx_mean !(lxk)
         ENDDO
 
         ! calculate C, intermediate matrix in localized observation
-        dHA_t = transpose(dHA) !(kxl)
+        dhx_t = transpose(dhx) !(kxl)
         DO j = 1, num_obs
-            C(:,j) = dHA_t(:,j) / (R(j)) !(kxl)
+            C(:,j) = dhx_t(:,j) / (R(j)) !(kxl)
         ENDDO
 
-        ! calculate C*dHA, intermediate matrix in background error M1
-        CALL dgemm('N', 'N', num_ens, num_ens, num_obs, 1.0_8, C, num_ens, dHA, num_obs, 0.0_8, M1, num_ens)
+        ! calculate C*dhx, intermediate matrix in background error M1
+        CALL dgemm('N', 'N', num_ens, num_ens, num_obs, 1.0_8, C, num_ens, dhx, num_obs, 0.0_8, M1, num_ens)
 
         ! calculate inverse of background error
         pa_inv = M1
@@ -120,7 +120,7 @@ CONTAINS
         CALL dgemm('N', 'N', num_ens, num_obs, num_ens, 1.0_8, pa, num_ens, C, num_ens, 0.0_8, M3, num_ens) !(kxl)
 
         ! calculate weight
-        delta = y - HA_mean
+        delta = y - hx_mean
         CALL dgemm('N', 'N', num_ens, 1, num_obs, 1.0_8, M3, num_ens, delta, num_obs, 0.0_8, w_avg, num_ens) !(kx1)
 
         ! calculate pertubation transform matrix

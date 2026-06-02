@@ -1,7 +1,7 @@
 #include <define.h>
 
 #ifdef DataAssimilation
-MODULE MOD_DA_Const
+MODULE MOD_DA_Operator_Const
 !-----------------------------------------------------------------------
 ! DESCRIPTION:
 ! 1. Define constants (do not rely on satellite parameters) used in RTM.
@@ -137,6 +137,6 @@ MODULE MOD_DA_Const
           0.000, 0.000/)  
 #endif
 
-END MODULE MOD_DA_Const
+END MODULE MOD_DA_Operator_Const
 !-----------------------------------------------------------------------------
 #endif

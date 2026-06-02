@@ -513,6 +513,32 @@ CONTAINS
 
    END SUBROUTINE ticktime
 
+   SUBROUTINE backtime(deltim, idate)
+
+   IMPLICIT NONE
+
+   real(r8),intent(in)    :: deltim
+   integer, intent(inout) :: idate(3)
+   integer maxday
+
+      idate(3) = idate(3) - nint(deltim)
+      IF (idate(3) < 0) THEN
+         idate(2) = idate(2) - 1
+         idate(3) = idate(3) + 86400
+
+         IF (idate(2) < 1) THEN
+            idate(1) = idate(1) - 1
+            IF ( isleapyear(idate(1)) ) THEN
+               maxday = 366
+            ELSE
+               maxday = 365
+            ENDIF
+            idate(2) = maxday
+         ENDIF
+      ENDIF
+
+   END SUBROUTINE backtime
+
    real(r8) FUNCTION calendarday_date(date)
 
    IMPLICIT NONE

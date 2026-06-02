@@ -5,7 +5,7 @@ HEADER = include/define.h
 
 INCLUDE_DIR = -Iinclude -I.bld/ -I${NETCDF_INC}
 VPATH = include : share : mksrfdata : mkinidata \
-	: main : main/HYDRO : main/BGC : main/URBAN : main/LULCC : main/DA \
+	: main : main/HYDRO : main/BGC : main/URBAN : main/LULCC : main/DA1 : main/DA \
 	: main/ParaOpt : extends/CaMa/src : postprocess : .bld
 
 # ********** Targets ALL **********
@@ -127,9 +127,9 @@ OBJS_BASIC =    \
 				 MOD_Urban_Vars_1DFluxes.o      \
 				 MOD_Urban_Vars_TimeVariables.o \
 				 MOD_Urban_Vars_TimeInvariants.o\
+				 MOD_DA_Vars_TimeVariables.o    \
 				 MOD_DA_Vars_1DFluxes.o         \
 				 MOD_Vars_TimeInvariants.o      \
-				 MOD_DA_Vars_TimeVariables.o    \
 				 MOD_Vars_TimeVariables.o       \
 				 MOD_Vars_1DPFTFluxes.o         \
 				 MOD_Vars_1DFluxes.o            \
@@ -285,12 +285,15 @@ OBJS_MAIN = \
 				MOD_UserSpecifiedForcing.o                \
 				MOD_ForcingDownscaling.o                  \
 				MOD_Forcing.o                             \
-				MOD_DA_TWS.o                              \
-				MOD_DA_Const.o                            \
-				MOD_DA_RTM.o                              \
+				MOD_DA_Assim_TWS.o                        \
+				MOD_DA_Operator_Const.o                   \
+				MOD_DA_Operator_RTM.o                     \
 				MOD_DA_EnKF.o                             \
-				MOD_DA_SM.o                               \
-				MOD_DA_Ensemble.o                         \
+				MOD_DA_Ens.o                              \
+				MOD_DA_Obs_BasicType.o                    \
+				MOD_DA_Obs_PM.o                          \
+				MOD_DA_Obs_SM.o                           \
+				MOD_DA_Assim_SM.o                         \
 				MOD_DA_Main.o                             \
 				MOD_Opt_Baseflow.o                        \
 				MOD_ParameterOptimization.o               \
@@ -460,4 +463,3 @@ clean :
 	rm -f run/mksrfdata.x run/mkinidata.x run/colm.x
 	rm -f run/hist_concatenate.x run/srfdata_concatenate.x run/post_vector2grid.x
 	rm -f CaMa/src/*.o CaMa/src/*.mod CaMa/src/*.a
-

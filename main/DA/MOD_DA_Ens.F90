@@ -1,7 +1,7 @@
 #include <define.h>
 
 #ifdef DataAssimilation
-MODULE MOD_DA_Ensemble
+MODULE MOD_DA_Ens
 !-----------------------------------------------------------------------
 ! DESCRIPTION:
 !    Provide functions to generate ensemble samples for data assimilation
@@ -26,6 +26,8 @@ MODULE MOD_DA_Ensemble
 
    ! public functions
    PUBLIC :: ensemble
+   PUBLIC :: model_to_ens_member
+   PUBLIC :: ens_member_to_model
 
    ! local parameters
    ! forcing [parameters used here is consistent with SMAP L4 (Table 4 in [1])]
@@ -89,8 +91,14 @@ CONTAINS
 
 !-----------------------------------------------------------------------
 
+      IF (mod(DEF_DA_ENS_NUM, 2) /= 0) THEN
+         print *, 'Error: DEF_DA_ENS_NUM must be even for Box-Muller ensemble sampling.'
+         CALL CoLM_stop()
+      ENDIF
+
       ! initialize persistent variables
       IF (.not. initialized) THEN
+         CALL random_seed()
          allocate(r_prev(numpatch, nvar, DEF_DA_ENS_NUM))
          allocate(r_curr(numpatch, nvar, DEF_DA_ENS_NUM))
          allocate(r_prev_sm(numpatch, nvar_sm, DEF_DA_ENS_NUM))
@@ -133,7 +141,6 @@ CONTAINS
       ! Generate ensemble samples for forcing variables
       DO np = 1, numpatch
          ! generate disturbance ensemble samples ~ N(0, I)
-         CALL random_seed()
          CALL random_number(u1)
          CALL random_number(u2)
          DO i = 1, DEF_DA_ENS_NUM/2
@@ -141,7 +148,6 @@ CONTAINS
             z(1,i*2-1) = sqrt(-2.0*log(u1(i))) * cos(2.0*pi*u2(i))
             z(1,i*2)   = sqrt(-2.0*log(u1(i))) * sin(2.0*pi*u2(i))
          ENDDO
-         CALL random_seed()
          CALL random_number(u1)
          CALL random_number(u2)
          DO i = 1, DEF_DA_ENS_NUM/2
@@ -149,7 +155,6 @@ CONTAINS
             z(2,i*2-1) = sqrt(-2.0*log(u1(i))) * cos(2.0*pi*u2(i))
             z(2,i*2)   = sqrt(-2.0*log(u1(i))) * sin(2.0*pi*u2(i))
          ENDDO
-         CALL random_seed()
          CALL random_number(u1)
          CALL random_number(u2)
          DO i = 1, DEF_DA_ENS_NUM/2
@@ -157,7 +162,6 @@ CONTAINS
             z(3,i*2-1) = sqrt(-2.0*log(u1(i))) * cos(2.0*pi*u2(i))
             z(3,i*2)   = sqrt(-2.0*log(u1(i))) * sin(2.0*pi*u2(i))
          ENDDO
-         CALL random_seed()
          CALL random_number(u1)
          CALL random_number(u2)
          DO i = 1, DEF_DA_ENS_NUM/2
@@ -212,7 +216,6 @@ CONTAINS
 
          IF (DEF_DA_ENS_SM) THEN
             ! generate ensemble samples (0, I) for soil moisture
-            CALL random_seed()
             CALL random_number(u1)
             CALL random_number(u2)
             DO i = 1, DEF_DA_ENS_NUM/2
@@ -264,5 +267,163 @@ CONTAINS
    END SUBROUTINE ensemble
 
 !-----------------------------------------------------------------------
-END MODULE MOD_DA_Ensemble
+
+   SUBROUTINE model_to_ens_member(iens)
+
+!-----------------------------------------------------------------------
+      USE MOD_Vars_1DFluxes
+      USE MOD_DA_Vars_1DFluxes
+      IMPLICIT NONE
+
+!------------------------ Dummy Arguments ------------------------------
+      integer, intent(in) :: iens
+
+!-----------------------------------------------------------------------
+      z_sno_ens       (  :,iens,:) = z_sno
+      dz_sno_ens      (  :,iens,:) = dz_sno
+      t_soisno_ens    (  :,iens,:) = t_soisno
+      wliq_soisno_ens (  :,iens,:) = wliq_soisno
+      wice_soisno_ens (  :,iens,:) = wice_soisno
+      smp_ens         (  :,iens,:) = smp
+      hk_ens          (  :,iens,:) = hk
+      t_grnd_ens      (    iens,:) = t_grnd
+      tleaf_ens       (    iens,:) = tleaf
+      ldew_ens        (    iens,:) = ldew
+      ldew_rain_ens   (    iens,:) = ldew_rain
+      ldew_snow_ens   (    iens,:) = ldew_snow
+      fwet_snow_ens   (    iens,:) = fwet_snow
+      sag_ens         (    iens,:) = sag
+      scv_ens         (    iens,:) = scv
+      snowdp_ens      (    iens,:) = snowdp
+      fveg_ens        (    iens,:) = fveg
+      fsno_ens        (    iens,:) = fsno
+      sigf_ens        (    iens,:) = sigf
+      green_ens       (    iens,:) = green
+      tlai_ens        (    iens,:) = tlai
+      lai_ens         (    iens,:) = lai
+      tsai_ens        (    iens,:) = tsai
+      sai_ens         (    iens,:) = sai
+      alb_ens         (:,:,iens,:) = alb
+      ssun_ens        (:,:,iens,:) = ssun
+      ssha_ens        (:,:,iens,:) = ssha
+      ssoi_ens        (:,:,iens,:) = ssoi
+      ssno_ens        (:,:,iens,:) = ssno
+      thermk_ens      (    iens,:) = thermk
+      extkb_ens       (    iens,:) = extkb
+      extkd_ens       (    iens,:) = extkd
+      zwt_ens         (    iens,:) = zwt
+      wdsrf_ens       (    iens,:) = wdsrf
+      wa_ens          (    iens,:) = wa
+      wetwat_ens      (    iens,:) = wetwat
+      t_lake_ens      (  :,iens,:) = t_lake
+      lake_icefrac_ens(  :,iens,:) = lake_icefrac
+      savedtke1_ens   (    iens,:) = savedtke1
+
+      trad_ens  (iens,:)   = trad
+      tref_ens  (iens,:)   = tref
+      qref_ens  (iens,:)   = qref
+      ustar_ens (iens,:)   = ustar
+      qstar_ens (iens,:)   = qstar
+      tstar_ens (iens,:)   = tstar
+      fm_ens    (iens,:)   = fm
+      fh_ens    (iens,:)   = fh
+      fq_ens    (iens,:)   = fq
+
+      forc_t_ens    (iens,:) = forc_t
+      forc_prc_ens  (iens,:) = forc_prc
+      forc_prl_ens  (iens,:) = forc_prl
+      forc_sols_ens (iens,:) = forc_sols
+      forc_soll_ens (iens,:) = forc_soll
+      forc_solsd_ens(iens,:) = forc_solsd
+      forc_solld_ens(iens,:) = forc_solld
+      forc_frl_ens  (iens,:) = forc_frl
+
+      fsena_ens (iens,:) = fsena
+      lfevpa_ens(iens,:) = lfevpa
+      fevpa_ens (iens,:) = fevpa
+      rsur_ens  (iens,:) = rsur
+
+   END SUBROUTINE model_to_ens_member
+
+!-----------------------------------------------------------------------
+
+   SUBROUTINE ens_member_to_model(iens)
+
+!-----------------------------------------------------------------------
+      USE MOD_Vars_1DFluxes
+      USE MOD_DA_Vars_1DFluxes
+      IMPLICIT NONE
+
+!------------------------ Dummy Arguments ------------------------------
+      integer, intent(in) :: iens
+
+!-----------------------------------------------------------------------
+      forc_t     = forc_t_ens(iens,:)
+      forc_prc   = forc_prc_ens(iens,:)
+      forc_prl   = forc_prl_ens(iens,:)
+      forc_sols  = forc_sols_ens(iens,:)
+      forc_soll  = forc_soll_ens(iens,:)
+      forc_solsd = forc_solsd_ens(iens,:)
+      forc_solld = forc_solld_ens(iens,:)
+      forc_frl   = forc_frl_ens(iens,:)
+
+      z_sno        = z_sno_ens       (  :,iens,:)
+      dz_sno       = dz_sno_ens      (  :,iens,:)
+      t_soisno     = t_soisno_ens    (  :,iens,:)
+      wliq_soisno  = wliq_soisno_ens (  :,iens,:)
+      wice_soisno  = wice_soisno_ens (  :,iens,:)
+      smp          = smp_ens         (  :,iens,:)
+      hk           = hk_ens          (  :,iens,:)
+      t_grnd       = t_grnd_ens      (    iens,:)
+      tleaf        = tleaf_ens       (    iens,:)
+      ldew         = ldew_ens        (    iens,:)
+      ldew_rain    = ldew_rain_ens   (    iens,:)
+      ldew_snow    = ldew_snow_ens   (    iens,:)
+      fwet_snow    = fwet_snow_ens   (    iens,:)
+      sag          = sag_ens         (    iens,:)
+      scv          = scv_ens         (    iens,:)
+      snowdp       = snowdp_ens      (    iens,:)
+      fveg         = fveg_ens        (    iens,:)
+      fsno         = fsno_ens        (    iens,:)
+      sigf         = sigf_ens        (    iens,:)
+      green        = green_ens       (    iens,:)
+      tlai         = tlai_ens        (    iens,:)
+      lai          = lai_ens         (    iens,:)
+      tsai         = tsai_ens        (    iens,:)
+      sai          = sai_ens         (    iens,:)
+      alb          = alb_ens         (:,:,iens,:)
+      ssun         = ssun_ens        (:,:,iens,:)
+      ssha         = ssha_ens        (:,:,iens,:)
+      ssoi         = ssoi_ens        (:,:,iens,:)
+      ssno         = ssno_ens        (:,:,iens,:)
+      thermk       = thermk_ens      (    iens,:)
+      extkb        = extkb_ens       (    iens,:)
+      extkd        = extkd_ens       (    iens,:)
+      zwt          = zwt_ens         (    iens,:)
+      wdsrf        = wdsrf_ens       (    iens,:)
+      wa           = wa_ens          (    iens,:)
+      wetwat       = wetwat_ens      (    iens,:)
+      t_lake       = t_lake_ens      (  :,iens,:)
+      lake_icefrac = lake_icefrac_ens(  :,iens,:)
+      savedtke1    = savedtke1_ens   (    iens,:)
+
+      trad   = trad_ens(iens,:)
+      tref   = tref_ens(iens,:)
+      qref   = qref_ens(iens,:)
+      ustar  = ustar_ens(iens,:)
+      qstar  = qstar_ens(iens,:)
+      tstar  = tstar_ens(iens,:)
+      fm     = fm_ens(iens,:)
+      fh     = fh_ens(iens,:)
+      fq     = fq_ens(iens,:)
+
+      fsena  = fsena_ens(iens,:)
+      lfevpa = lfevpa_ens(iens,:)
+      fevpa  = fevpa_ens(iens,:)
+      rsur   = rsur_ens(iens,:)
+
+   END SUBROUTINE ens_member_to_model
+
+!-----------------------------------------------------------------------
+END MODULE MOD_DA_Ens
 #endif

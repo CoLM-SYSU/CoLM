@@ -80,9 +80,11 @@ Help()
    echo '          -g grid_g144x96 -s pc -m vg -b) Global 2.5x1.875; Lat-lon grid '
    echo '          cells; IGBP PC subgrid; vanGenuchten Mualem model; bgc on; crop '
    echo '          off; lulcc off; urban off; cama off'
-   echo '       6. SinglePt_US-Bo1_PC_VG'
+   echo '       6. SinglePt_${SITENAME}_PC_VG'
    echo '          equivalent to the custom configuration (-L SiteList -s pc -m vg '
-   echo '          -g single_US-Bo1); IGBP PFT subgrid;  vanGenuchten Mualem model; '
+   echo '          -g single_${SITENAME}); IGBP PC subgrid; vanGenuchten Mualem model; '
+   echo '          SITENAME must be presented in SITELIST.'
+   echo '          For example: SinglePt_IT-Isp_PC_VG, SinglePt_AT-Neu_PC_VG.'
    echo '          bgc off; crop off; lulcc off; urban off; cama off'
    echo 
    echo '   following option is only valid when "-c|--config" is absent, if '
@@ -319,7 +321,7 @@ if [ ! -z "$ConfigName" ]; then
    if [ ! -z "${SpinupScheme}" ];then
       echo "Warning: -c|--config option is present, ignore -i|--spinup $SpinupScheme option"
    fi
-   if [ ! -z "${SITELIST}" ];then
+   if [ ! -z "${SITELIST}" ] && [[ ! "${ConfigName}" == SinglePt_*_PC_VG ]];then
       echo "Warning: -c|--config option is present, ignore -L|--sitelist $SITELIST option"
    fi
    case $ConfigName in
@@ -625,7 +627,7 @@ if [ ! -z "$ConfigName" ]; then
 	 startyr=1980
          endyr=2023
 	 ;;
-      SinglePt_US-Bo1_PC_VG)
+      SinglePt_*_PC_VG)
 	 IsDefBGC="#undef"
          IsDefCrop="#undef"
 	 IsDefCaMa="#undef"
@@ -653,8 +655,11 @@ if [ ! -z "$ConfigName" ]; then
   	 nx_block=Null
 	 ny_block=Null
 	 nGroup=Null
-	 SITENAME=US-Bo1
-	 SITELIST=SiteList
+	 SITENAME=${ConfigName#SinglePt_}
+	 SITENAME=${SITENAME%_PC_VG}
+	 if [ -z "${SITELIST}" ];then
+	    SITELIST=SiteList
+	 fi
 	 if [ ! -f $SITELIST ];then
             echo "Error: site list $SITELIST does not exist"
 	    exit 1
@@ -668,7 +673,7 @@ if [ ! -z "$ConfigName" ]; then
 	 ;;
       *)
          echo "Error: the argument for the -c|--config option is incorret."
-	 echo "The argument -g $RConfigName is unknown. Check available option by -h|--help"
+	 echo "The argument -c $ConfigName is unknown. Check available option by -h|--help"
 	 exit
 	 ;;
    esac      
@@ -1370,4 +1375,3 @@ $IsDefLuLCC LULCC
 EOF
 
 ln -sf $MAKEOPTION bld/include/Makeoptions
-

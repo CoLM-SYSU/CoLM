@@ -433,6 +433,19 @@ CONTAINS
       dtl(0) = 0.
       fevpl_bef = 0.
 
+! ==== FIX 2026-08-16 #4b BEGIN: same ozone-off issue as in MOD_LeafTemperaturePC.
+! When DEF_USE_OZONESTRESS is off, o3coefv/o3coefg are used INSIDE the stability
+! iteration (gs0sun at line ~707) but were only set to 1.0 AFTER the iteration
+! (ELSE branch below), leaving spval at the first step after restart. Set them
+! to 1.0 BEFORE the iteration loop. ====
+      IF (.not. DEF_USE_OZONESTRESS) THEN
+         o3coefv_sun = 1.0_r8
+         o3coefg_sun = 1.0_r8
+         o3coefv_sha = 1.0_r8
+         o3coefg_sha = 1.0_r8
+      ENDIF
+! ==== FIX 2026-08-16 #4b END ====
+
       fht  = 0.     !integral of profile function for heat
       fqt  = 0.     !integral of profile function for moisture
 

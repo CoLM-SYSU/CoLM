@@ -154,7 +154,7 @@ CONTAINS
 !End WUE stomata model parameter
         extkn        ! coefficient of leaf nitrogen allocation
    integer , intent(in) :: &
-        c3c4 ! 1 for c3, 0 for c4
+        c3c4         ! 1 for c3, 0 for c4
    real(r8), intent(in) :: & ! for plant hydraulic scheme
         kmax_sun,   &! Plant Hydraulics Parameters
         kmax_sha,   &! Plant Hydraulics Parameters
@@ -686,7 +686,7 @@ CONTAINS
             rbsha = rb / laisha
 
             ! Sunlit leaves
-            CALL stomata  (vmax25   ,effcon   ,c3c4     ,slti     ,hlti     ,&
+            CALL stomata  (vmax25   ,effcon   ,slti     ,hlti     ,&
                  shti     ,hhti     ,trda     ,trdm     ,trop     ,&
                  g1       ,g0       ,gradm    ,binter   ,thm      ,&
                  psrf     ,po2m     ,pco2m    ,pco2a    ,eah      ,&
@@ -698,10 +698,10 @@ CONTAINS
                  lambda   ,&
             !End WUE stomata model parameter
                  rbsun    ,raw      ,rstfacsun,cintsun  ,&
-                 assimsun ,respcsun ,rssun    )
+                 assimsun ,respcsun ,rssun    ,c3c4=c3c4 )
 
             ! Shaded leaves
-            CALL stomata  (vmax25   ,effcon   ,c3c4     ,slti     ,hlti     ,&
+            CALL stomata  (vmax25   ,effcon   ,slti     ,hlti     ,&
                  shti     ,hhti     ,trda     ,trdm     ,trop     ,&
                  g1       ,g0       ,gradm    ,binter   ,thm      ,&
                  psrf     ,po2m     ,pco2m    ,pco2a    ,eah      ,&
@@ -713,7 +713,7 @@ CONTAINS
                  lambda   ,&
             ! End WUE stomata model parameter
                  rbsha    ,raw      ,rstfacsha,cintsha  ,&
-                 assimsha ,respcsha ,rssha    )
+                 assimsha ,respcsha ,rssha    ,c3c4=c3c4 )
 
             IF (DEF_USE_PLANTHYDRAULICS) THEN
 
@@ -741,12 +741,12 @@ CONTAINS
                gssha = gssha * laisha
 
                CALL update_photosyn(tl, po2m, pco2m, pco2a, parsun, psrf, rstfacsun, rb, gssun, &
-                                    effcon, vmax25, c3c4, gradm, trop, slti, hlti, shti, hhti, trda, &
-                                    trdm, cintsun, assimsun, respcsun)
+                                    effcon, vmax25, gradm, trop, slti, hlti, shti, hhti, trda, &
+                                    trdm, cintsun, assimsun, respcsun, c3c4=c3c4)
 
                CALL update_photosyn(tl, po2m, pco2m, pco2a, parsha, psrf, rstfacsha, rb, gssha, &
-                                    effcon, vmax25, c3c4, gradm, trop, slti, hlti, shti, hhti, trda, &
-                                    trdm, cintsha, assimsha, respcsha)
+                                    effcon, vmax25, gradm, trop, slti, hlti, shti, hhti, trda, &
+                                    trdm, cintsha, assimsha, respcsha, c3c4=c3c4)
 
                rssun = tprcor/tl * 1.e6 / gssun
                rssha = tprcor/tl * 1.e6 / gssha

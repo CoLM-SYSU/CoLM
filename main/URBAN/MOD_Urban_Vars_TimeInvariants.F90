@@ -223,7 +223,6 @@ CONTAINS
       compress = DEF_REST_CompressLevel
 
       CALL ncio_create_file_vector (file_restart, landurban)
-      CALL ncio_define_dimension_vector (file_restart, landurban, 'urban')
 
       CALL ncio_define_dimension_vector (file_restart, landurban, 'urban')
       CALL ncio_define_dimension_vector (file_restart, landurban, 'numsolar', nr  )

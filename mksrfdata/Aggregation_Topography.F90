@@ -74,7 +74,7 @@ SUBROUTINE Aggregation_Topography ( &
       CALL mpi_barrier (p_comm_glb, p_err)
 #endif
 
-      lndname = trim(dir_rawdata)//'/topography.nc'
+      lndname = trim(dir_rawdata)//trim(DEF_rawdata%topo%dir)//'/topography.nc'
 
 ! ---------------------------------------------------------------------------------
 !   aggregate the elevation from the resolution of raw data to modelling resolution
@@ -184,17 +184,17 @@ SUBROUTINE Aggregation_Topography ( &
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/topography_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (elevation_patches, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'elevation', compress = 1, write_mode = 'one', create_mode=.true.)
+         -1.0e36_r8, lndname, 'elevation', compress = 6, write_mode = 'one', create_mode=.true.)
 
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/topography_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (elvstd_patches, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'elvstd', compress = 1, write_mode = 'one')
+         -1.0e36_r8, lndname, 'elvstd', compress = 6, write_mode = 'one')
 
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/topography_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (sloperatio_patches, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'sloperatio', compress = 1, write_mode = 'one')
+         -1.0e36_r8, lndname, 'sloperatio', compress = 6, write_mode = 'one')
 #endif
 
       IF (p_is_worker) THEN

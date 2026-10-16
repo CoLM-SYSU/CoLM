@@ -53,7 +53,7 @@ SUBROUTINE Aggregation_PercentagesPFT (gland, dir_rawdata, dir_model_landdata, l
    character(len=256) :: landdir, lndname
 
    ! for IGBP data
-   character(len=256) :: dir_5x5, suffix, cyear
+   character(len=256) :: dir, fname, cyear
    ! for PFT
    type (block_data_real8_3d) :: pftPCT
    real(r8), allocatable :: pct_one(:), area_one(:)
@@ -88,14 +88,12 @@ SUBROUTINE Aggregation_PercentagesPFT (gland, dir_rawdata, dir_model_landdata, l
 
 #if (defined LULC_IGBP_PFT || defined LULC_IGBP_PC)
 
-      dir_5x5 = trim(dir_rawdata) // '/plant_15s'
-      ! add parameter input for time year
-      !write(cyear,'(i4.4)') lc_year
-      suffix  = 'MOD'//trim(cyear)
+      dir   = trim(dir_rawdata) // trim(DEF_rawdata%pft%dir)
+      fname = trim(DEF_rawdata%pft%fname)//'.'//trim(cyear)
 
       IF (p_is_io) THEN
          CALL allocate_block_data (gland, pftPCT, N_PFT_modis, lb1 = 0)
-         CALL read_5x5_data_pft   (dir_5x5, suffix, gland, 'PCT_PFT', pftPCT)
+         CALL read_5x5_data_pft   (dir, fname, gland, 'PCT_PFT', pftPCT)
 #ifdef USEMPI
          CALL aggregation_data_daemon (gland, data_r8_3d_in1 = pftPCT, n1_r8_3d_in1 = N_PFT_modis)
 #endif
@@ -184,7 +182,7 @@ SUBROUTINE Aggregation_PercentagesPFT (gland, dir_rawdata, dir_model_landdata, l
       typpft = (/(ipft, ipft = 0, N_PFT-1)/)
       lndname = trim(dir_model_landdata)//'/diag/pftfrac_elm_'//trim(cyear)//'.nc'
       CALL srfdata_map_and_write (pct_pfts, landpft%settyp, typpft, m_pft2diag, &
-         -1.0e36_r8, lndname, 'pftfrac_elm', compress = 1, write_mode = 'one',  &
+         -1.0e36_r8, lndname, 'pftfrac_elm', compress = 6, write_mode = 'one',  &
          defval=0._r8, stat_mode = 'fraction', pctshared = landpft%pctshared,   &
          create_mode=.true.)
 #endif
@@ -207,7 +205,7 @@ SUBROUTINE Aggregation_PercentagesPFT (gland, dir_rawdata, dir_model_landdata, l
       typcrop = (/(ityp, ityp = 1, N_CFT)/)
       lndname = trim(dir_model_landdata) // '/diag/cropfrac_elm_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (cropfrac, cropclass, typcrop, m_patch2diag,   &
-         -1.0e36_r8, lndname, 'cropfrac_elm', compress = 1, write_mode = 'one', &
+         -1.0e36_r8, lndname, 'cropfrac_elm', compress = 6, write_mode = 'one', &
          defval=0._r8, stat_mode = 'fraction', pctshared = landpatch%pctshared, &
          create_mode=.true.)
 #endif

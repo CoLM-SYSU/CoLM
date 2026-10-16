@@ -61,7 +61,7 @@ CONTAINS
         z_wall         ,zi_roofsno     ,zi_gimpsno     ,zi_gpersno     ,&
         zi_lakesno     ,zi_wall        ,dz_lake        ,lakedepth      ,&
         dewmx          ,sqrtdi         ,rootfr         ,effcon         ,&
-        vmax25         ,c3c4           ,slti           ,hlti           ,shti,&
+        vmax25         ,slti           ,hlti           ,shti           ,&
         hhti           ,trda           ,trdm           ,trop           ,&
         g1             ,g0             ,gradm          ,binter         ,&
         extkn          ,lambda                                         ,&
@@ -276,9 +276,6 @@ CONTAINS
         binter              ,&! conductance-photosynthesis intercept
         lambda              ,&! marginal water cost of carbon gain
         extkn                ! coefficient of leaf nitrogen allocation
-   
-   integer , intent(in) :: &
-        c3c4                              ! 1 for C3, 0 for C4
 
    real(r8), intent(in) :: &
         fsno_roof                      ,&! fraction of ground covered by snow
@@ -874,7 +871,7 @@ CONTAINS
             hroof          ,hlr            ,nurb           ,fcover         ,&
             ewall          ,egimp          ,egper          ,ev             ,&
             htop           ,hbot           ,lai            ,sai            ,&
-            sqrtdi         ,effcon         ,vmax25         ,c3c4           ,slti,&
+            sqrtdi         ,effcon         ,vmax25         ,slti           ,&
             hlti           ,shti           ,hhti           ,trda           ,&
             trdm           ,trop           ,g1             ,g0             ,&
             gradm          ,binter         ,extkn          ,extkd          ,&
@@ -1116,11 +1113,11 @@ CONTAINS
       fseng = fsenroof*fcover(0) + fsenwsun*fcover(1) + fsenwsha*fcover(2) + &
               fsengimp*fcover(3) + fsengper*fcover(4)
 
-      fsen_roof = fsenroof*fcover(0)
-      fsen_wsun = fsenwsun*fcover(1)
-      fsen_wsha = fsenwsha*fcover(2)
-      fsen_gimp = fsengimp*fcover(3)
-      fsen_gper = fsengper*fcover(4)
+      fsen_roof = fsenroof*fcover(0)*(1-flake)
+      fsen_wsun = fsenwsun*fcover(1)*(1-flake)
+      fsen_wsha = fsenwsha*fcover(2)*(1-flake)
+      fsen_gimp = fsengimp*fcover(3)*(1-flake)
+      fsen_gper = fsengper*fcover(4)*(1-flake)
 
       fevpg = fevproof*fcover(0) + fevpgimp*fcover(3) + fevpgper*fcover(4)
 
@@ -1128,9 +1125,9 @@ CONTAINS
                htvp_gimp*fevpgimp*fcover(3) + &
                htvp_gper*fevpgper*fcover(4)
 
-      lfevp_roof = htvp_roof*fevproof*fcover(0)
-      lfevp_gimp = htvp_gimp*fevpgimp*fcover(3)
-      lfevp_gper = htvp_gper*fevpgper*fcover(4)
+      lfevp_roof = htvp_roof*fevproof*fcover(0)*(1-flake)
+      lfevp_gimp = htvp_gimp*fevpgimp*fcover(3)*(1-flake)
+      lfevp_gper = htvp_gper*fevpgper*fcover(4)*(1-flake)
 
       IF ( doveg ) THEN
          assim  = assim * fveg
@@ -1142,8 +1139,8 @@ CONTAINS
          fevpa  = fevpl + fevpg
          lfevpa = lfevpa + hvap*fevpl
 
-         fsen_urbl   = fsenl
-         lfevp_urbl  = hvap*fevpl
+         fsen_urbl   = fsenl*(1-flake)
+         lfevp_urbl  = hvap*fevpl*(1-flake)
          etr_deficit = etr_deficit*fveg
       ELSE
          fsena  = fseng
@@ -1315,7 +1312,7 @@ CONTAINS
       ! ground heat flux
       fgrnd = sabg + lnet - dlwbef - dlout*fg*(1-flake) &
             - 4.*eroof*stefnc*troof_bef**3*dT(0)*froof*(1-flake)&
-            - fseng - (lfevp_roof + lfevp_gimp + lfevp_gper)*(1-flake) &
+            - fseng - (lfevp_roof + lfevp_gimp + lfevp_gper) &
             - lfevpa_lake*flake
 
       ! energy balance check
@@ -1370,7 +1367,8 @@ CONTAINS
 !=======================================================================
 
       ! A simple Building energy model
-      CALL SimpleBEM ( deltim, forc_rhoair, fcover(0:2), hroof, troommax, troommin, &
+      CALL SimpleBEM ( idate, deltim, patchlonr, forc_rhoair, fcover(0:2), hroof, &
+                       troommax, troommin, weh_prof, &
                        troof_nl_bef, twsun_nl_bef, twsha_nl_bef, &
                        t_roofsno(nl_roof), t_wallsun(nl_wall), t_wallsha(nl_wall), &
                        tkdz_roof, tkdz_wsun, tkdz_wsha, tafu, troom, &
@@ -1392,7 +1390,6 @@ CONTAINS
       Fwst = Fwst * (1-flake)
       Fach = Fach * (1-flake)
       Fhah = Fhah * (1-flake)
-
 
       deallocate ( fcover )
 

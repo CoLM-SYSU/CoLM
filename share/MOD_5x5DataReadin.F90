@@ -23,6 +23,7 @@ MODULE MOD_5x5DataReadin
 !       to (pft,lon,lat) in variables.
 !
 !  Created by Shupeng Zhang, May 2023
+!  Jiayi Xiang, Dec 2025: added optional PFT bounds to read_5x5_data_pft.
 !-----------------------------------------------------------------------
 
    USE MOD_NetCDFSerial, only: nccheck
@@ -286,7 +287,7 @@ CONTAINS
    END SUBROUTINE read_5x5_data_real8
 
    ! -----
-   SUBROUTINE read_5x5_data_pft (dir_5x5, sfx, grid, dataname, rdata)
+   SUBROUTINE read_5x5_data_pft (dir_5x5, sfx, grid, dataname, rdata, lb, ub)
 
    USE MOD_Precision
    USE MOD_SPMD_Task
@@ -299,7 +300,7 @@ CONTAINS
    character (len=*), intent(in) :: dir_5x5
    character (len=*), intent(in) :: sfx
    type (grid_type),  intent(in) :: grid
-
+   integer, intent(in), optional :: lb, ub
    character (len=*), intent(in) :: dataname
    type (block_data_real8_3d), intent(inout) :: rdata
 
@@ -349,17 +350,32 @@ CONTAINS
 
                inquire(file=file_5x5, exist=fexists)
                IF (fexists) THEN
-                  allocate (dcache (i1-i0+1,j1-j0+1,0:N_PFT_modis-1))
 
-                  CALL nccheck( nf90_open(trim(file_5x5), NF90_NOWRITE, ncid) )
-                  CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
-                  CALL nccheck( nf90_get_var(ncid, varid, dcache, &
-                     (/i0,j0,1/), (/i1-i0+1,j1-j0+1,N_PFT_modis/)) )
-                  CALL nccheck( nf90_close(ncid) )
+                  IF (present(lb) .and. present(ub)) THEN
+                     allocate (dcache (i1-i0+1,j1-j0+1,lb:ub))
 
-                  DO ipft = 0, N_PFT_modis-1
-                     rdata%blk(iblk,jblk)%val(ipft,il0:il1,jl0:jl1) = dcache(:,:,ipft)
-                  ENDDO
+                     CALL nccheck( nf90_open(trim(file_5x5), NF90_NOWRITE, ncid) )
+                     CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+                     CALL nccheck( nf90_get_var(ncid, varid, dcache, &
+                        (/i0,j0,lb/), (/i1-i0+1,j1-j0+1,ub-lb+1/)) )
+                     CALL nccheck( nf90_close(ncid) )
+
+                     DO ipft = lb, ub
+                        rdata%blk(iblk,jblk)%val(ipft,il0:il1,jl0:jl1) = dcache(:,:,ipft)
+                     ENDDO
+                  ELSE
+                     allocate (dcache (i1-i0+1,j1-j0+1,0:N_PFT_modis-1))
+
+                     CALL nccheck( nf90_open(trim(file_5x5), NF90_NOWRITE, ncid) )
+                     CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+                     CALL nccheck( nf90_get_var(ncid, varid, dcache, &
+                        (/i0,j0,1/), (/i1-i0+1,j1-j0+1,N_PFT_modis/)) )
+                     CALL nccheck( nf90_close(ncid) )
+
+                     DO ipft = 0, N_PFT_modis-1
+                        rdata%blk(iblk,jblk)%val(ipft,il0:il1,jl0:jl1) = dcache(:,:,ipft)
+                     ENDDO
+                  ENDIF
 
                   deallocate (dcache)
                ENDIF
@@ -398,9 +414,10 @@ CONTAINS
    integer :: iblkme, iblk, jblk, isouth, inorth, iwest, ieast, ibox, jbox, ibox0
    integer :: i0, i1, j0, j1, il0, il1, jl0, jl1
    character(len=256) :: file_5x5
-   integer :: ncid, varid
+   integer :: ncid, varid, ierr
    real(r8), allocatable :: dcache(:,:)
    logical :: fexists
+   real(r8):: scale_factor
 
       nxglb = grid%nlon
       nyglb = grid%nlat
@@ -444,9 +461,17 @@ CONTAINS
                   CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
                   CALL nccheck( nf90_get_var(ncid, varid, dcache, &
                      (/i0,j0,time/), (/i1-i0+1,j1-j0+1,1/)) )
+
+                  ierr = nf90_inquire_attribute(ncid, varid, "scale_factor")
+                  IF (ierr == NF90_NOERR) THEN
+                     CALL nccheck( nf90_get_att(ncid, varid, "scale_factor", scale_factor) )
+                  ELSE IF (ierr == NF90_ENOTATT) THEN
+                     scale_factor = 1.0
+                  END IF
+
                   CALL nccheck( nf90_close(ncid) )
 
-                  rdata%blk(iblk,jblk)%val(il0:il1,jl0:jl1) = dcache
+                  rdata%blk(iblk,jblk)%val(il0:il1,jl0:jl1) = dcache * scale_factor
 
                   deallocate (dcache)
                ENDIF
@@ -485,10 +510,11 @@ CONTAINS
    integer :: iblkme, iblk, jblk, isouth, inorth, iwest, ieast, ibox, jbox, ibox0
    integer :: i0, i1, j0, j1, il0, il1, jl0, jl1
    character(len=256) :: file_5x5
-   integer :: ncid, varid
+   integer :: ncid, varid, ierr
    real(r8), allocatable :: dcache(:,:,:)
    logical :: fexists
    integer :: ipft
+   real(r8):: scale_factor
 
       nxglb = grid%nlon
       nyglb = grid%nlat
@@ -532,10 +558,18 @@ CONTAINS
                   CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
                   CALL nccheck( nf90_get_var(ncid, varid, dcache, &
                      (/i0,j0,1,time/), (/i1-i0+1,j1-j0+1,N_PFT_modis,1/)) )
+
+                  ierr = nf90_inquire_attribute(ncid, varid, "scale_factor")
+                  IF (ierr == NF90_NOERR) THEN
+                     CALL nccheck( nf90_get_att(ncid, varid, "scale_factor", scale_factor) )
+                  ELSE IF (ierr == NF90_ENOTATT) THEN
+                     scale_factor = 1.0
+                  END IF
+
                   CALL nccheck( nf90_close(ncid) )
 
                   DO ipft = 0, N_PFT_modis-1
-                     rdata%blk(iblk,jblk)%val(ipft,il0:il1,jl0:jl1) = dcache(:,:,ipft)
+                     rdata%blk(iblk,jblk)%val(ipft,il0:il1,jl0:jl1) = dcache(:,:,ipft) * scale_factor
                   ENDDO
 
                   deallocate (dcache)

@@ -57,7 +57,7 @@ CONTAINS
               forc_aer                                                        ,&
               mss_bcpho   ,mss_bcphi   ,mss_ocpho   ,mss_ocphi                ,&
               mss_dst1    ,mss_dst2    ,mss_dst3    ,mss_dst4                 ,&
-              qflx_irrig_drip  ,qflx_irrig_flood ,qflx_irrig_paddy               )
+              qflx_irrig_drip  ,qflx_irrig_flood ,qflx_irrig_paddy             )
 
 !=======================================================================
 !  this is the main SUBROUTINE to execute the calculation of
@@ -179,10 +179,10 @@ CONTAINS
 ! END SNICAR model variables
 
 !  irrigation variable
-   real(r8), intent(in) :: &
-        qflx_irrig_drip  , &! irrigation flux from drip irrigation [mm/s]
-        qflx_irrig_flood , &! irrigation flux from flood irrigation [mm/s]
-        qflx_irrig_paddy    ! irrigation flux from paddy irrigation [mm/s]
+   real(r8), intent(in), optional :: &
+        qflx_irrig_drip         ,&! irrigation flux from drip irrigation [mm/s]
+        qflx_irrig_flood        ,&! irrigation flux from flood irrigation [mm/s]
+        qflx_irrig_paddy          ! irrigation flux from paddy irrigation [mm/s]
 
 !-------------------------- Local Variables ----------------------------
 
@@ -523,7 +523,7 @@ ENDIF
               mss_bcpho   ,mss_bcphi   ,mss_ocpho   ,mss_ocphi                ,&
               mss_dst1    ,mss_dst2    ,mss_dst3    ,mss_dst4                 ,&
 !  irrigation variable
-              qflx_irrig_drip  ,qflx_irrig_flood ,qflx_irrig_paddy            )
+              qflx_irrig_drip  ,qflx_irrig_flood ,qflx_irrig_paddy             )
 
 !===================================================================================
 !  this is the main SUBROUTINE to execute the calculation of soil water processes

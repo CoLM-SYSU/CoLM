@@ -5,6 +5,9 @@ MODULE MOD_Urban_BEM
    USE MOD_Precision
    USE MOD_Vars_Global
    USE MOD_Const_Physical
+   USE MOD_Namelist, only: DEF_simulation_time
+   USE MOD_TimeManager
+   USE MOD_Urban_Const_LCZ
    USE MOD_Urban_Shortwave, only: MatrixInverse
 
    IMPLICIT NONE
@@ -17,7 +20,8 @@ MODULE MOD_Urban_BEM
 CONTAINS
 
 !-----------------------------------------------------------------------
-   SUBROUTINE SimpleBEM (deltim, rhoair, fcover, H, troom_max, troom_min, &
+   SUBROUTINE SimpleBEM (idate, deltim, patchlonr, rhoair, fcover, H, &
+                         troom_max, troom_min, weekend, &
                          troof_nl_bef, twsun_nl_bef, twsha_nl_bef, &
                          troof_nl, twsun_nl, twsha_nl, &
                          tkdz_roof, tkdz_wsun, tkdz_wsha, taf, &
@@ -70,19 +74,27 @@ CONTAINS
 ! !REVISIONS:
 !
 !  11/2022, Hua Yuan: Add option for constant AC.
+!  11/2025, Wenzong Dong: The coefficient of waste heat for cooling
+!           has been adjusted from 0.6 to 0.3 and the effective
+!           AC usage rate explicitly considered.
 !
 !-----------------------------------------------------------------------
 
    IMPLICIT NONE
 
 !-------------------------- Dummy Arguments ----------------------------
+   integer , intent(in) :: &
+        idate(3)          ! calendar (year, julian day, seconds)
+
    real(r8), intent(in) :: &
         deltim,          &! seconds in a time step [second]
+        patchlonr,       &! longitude in radians
         rhoair,          &! density air [kg/m3]
         fcover(0:2),     &! fractional cover of roof, wall
         H,               &! average building height [m]
         troom_max,       &! maximum temperature of inner building
         troom_min,       &! minimum temperature of inner building
+        weekend(24),     &! Diurnal traffic flow profile of weekend
         troof_nl_bef,    &! roof temperature at layer nl_roof
         twsun_nl_bef,    &! sunlit wall temperature at layer nl_wall
         twsha_nl_bef,    &! shaded wall temperature at layer nl_wall
@@ -126,23 +138,35 @@ CONTAINS
         X(4)              ! x for Ax=B
 
    real(r8) :: &
+        londeg,          &! longitude of path [degree]
+        Fadj,            &! flux used to adjust the indoor air temperatur
+        Uac,             &! Effective AC usage ratio
         troom_pro,       &! projected room temperature
         troom_bef,       &! temperature of inner building
         troof_inner_bef, &! temperature of inner roof
         twsun_inner_bef, &! temperature of inner sunlit wall
         twsha_inner_bef   ! temperature of inner shaded wall
 
+   integer :: &
+      ldate(3),          &! local time (year, julian day, seconds)
+      sdate(3)            ! calendar of begin style (year, julian day, seconds)
+
+   integer :: nl_floor, tloc, s_heating, e_heating
    logical :: cooling, heating
 
    ! Option for continuous AC
-   logical, parameter :: Constant_AC = .true.
+   logical, parameter :: Constant_AC  = .true.
+
+   ! Option for effective AC
+   logical, parameter :: Effective_AC = .true.
 
 !-----------------------------------------------------------------------
 
       ACH = 0.3           !air exchange coefficient
       hcv_roof   = 4.040  !convective exchange coefficient for roof<->room (W m-2 K-1)
       hcv_wall   = 3.076  !convective exchange coefficient for wall<->room (W m-2 K-1)
-      waste_cool = 0.6    !waste heat for AC cooling
+      waste_cool = 0.3    !waste heat for AC cooling
+     !waste_cool = 0.6    !waste heat for AC cooling
       waste_heat = 0.2    !waste heat for AC heating
       cooling = .false.   !cooling case
       heating = .false.   !heating case
@@ -151,7 +175,21 @@ CONTAINS
       f_wsha = fcover(2)/fcover(0) !weight factor for shaded wall
 
       ! initialization
-      Fhac = 0.; Fwst = 0.; Fach = 0.; Fhah = 0.;
+      Fhac = 0.; Fwst = 0.; Fach = 0.; Fhah = 0.
+
+      ! Heat From Equip (in development)
+
+      ! greenwich to local time
+      IF (DEF_simulation_time%greenwich) THEN
+         sdate    = idate
+         sdate(3) = idate(3) - deltim
+         londeg = patchlonr*180/PI
+
+         ! convert GMT time to local time
+         CALL gmt2local(sdate, londeg, ldate)
+      ENDIF
+
+      tloc = int(ldate(3)/3600) + 1
 
       ! Ax = B
       ! set values for heat transfer matrix
@@ -238,10 +276,53 @@ CONTAINS
          Fhac = 0.5*hcv_wall*(twsha_inner_bef-troom_bef)*f_wsha &
               + 0.5*hcv_wall*(twsha_inner-troom)*f_wsha + Fhac
 
-         IF ( heating ) Fhah = abs(Fhac)
-         Fhac = abs(Fhac) + abs(Fach)
+         IF ( Effective_AC ) THEN
+
+            Uac  = weekend(tloc)/maxval(weekend)
+
+            Fhac = Fhac*Uac
+
+            Fadj = Fhac - 0.5*hcv_roof*(troof_inner_bef-troom_bef) &
+                 - 0.5*hcv_wall*(twsun_inner_bef-troom_bef)*f_wsun &
+                 - 0.5*hcv_wall*(twsha_inner_bef-troom_bef)*f_wsha
+
+            Fadj = 0.5*hcv_roof*B(1)/A(1,1) &
+                 + 0.5*hcv_wall*B(2)/A(2,2)*f_wsun &
+                 + 0.5*hcv_wall*B(3)/A(3,3)*f_wsha - Fadj
+
+            troom = Fadj / &
+                 ( 0.5*hcv_roof*(A(1,4)/A(1,1)+1) &
+                 + 0.5*hcv_wall*(A(2,4)/A(2,2)+1)*f_wsun &
+                 + 0.5*hcv_wall*(A(3,4)/A(3,3)+1)*f_wsha &
+                 )
+
+            troof_inner = (B(1)-A(1,4)*troom)/A(1,1)
+            twsun_inner = (B(2)-A(2,4)*troom)/A(2,2)
+            twsha_inner = (B(3)-A(3,4)*troom)/A(3,3)
+
+            Fach = (ACH/3600.)*H*rhoair*cpair*(troom - taf)
+         ENDIF
+
+         IF ( heating ) THEN
+            IF (Fach > 0) THEN
+               Fhac = abs(Fhac) + Fach
+            ELSE
+               Fhac = abs(Fhac)
+            ENDIF
+
+            Fhah = Fhac
+         ELSE
+            IF (Fach < 0) THEN
+               Fhac = abs(Fhac) + abs(Fach)
+            ELSE
+               Fhac = abs(Fhac)
+            ENDIF
+         ENDIF
+
          Fwst = Fhac*waste_coef
-         IF ( heating ) Fhac = 0.
+         IF ( heating ) THEN
+            Fhac = 0.
+         ENDIF
 
       ENDIF
 

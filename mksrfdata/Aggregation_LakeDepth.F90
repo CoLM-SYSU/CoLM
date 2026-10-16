@@ -81,7 +81,8 @@ SUBROUTINE Aggregation_LakeDepth ( &
 ! ................................................
 ! global lake coverage and lake depth
 ! ................................................
-      lndname = trim(dir_rawdata)//'/lake_depth.nc'
+      !TODO:
+      lndname = trim(dir_rawdata)//trim(DEF_rawdata%hydro%dir)//'/lake_depth.nc'
 
       IF (p_is_io) THEN
          CALL allocate_block_data (gland, lakedepth)
@@ -135,7 +136,7 @@ SUBROUTINE Aggregation_LakeDepth ( &
 #ifdef SrfdataDiag
       lndname = trim(dir_model_landdata)//'/diag/lakedepth_'//trim(cyear)//'.nc'
       CALL srfdata_map_and_write (lakedepth_patches, landpatch%settyp, typlake, m_patch2diag, &
-         -1.0e36_r8, lndname, 'lakedepth', compress = 1, write_mode = 'one', create_mode=.true.)
+         -1.0e36_r8, lndname, 'lakedepth', compress = 6, write_mode = 'one', create_mode=.true.)
 #endif
 
       IF (p_is_worker) THEN

@@ -1,0 +1,399 @@
+&nl_colm_rawdata
+
+  !==========================================================================!
+  ! FORMAT: For each data type, set idx (1-10) to choose the active
+  !         dataset from opt(1:10). Unused opt entries may be left
+  !         as default or set to 'null'.
+  !==========================================================================!
+
+  !--------------------------------------------------------------------------!
+  ! 1. Land cover and land use data
+  !--------------------------------------------------------------------------!
+  ! Options:
+  !   1: USGS 1km
+  !   2: MODIS IGBP 500m
+  !   3: ESA-CCI 500m
+  !   4: GLC30 30m
+  !
+  ! NOTE: if #define LULC_USGS, opt(1) is automatically chosen.
+  ! opt(2-3) are for LULC_IGBP_PC, LULC_IGBP_PFT, LULC_IGBP subgrid schemes.
+
+  DEF_rawdata_nml%landcover%idx = 2
+
+  DEF_rawdata_nml%landcover%opt(1)%dir   = '/landcover/usgs/'
+  DEF_rawdata_nml%landcover%opt(1)%gname = 'colm_1km'
+  DEF_rawdata_nml%landcover%opt(1)%fname = 'landtype-usgs-update'
+
+  DEF_rawdata_nml%landcover%opt(2)%dir   = '/landcover/modis/'
+  DEF_rawdata_nml%landcover%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%landcover%opt(2)%fname = 'landtype-igbp-modis'
+
+  DEF_rawdata_nml%landcover%opt(3)%dir   = '/landcover/esa/'
+  DEF_rawdata_nml%landcover%opt(3)%gname = 'colm_500m'
+  DEF_rawdata_nml%landcover%opt(3)%fname = 'ESACCI'
+
+  DEF_rawdata_nml%landcover%opt(4)%dir   = '/landcover/glc/'
+  DEF_rawdata_nml%landcover%opt(4)%gname = 'colm_30m'
+  DEF_rawdata_nml%landcover%opt(4)%fname = 'LC30m.GLC'
+
+  !--------------------------------------------------------------------------!
+  ! 2. Vegetation data
+  !--------------------------------------------------------------------------!
+
+  ! ----- PFT fraction data -----
+  ! Options:
+  !   1: c2022 500m
+  !   2: c2025 500m
+  !   3: c2025 30m
+  !
+  ! NOTE: only applied for LULC_IGBP_PC, LULC_IGBP_PFT subgrid schemes.
+
+  DEF_rawdata_nml%pft%idx = 1
+
+  DEF_rawdata_nml%pft%opt(1)%dir   = '/vegetation_pft/c2022/'
+  DEF_rawdata_nml%pft%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%pft%opt(1)%fname = 'MOD'
+
+  DEF_rawdata_nml%pft%opt(2)%dir   = '/vegetation_pft/c2025/'
+  DEF_rawdata_nml%pft%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%pft%opt(2)%fname = 'PFT500m'
+
+  DEF_rawdata_nml%pft%opt(3)%dir   = '/vegetation_pft/c2025/'
+  DEF_rawdata_nml%pft%opt(3)%gname = 'colm_30m'
+  DEF_rawdata_nml%pft%opt(3)%fname = 'PFT30m'
+
+  ! ----- LAI and SAI data -----
+  ! Options:
+  !   1: c2022 500m
+  !   2: c2025 500m
+  !   3: c2025_snowfree 500m
+  !
+  ! NOTE: only applied for using monthly LAI and SAI (DEF_LAI_MONTHLY=.true.)
+
+  DEF_rawdata_nml%lai_sai%idx = 1
+
+  DEF_rawdata_nml%lai_sai%opt(1)%dir   = '/vegetation_lai_sai/c2022/'
+  DEF_rawdata_nml%lai_sai%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%lai_sai%opt(1)%fname = 'MOD'
+
+  DEF_rawdata_nml%lai_sai%opt(2)%dir   = '/vegetation_lai_sai/c2025/'
+  DEF_rawdata_nml%lai_sai%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%lai_sai%opt(2)%fname = 'LSAI500m'
+
+  DEF_rawdata_nml%lai_sai%opt(3)%dir   = '/vegetation_lai_sai/c2025_snowfree/'
+  DEF_rawdata_nml%lai_sai%opt(3)%gname = 'colm_500m'
+  DEF_rawdata_nml%lai_sai%opt(3)%fname = 'LSAI500m'
+
+  ! ----- tree top height data -----
+  ! Options:
+  !   1: Simard 1km
+  !   2: ETH 500m
+  !   3: ETH 30m
+  !   4: Tolan 500m
+  !   5: Tolan 30m
+  DEF_rawdata_nml%htop%idx = 1
+
+  DEF_rawdata_nml%htop%opt(1)%dir   = '/vegetation_morphology/tree_height_Simard/'
+  DEF_rawdata_nml%htop%opt(1)%gname = 'colm_1km'
+  DEF_rawdata_nml%htop%opt(1)%fname = 'Forest_Height'
+  DEF_rawdata_nml%htop%opt(1)%vname = 'forest_height'
+
+  DEF_rawdata_nml%htop%opt(2)%dir   = '/vegetation_morphology/tree_height_ETH/'
+  DEF_rawdata_nml%htop%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%htop%opt(2)%fname = 'Htop500m.ETH'
+  DEF_rawdata_nml%htop%opt(2)%vname = 'HTOP'
+
+  DEF_rawdata_nml%htop%opt(3)%dir   = '/vegetation_morphology/tree_height_ETH/'
+  DEF_rawdata_nml%htop%opt(3)%gname = 'colm_30m'
+  DEF_rawdata_nml%htop%opt(3)%fname = 'Htop30m.ETH'
+  DEF_rawdata_nml%htop%opt(3)%vname = 'HTOP'
+
+  DEF_rawdata_nml%htop%opt(4)%dir   = '/vegetation_morphology/tree_height_Tolan/'
+  DEF_rawdata_nml%htop%opt(4)%gname = 'colm_500m'
+  DEF_rawdata_nml%htop%opt(4)%fname = 'Htop500m.Tolan'
+  DEF_rawdata_nml%htop%opt(4)%vname = 'HTOP_90'
+
+  DEF_rawdata_nml%htop%opt(5)%dir   = '/vegetation_morphology/tree_height_Tolan/'
+  DEF_rawdata_nml%htop%opt(5)%gname = 'colm_30m'
+  DEF_rawdata_nml%htop%opt(5)%fname = 'Htop30m.Tolan'
+  DEF_rawdata_nml%htop%opt(5)%vname = 'HTOP'
+
+  !--------------------------------------------------------------------------!
+  ! 3. Soil data
+  !--------------------------------------------------------------------------!
+  !TODO: options can be extended below, default is option index 1
+
+  ! ----- Soil properties -----
+  DEF_rawdata_nml%soil_property%opt(1)%dir = '/soil_properties/'
+
+  ! ----- Soil thermal and hydraulic parameters -----
+  DEF_rawdata_nml%soil_th%opt(1)%dir = '/soil_thermal_hydraulic/'
+
+  ! ----- Soil albedo -----
+  DEF_rawdata_nml%soil_albedo%opt(1)%dir = '/soil_albedo/'
+
+  ! ----- Soil depth to bedrock -----
+  DEF_rawdata_nml%soil_bedrock%opt(1)%dir = '/soil_bedrock/'
+
+  !--------------------------------------------------------------------------!
+  ! 4. Topographic data
+  !--------------------------------------------------------------------------!
+  DEF_rawdata_nml%topo%opt(1)%dir = '/topography/'
+
+  !--------------------------------------------------------------------------!
+  ! 5. Hydrological data
+  !--------------------------------------------------------------------------!
+  DEF_rawdata_nml%hydro%opt(1)%dir = '/hydrology/'
+
+  !--------------------------------------------------------------------------!
+  ! 6. Water Resources
+  !--------------------------------------------------------------------------!
+  DEF_rawdata_nml%water%opt(1)%dir = '/water_resource/'
+
+  !--------------------------------------------------------------------------!
+  ! 7. Urban data
+  !--------------------------------------------------------------------------!
+
+  ! ----- Urban subgrid type -----
+  ! Options:
+  !   1: NCAR 500m (Obtained via nearest-neighbor interpolation of 1 km data)
+  !   2: LCZ 500m
+  !   3: LCZ 100m
+  !   4: c2022 500m (include both LCZ and NCAR, and NCAR was interpolated to
+  !      a 500 m grid using nearest-neighbor interpolation)
+  DEF_rawdata_nml%urban_type%idx = 4
+
+  DEF_rawdata_nml%urban_type%opt(1)%dir   = '/urban_type/ncar/'
+  DEF_rawdata_nml%urban_type%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_type%opt(1)%fname = 'URBTYPE1km_NCAR.Jackson'
+
+  DEF_rawdata_nml%urban_type%opt(2)%dir   = '/urban_type/lcz/'
+  DEF_rawdata_nml%urban_type%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_type%opt(2)%fname = 'URBTYPE500m_LCZ.Demuzere'
+
+  DEF_rawdata_nml%urban_type%opt(3)%dir   = '/urban_type/lcz/'
+  DEF_rawdata_nml%urban_type%opt(3)%gname = 'colm_100m'
+  DEF_rawdata_nml%urban_type%opt(3)%fname = 'URBTYPE100m_LCZ.Demuzere'
+
+  DEF_rawdata_nml%urban_type%opt(4)%dir   = '/urban_type/c2022/'
+  DEF_rawdata_nml%urban_type%opt(4)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_type%opt(4)%fname = 'URBTYP'
+
+  ! ----- Urban Roof height and fraction-----
+  ! Options:
+  !   1: Li 1km
+  !   2: Liao 1km
+  !   3: GHSL 500m
+  !   4: GHSL 100m
+  !   5: c2022_Li 500m (include both GHSL and Li, Li was interpolated to
+  !      a 500 m grid using nearest-neighbor interpolation, use vname to switch)
+  DEF_rawdata_nml%urban_roof%idx = 5
+
+  DEF_rawdata_nml%urban_roof%opt(1)%dir   = '/urban_morphology/roof_height_fraction_Li/'
+  DEF_rawdata_nml%urban_roof%opt(1)%gname = 'colm_1km'
+  DEF_rawdata_nml%urban_roof%opt(1)%fname = 'ROOF1km.Li'
+
+  DEF_rawdata_nml%urban_roof%opt(2)%dir   = '/urban_morphology/roof_height_fraction_Liao/'
+  DEF_rawdata_nml%urban_roof%opt(2)%gname = 'colm_1km'
+  DEF_rawdata_nml%urban_roof%opt(2)%fname = 'ROOF1km.Liao'
+
+  DEF_rawdata_nml%urban_roof%opt(3)%dir   = '/urban_morphology/roof_height_fraction_GHSL/'
+  DEF_rawdata_nml%urban_roof%opt(3)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_roof%opt(3)%fname = 'ROOF500m.GHSL'
+
+  DEF_rawdata_nml%urban_roof%opt(4)%dir   = '/urban_morphology/roof_height_fraction_GHSL/'
+  DEF_rawdata_nml%urban_roof%opt(4)%gname = 'colm_100m'
+  DEF_rawdata_nml%urban_roof%opt(4)%fname = 'ROOF100m.GHSL'
+
+  DEF_rawdata_nml%urban_roof%opt(5)%dir   = '/urban_morphology/c2022/'
+  DEF_rawdata_nml%urban_roof%opt(5)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_roof%opt(5)%fname = 'URBSRF'
+  DEF_rawdata_nml%urban_roof%opt(5)%vname = 'GHSL'
+
+  ! ----- Urban building height-to-side-length (H/L) -----
+  ! Options:
+  !   1: Li_GBFP 500m
+  !   2: GHSL_GBFP 500m
+  !   3: GHSL_GBFP 100m
+  !   4: Liao 1km
+  !   5: c2022 500m (include both GHSL and Li, use vname to switch)
+  DEF_rawdata_nml%urban_hl%idx = 5
+
+  DEF_rawdata_nml%urban_hl%opt(1)%dir   = '/urban_morphology/building_HL_GBFP/'
+  DEF_rawdata_nml%urban_hl%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_hl%opt(1)%fname = 'HL500m_Li_GBFP'
+
+  DEF_rawdata_nml%urban_hl%opt(2)%dir   = '/urban_morphology/building_HL_GBFP/'
+  DEF_rawdata_nml%urban_hl%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_hl%opt(2)%fname = 'HL500m_GHSL_GBFP'
+
+  DEF_rawdata_nml%urban_hl%opt(3)%dir   = '/urban_morphology/building_HL_GBFP/'
+  DEF_rawdata_nml%urban_hl%opt(3)%gname = 'colm_100m'
+  DEF_rawdata_nml%urban_hl%opt(3)%fname = 'HL100m_GHSL_GBFP'
+
+  DEF_rawdata_nml%urban_hl%opt(4)%dir   = '/urban_morphology/building_HL_Liao/'
+  DEF_rawdata_nml%urban_hl%opt(4)%gname = 'colm_1km'
+  DEF_rawdata_nml%urban_hl%opt(4)%fname = 'HL1km_Liao'
+
+  DEF_rawdata_nml%urban_hl%opt(5)%dir   = '/urban_morphology/c2022/'
+  DEF_rawdata_nml%urban_hl%opt(5)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_hl%opt(5)%fname = 'URBSRF'
+  DEF_rawdata_nml%urban_hl%opt(5)%vname = 'GHSL'
+
+  ! ----- Urban pervious fraction (fgper) -----
+  ! Options:
+  !   1: Liao 1km
+  DEF_rawdata_nml%urban_fgper%idx = 1
+
+  DEF_rawdata_nml%urban_fgper%opt(1)%dir   = '/urban_morphology/pervious_fraction_Liao/'
+  DEF_rawdata_nml%urban_fgper%opt(1)%gname = 'colm_1km'
+  DEF_rawdata_nml%urban_fgper%opt(1)%fname = 'Fgper1km_Liao'
+
+  ! ----- Urban tree height top -----
+  !TODO: USE nature vegetation options? Yes, and recommend ETH
+  ! Options:
+  !   1: ETH 500m
+  !   2: ETH 30m
+  !   3: Tolan 500m
+  !   4: Tolan 30m
+  !   5: c2022 500m (The data is ETH, but it is an early version.)
+  DEF_rawdata_nml%urban_htop%idx = 5
+
+  DEF_rawdata_nml%urban_htop%opt(1)%dir   = '/vegetation_morphology/tree_height_ETH/'
+  DEF_rawdata_nml%urban_htop%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_htop%opt(1)%fname = 'Htop500m.ETH'
+  DEF_rawdata_nml%urban_htop%opt(1)%vname = 'HTOP'
+
+  DEF_rawdata_nml%urban_htop%opt(2)%dir   = '/vegetation_morphology/tree_height_ETH/'
+  DEF_rawdata_nml%urban_htop%opt(2)%gname = 'colm_30m'
+  DEF_rawdata_nml%urban_htop%opt(2)%fname = 'Htop30m.ETH'
+  DEF_rawdata_nml%urban_htop%opt(2)%vname = 'HTOP'
+
+  DEF_rawdata_nml%urban_htop%opt(3)%dir   = '/vegetation_morphology/tree_height_Tolan/'
+  DEF_rawdata_nml%urban_htop%opt(3)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_htop%opt(3)%fname = 'Htop500m.Tolan'
+  DEF_rawdata_nml%urban_htop%opt(3)%vname = 'HTOP_90'
+
+  DEF_rawdata_nml%urban_htop%opt(4)%dir   = '/vegetation_morphology/tree_height_Tolan/'
+  DEF_rawdata_nml%urban_htop%opt(4)%gname = 'colm_30m'
+  DEF_rawdata_nml%urban_htop%opt(4)%fname = 'Htop30m.Tolan'
+  DEF_rawdata_nml%urban_htop%opt(4)%vname = 'HTOP'
+
+  DEF_rawdata_nml%urban_htop%opt(5)%dir   = '/urban_morphology/c2022/'
+  DEF_rawdata_nml%urban_htop%opt(5)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_htop%opt(5)%fname = 'URBSRF'
+  DEF_rawdata_nml%urban_htop%opt(5)%vname = 'HTOP'
+
+  ! ----- Urban fractional tree cover -----
+  ! Options:
+  !   1: GFCC 500m
+  !   2: GFCC 30m
+  !   3: c2022 500m (The data is GFCC, but it is an early version.)
+  DEF_rawdata_nml%urban_fveg%idx = 3
+
+  DEF_rawdata_nml%urban_fveg%opt(1)%dir   = '/urban_ecology/tree_fraction_GFCC/'
+  DEF_rawdata_nml%urban_fveg%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_fveg%opt(1)%fname = 'PCTT500m.GFCC'
+
+  DEF_rawdata_nml%urban_fveg%opt(2)%dir   = '/urban_ecology/tree_fraction_GFCC/'
+  DEF_rawdata_nml%urban_fveg%opt(2)%gname = 'colm_30m'
+  DEF_rawdata_nml%urban_fveg%opt(2)%fname = 'PCTT30m.GFCC'
+
+  DEF_rawdata_nml%urban_fveg%opt(3)%dir   = '/urban_morphology/c2022/'
+  DEF_rawdata_nml%urban_fveg%opt(3)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_fveg%opt(3)%fname = 'URBSRF'
+
+  ! ----- Urban fractional water cover -----
+  ! Options:
+  !   1: gl30 500m
+  !   2: glc 500m
+  !   3: glc 100m
+  !   4: c2022 500m (The data is GL30, but it is an early version.)
+  DEF_rawdata_nml%urban_flake%idx = 4
+
+  DEF_rawdata_nml%urban_flake%opt(1)%dir   = '/urban_ecology/water_fraction_gl30/'
+  DEF_rawdata_nml%urban_flake%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_flake%opt(1)%fname = 'PCTW500m.GL30'
+
+  DEF_rawdata_nml%urban_flake%opt(2)%dir   = '/urban_ecology/water_fraction_glc/'
+  DEF_rawdata_nml%urban_flake%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_flake%opt(2)%fname = 'PCTW500m.GLC'
+
+  DEF_rawdata_nml%urban_flake%opt(3)%dir   = '/urban_ecology/water_fraction_glc/'
+  DEF_rawdata_nml%urban_flake%opt(3)%gname = 'colm_100m'
+  DEF_rawdata_nml%urban_flake%opt(3)%fname = 'PCTW100m.GLC'
+
+  DEF_rawdata_nml%urban_flake%opt(4)%dir   = '/urban_morphology/c2022/'
+  DEF_rawdata_nml%urban_flake%opt(4)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_flake%opt(4)%fname = 'URBSRF'
+
+  ! ----- Urban tree LAI and SAI -----
+  ! Options:
+  !   1: Dong 500m
+  DEF_rawdata_nml%urban_lsai%idx = 1
+
+  DEF_rawdata_nml%urban_lsai%opt(1)%dir   = '/urban_ecology/lai_sai/'
+  DEF_rawdata_nml%urban_lsai%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_lsai%opt(1)%fname = 'URBLSAI500m'
+
+  ! ----- Urban population -----
+  ! Options:
+  !   1: LandScan 1km
+  !   2: GHSL-POP 100m
+  !   3: GHSL-POP 500m
+  !   4: GlobPOP 1km
+  !   5: c2022 500m (The data is LandScan, but it is an early version.)
+  DEF_rawdata_nml%urban_pop%idx = 5
+
+  DEF_rawdata_nml%urban_pop%opt(1)%dir   = '/urban_human/population_density_LandScan/'
+  DEF_rawdata_nml%urban_pop%opt(1)%gname = 'colm_1km'
+  DEF_rawdata_nml%urban_pop%opt(1)%fname = 'POP1km.LandScan'
+
+  DEF_rawdata_nml%urban_pop%opt(2)%dir   = '/urban_human/population_density_GHSL/'
+  DEF_rawdata_nml%urban_pop%opt(2)%gname = 'colm_100m'
+  DEF_rawdata_nml%urban_pop%opt(2)%fname = 'POP100m.GHSL'
+
+  DEF_rawdata_nml%urban_pop%opt(3)%dir   = '/urban_human/population_density_GHSL/'
+  DEF_rawdata_nml%urban_pop%opt(3)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_pop%opt(3)%fname = 'POP500m.GHSL'
+
+  DEF_rawdata_nml%urban_pop%opt(4)%dir   = '/urban_human/population_density_GlobPOP/'
+  DEF_rawdata_nml%urban_pop%opt(4)%gname = 'colm_1km'
+  DEF_rawdata_nml%urban_pop%opt(4)%fname = 'POP1km.GlobPOP'
+
+  DEF_rawdata_nml%urban_pop%opt(5)%dir   = '/urban_morphology/c2022/'
+  DEF_rawdata_nml%urban_pop%opt(5)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_pop%opt(5)%fname = 'URBSRF'
+
+  ! ----- Urban lucy -----
+  ! Options:
+  !   1: LUCY
+  DEF_rawdata_nml%urban_lucy%idx = 1
+
+  DEF_rawdata_nml%urban_lucy%opt(1)%dir   = '/urban_human/lucy/'
+
+  ! ----- Urban roof albedo -----
+  ! Options:
+  !   1: roof albedo NCAR
+  !   2: roof albedo LCZ
+  DEF_rawdata_nml%urban_alb%idx = 2
+
+  DEF_rawdata_nml%urban_alb%opt(1)%dir   = '/urban_physical/roof_albedo/'
+  DEF_rawdata_nml%urban_alb%opt(1)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_alb%opt(1)%fname = 'ALB_ROOF500m_NCAR'
+
+  DEF_rawdata_nml%urban_alb%opt(2)%dir   = '/urban_physical/roof_albedo/'
+  DEF_rawdata_nml%urban_alb%opt(2)%gname = 'colm_500m'
+  DEF_rawdata_nml%urban_alb%opt(2)%fname = 'ALB_ROOF500m_LCZ'
+
+  !--------------------------------------------------------------------------!
+  ! 8. Crop data
+  !--------------------------------------------------------------------------!
+  DEF_rawdata_nml%crop%opt(1)%dir = '/crop/'
+
+  !--------------------------------------------------------------------------!
+  ! 9. Biogeochemical data
+  !--------------------------------------------------------------------------!
+  DEF_rawdata_nml%bgc%opt(1)%dir = '/biogeochemistry/'
+
+/

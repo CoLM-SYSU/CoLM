@@ -133,7 +133,7 @@ SUBROUTINE Aggregation_TopographyFactors_Simple ( &
             data_r8_2d_in1 = cur_grid,   data_r8_2d_out1 = cur_one, &
             data_r8_3d_in1 = slp_grid,   data_r8_3d_out1 = slp_one,   n1_r8_3d_in1 = num_aspect_type, &
             data_r8_3d_in2 = asp_grid,   data_r8_3d_out2 = asp_one,   n1_r8_3d_in2 = num_aspect_type)
-    
+
          ! ------------------------------------------------------------------
          ! aggregate curvature at patches
          ! ------------------------------------------------------------------
@@ -149,7 +149,7 @@ SUBROUTINE Aggregation_TopographyFactors_Simple ( &
          ! ------------------------------------------------------------------
          ! aggregate slope and aspect at each direction of aspect of patches.
          ! num_aspect_type = 1:north, 2:northeast, 3:east, 4:southeast, 5:south, 6:southwest, 7:west, 8:northwest, 9:flat
-         ! ------------------------------------------------------------------         
+         ! ------------------------------------------------------------------
          DO i = 1, num_aspect_type
             IF (any(asp_one(i,:) /= -9999.0)) THEN
                asp_type_patches (i, ipatch) = &
@@ -209,27 +209,27 @@ SUBROUTINE Aggregation_TopographyFactors_Simple ( &
 
    ! --------------------------------------------------------------------------
 #ifdef SrfdataDiag
-   typpatch = (/(ityp, ityp = 0, N_land_classification)/) 
+   typpatch = (/(ityp, ityp = 0, N_land_classification)/)
 
    ! only write the first type of slope and aspect at patches
    lndname  = trim(dir_model_landdata) // '/diag/topo_factor_slp_' // trim(cyear) // '.nc'
    DO i = 1, num_aspect_type
       write(sdir,'(I0)') i
       CALL srfdata_map_and_write (slp_type_patches(i,:), landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'slp_'//trim(sdir), compress = 1, write_mode = 'one')
+         -1.0e36_r8, lndname, 'slp_'//trim(sdir), compress = 6, write_mode = 'one')
    ENDDO
 
    lndname  = trim(dir_model_landdata) // '/diag/topo_factor_asp_' // trim(cyear) // '.nc'
    DO i = 1, num_aspect_type
       write(sdir,'(I0)') i
       CALL srfdata_map_and_write (asp_type_patches(i,:), landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'asp_'//trim(sdir), compress = 1, write_mode = 'one')
+         -1.0e36_r8, lndname, 'asp_'//trim(sdir), compress = 6, write_mode = 'one')
    ENDDO
 
    ! write curvature at patches
    lndname  = trim(dir_model_landdata) // '/diag/topo_factor_cur_' // trim(cyear) // '.nc'
    CALL srfdata_map_and_write (cur_patches, landpatch%settyp, typpatch, m_patch2diag, &
-      -1.0e36_r8, lndname, 'cur', compress = 1, write_mode = 'one')
+      -1.0e36_r8, lndname, 'cur', compress = 6, write_mode = 'one')
 
 #endif
 
@@ -239,4 +239,4 @@ SUBROUTINE Aggregation_TopographyFactors_Simple ( &
       IF (allocated(cur_patches     )) deallocate ( cur_patches      )
    ENDIF
 
-END SUBROUTINE Aggregation_TopographyFactors_Simple   
+END SUBROUTINE Aggregation_TopographyFactors_Simple

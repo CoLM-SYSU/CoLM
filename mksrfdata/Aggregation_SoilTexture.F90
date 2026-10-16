@@ -67,7 +67,8 @@ SUBROUTINE Aggregation_SoilTexture ( &
       CALL mpi_barrier (p_comm_glb, p_err)
 #endif
 
-      lndname = trim(dir_rawdata)//'/soil/soiltexture_0cm-60cm_mean.nc'
+      lndname = trim(dir_rawdata)//trim(DEF_rawdata%soil_property%dir)//&
+                '/soiltexture_0cm-60cm_mean.nc'
 
       IF (p_is_io) THEN
          CALL allocate_block_data (gland, soiltext)
@@ -126,7 +127,7 @@ SUBROUTINE Aggregation_SoilTexture ( &
       ENDIF
 
       CALL srfdata_map_and_write (soiltext_r8, landpatch%settyp, typpatch,  &
-         m_patch2diag, -1., lndname, 'soiltexture', compress = 1, write_mode = 'one', &
+         m_patch2diag, -1., lndname, 'soiltexture', compress = 6, write_mode = 'one', &
          create_mode=.true.)
 
       IF (allocated(soiltext_r8)) deallocate(soiltext_r8)

@@ -4868,7 +4868,9 @@ ENDIF
 #ifdef URBAN_MODEL
    SUBROUTINE write_history_variable_urb_2d ( is_hist, &
          acc_vec, file_hist, varname, itime_in_file, sumarea, filter, &
-         longname, units)
+         longname, units, acc_num)
+
+   USE MOD_Vars_1DAccFluxes, only: nac
 
    IMPLICIT NONE
 
@@ -4883,8 +4885,25 @@ ENDIF
 
    type(block_data_real8_2d), intent(in) :: sumarea
    logical, intent(in) :: filter(:)
+   real(r8), intent(in), optional  :: acc_num(:)
 
       IF (.not. is_hist) RETURN
+
+#ifndef SinglePoint
+      IF ( .not. present(acc_num) ) THEN
+         IF (p_is_worker) &
+            WHERE (acc_vec /= spval) acc_vec = acc_vec / nac
+      ELSE
+         IF (p_is_worker)  &
+            WHERE (acc_vec/=spval .and. acc_num>0) acc_vec = acc_vec / acc_num
+      ENDIF
+#else
+      IF ( .not. present(acc_num) ) THEN
+         WHERE (acc_vec /= spval)  acc_vec = acc_vec / nac
+      ELSE
+         WHERE (acc_vec/=spval .and. acc_num>0) acc_vec = acc_vec / acc_num
+      ENDIF
+#endif
 
       select CASE (HistForm)
       CASE ('Gridded')
@@ -4893,7 +4912,7 @@ ENDIF
 #if (defined UNSTRUCTURED || defined CATCHMENT)
       CASE ('Vector')
          !TODO: currently, it is not applicable to urban variables
-         CALL aggregate_to_vector_and_write_2d ( &
+         CALL aggregate_to_vector_and_write_urb_2d ( &
             acc_vec, file_hist, varname, itime_in_file, filter, longname, units)
 #endif
 #ifdef SinglePoint

@@ -320,13 +320,14 @@ CONTAINS
    END SUBROUTINE read_point_5x5_var_2d_real8
 
    ! -----
-   SUBROUTINE read_point_5x5_var_3d_real8 (grid, dir_5x5, sfx, varname, site_lon, site_lat, nlastdim, rdata)
+   SUBROUTINE read_point_5x5_var_3d_real8 (grid, dir_5x5, sfx, varname, site_lon, site_lat, nlastdim, rdata, lb, ub)
 
    IMPLICIT NONE
 
    type (grid_type),  intent(in) :: grid
    character (len=*), intent(in) :: dir_5x5
    character (len=*), intent(in) :: sfx
+   integer, intent(in), optional :: lb, ub
    character (len=*), intent(in) :: varname
 
    real(r8), intent(in) :: site_lon
@@ -340,15 +341,22 @@ CONTAINS
    integer :: ncid, varid, start3(3)
 
       CALL get_5x5_filename (grid, dir_5x5, sfx, site_lon, site_lat, filename, start3(1:2))
-      
-      allocate (rdata (nlastdim))
-
-      start3(3) = 1
-
-      CALL nccheck (nf90_open      (trim(filename), NF90_NOWRITE, ncid), trace=trim(filename)//' cannot open')
-      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid), trace=trim(varname)//' in file '//trim(filename))
-      CALL nccheck (nf90_get_var   (ncid, varid, rdata, start3, (/1,1,nlastdim/)) )
-      CALL nccheck (nf90_close     (ncid) )
+      IF (present(lb) .and. present(ub)) THEN
+         allocate (rdata (nlastdim))
+         rdata = 0.0_r8
+         start3(3) = lb
+         CALL nccheck (nf90_open      (trim(filename), NF90_NOWRITE, ncid), trace=trim(filename)//' cannot open')
+         CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid), trace=trim(varname)//' in file '//trim(filename))
+         CALL nccheck (nf90_get_var   (ncid, varid, rdata(lb+1:ub+1), start3, (/1,1,ub-lb+1/)) )
+         CALL nccheck (nf90_close     (ncid) )
+      ELSE
+         allocate (rdata (nlastdim))
+         start3(3) = 1
+         CALL nccheck (nf90_open      (trim(filename), NF90_NOWRITE, ncid), trace=trim(filename)//' cannot open')
+         CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid), trace=trim(varname)//' in file '//trim(filename))
+         CALL nccheck (nf90_get_var   (ncid, varid, rdata, start3, (/1,1,nlastdim/)) )
+         CALL nccheck (nf90_close     (ncid) )
+      ENDIF
 
    END SUBROUTINE read_point_5x5_var_3d_real8
 

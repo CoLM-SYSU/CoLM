@@ -73,7 +73,7 @@ CONTAINS
 
    real(r8) :: &
       londeg           ,&! longitude of path [degree]
-      car_sp           ,&! distance traveled [km]
+      car_dis          ,&! distance traveled [km]
       traf_frac        ,&! vehicle heat profile of hour [-]
       meta_prof        ,&! metabolic heat profile of hour [-]
       carflx           ,&! flux from car [W/m2]
@@ -81,7 +81,10 @@ CONTAINS
       freflx             ! flux from freight [W/m2]
 
 !-------------------------- Local Variables ----------------------------
-   real(r8):: ldate(3)   ! local time (year, julian day, seconds)
+   integer :: &
+      ldate(3)         ,&! local time (year, julian day, seconds)
+      sdate(3)           ! calendar of begin style (year, julian day, seconds)
+
    integer :: &
       iweek            ,&! day of week
       ihour            ,&! hour of day
@@ -100,7 +103,7 @@ CONTAINS
       Fahe = 0.
 
       ! set vehicle distance traveled
-      car_sp = 50
+      car_dis = 50
 
       ! emission factor Sailor and Lu (2004),
       ! all vehicle are set to same value
@@ -109,18 +112,21 @@ CONTAINS
       EF = 3975
 
       IF (DEF_simulation_time%greenwich) THEN
+         sdate    = idate
+         sdate(3) = idate(3) - deltim
+         londeg   = patchlonr*180/PI
+
          ! convert GMT time to local time
-         londeg = patchlonr*180/PI
-         CALL gmt2local(idate, londeg, ldate)
+         CALL gmt2local(sdate, londeg, ldate)
       ENDIF
 
       vehc_prof(:,1) = wdh_prof
       vehc_prof(:,2) = weh_prof
 
-      CALL julian2monthday(int(ldate(1)), int(ldate(2)), month, day)
-      CALL timeweek(int(ldate(1)), month, day, iweek)
+      CALL julian2monthday(ldate(1), ldate(2), month, day)
+      CALL timeweek(ldate(1), month, day, iweek)
 
-      ihour = CEILING(ldate(3)*1./3600)
+      ihour = int(ldate(3)/3600) + 1
 
       IF (day==366)  day=365
       IF (fix_holiday(day)==0 .or. week_holiday(iweek)==0) THEN
@@ -144,7 +150,7 @@ CONTAINS
       IF (carscell > 0) THEN
          carflx = carscell*pop_den/1000
          carflx = carflx*traf_frac &
-                  *EC*(car_sp*1000)/1e6
+                  *EC*(car_dis*1000)/1e6
          carflx = carflx/3600
       ELSE
          carflx = 0.
@@ -154,7 +160,7 @@ CONTAINS
       IF (mbkscell > 0) THEN
          motflx = mbkscell*pop_den/1000
          motflx = motflx*traf_frac &
-                  *EM*(car_sp*1000)/1e6
+                  *EM*(car_dis*1000)/1e6
          motflx = motflx/3600
       ELSE
          motflx = 0.
@@ -164,7 +170,7 @@ CONTAINS
       IF (frescell > 0)THEN
          freflx = frescell*pop_den/1000
          freflx = freflx*traf_frac &
-                  *EF*(car_sp*1000)/1e6
+                  *EF*(car_dis*1000)/1e6
          freflx = freflx/3600
       ELSE
          freflx = 0.

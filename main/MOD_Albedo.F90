@@ -566,6 +566,7 @@ ENDIF
    real(r8) :: upscat_sno = 0.5   !upscat parameter for snow
    real(r8) :: beta0_sno  = 0.5   !beta0 parameter for snow
    real(r8) :: scat_sno(2)        !snow single scattering albedo
+   real(r8) :: scat_new           !snow-modified single scattering albedo
    data scat_sno(1), scat_sno(2) /0.8, 0.4/   ! 1:vis, 2: nir
 
    integer iw               ! band iterator
@@ -632,9 +633,10 @@ ENDIF
       ! modify scat, upscat and beta0
       ! USE: fwet_snow, snow properties, scatter vis0.8, nir0.4, upscat0.5, beta0.5
       IF ( DEF_VEG_SNOW ) THEN
-         scat   =   (1.-fwet_snow)*scat        + fwet_snow*scat_sno(iw)
-         upscat = ( (1.-fwet_snow)*scat*upscat + fwet_snow*scat_sno(iw)*upscat_sno ) / scat
-         beta0  = ( (1.-fwet_snow)*scat*beta0  + fwet_snow*scat_sno(iw)*beta0_sno  ) / scat
+         scat_new = (  1.-fwet_snow)*scat        + fwet_snow*scat_sno(iw)
+         upscat   = ( (1.-fwet_snow)*scat*upscat + fwet_snow*scat_sno(iw)*upscat_sno ) / scat_new
+         beta0    = ( (1.-fwet_snow)*scat*beta0  + fwet_snow*scat_sno(iw)*beta0_sno  ) / scat_new
+         scat     = scat_new
       ENDIF
 
 !-----------------------------------------------------------------------
@@ -899,6 +901,7 @@ ENDIF
    real(r8) :: upscat_sno = 0.5   !upscatter parameter for snow
    real(r8) :: beta0_sno  = 0.5   !beta0 parameter for snow
    real(r8) :: scat_sno(2)        !snow single scattering albedo
+   real(r8) :: scat_new           !snow-modified single scattering albedo
    data scat_sno(1), scat_sno(2) /0.8, 0.4/   ! 1:vis, 2: nir
 
    integer iw                ! band loop index
@@ -989,9 +992,10 @@ ENDIF
       ! modify scat, upscat and beta0
       ! USE: fwet_snow, snow properties, scatter vis0.8, nir0.4, upscat0.5, beta0.5
       IF ( DEF_VEG_SNOW ) THEN
-         scat   =   (1.-fwet_snow)*scat        + fwet_snow*scat_sno(iw)
-         upscat = ( (1.-fwet_snow)*scat*upscat + fwet_snow*scat_sno(iw)*upscat_sno ) / scat
-         beta0  = ( (1.-fwet_snow)*scat*beta0  + fwet_snow*scat_sno(iw)*beta0_sno  ) / scat
+         scat_new = (  1.-fwet_snow)*scat        + fwet_snow*scat_sno(iw)
+         upscat   = ( (1.-fwet_snow)*scat*upscat + fwet_snow*scat_sno(iw)*upscat_sno ) / scat_new
+         beta0    = ( (1.-fwet_snow)*scat*beta0  + fwet_snow*scat_sno(iw)*beta0_sno  ) / scat_new
+         scat     = scat_new
       ENDIF
 
 !-----------------------------------------------------------------------

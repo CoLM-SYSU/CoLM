@@ -60,6 +60,7 @@ CONTAINS
    IMPLICIT NONE
 
    integer, intent(in) :: lc_year
+
    ! Local Variables
    character(len=256) :: dir_urban
    type (block_data_int32_2d) :: data_urb_class ! urban type index
@@ -88,7 +89,7 @@ CONTAINS
    integer , allocatable :: urbclass (:)
    real(r8), allocatable :: area_one (:)
 
-   character(len=256) :: suffix, cyear
+   character(len=256) :: fname, cyear
 
       IF (p_is_master) THEN
          write(*,'(A)') 'Making urban type tiles:'
@@ -101,17 +102,21 @@ CONTAINS
       ! allocate and read the grided LCZ/NCAR urban type
       IF (p_is_io) THEN
 
-         dir_urban = trim(DEF_dir_rawdata) // '/urban_type'
-
          CALL allocate_block_data (grid_urban, data_urb_class)
          CALL flush_block_data (data_urb_class, 0)
 
          ! read urban type data
-         suffix = 'URBTYP'
+         dir_urban = trim(DEF_dir_rawdata) // trim(DEF_rawdata%urban_type%dir)
+         fname     = trim(DEF_rawdata%urban_type%fname)
+
 IF (DEF_URBAN_type_scheme == 1) THEN
-         CALL read_5x5_data (dir_urban, suffix, grid_urban, 'URBAN_DENSITY_CLASS', data_urb_class)
+         CALL read_5x5_data (dir_urban, fname, grid_urban, 'URBAN_DENSITY_CLASS', data_urb_class)
 ELSE IF (DEF_URBAN_type_scheme == 2) THEN
-         CALL read_5x5_data (dir_urban, suffix, grid_urban, 'LCZ_DOM', data_urb_class)
+         IF (DEF_rawdata_namelist == "colm2024.nml") THEN
+            CALL read_5x5_data (dir_urban, fname, grid_urban, 'LCZ_DOM', data_urb_class)
+         ELSE
+            CALL read_5x5_data (dir_urban, fname, grid_urban, 'LCZ', data_urb_class)
+         ENDIF
 ENDIF
 
 #ifdef USEMPI
@@ -162,26 +167,9 @@ ENDIF
                      area_one = 0
                   END WHERE
 
-                  buff_p = 0
-                  IF (sum(area_one) > 0) THEN
-                     DO ib = 1, size(area_one)
-                        IF (ibuff(ib)>1 .and. ibuff(ib)<N_URB) THEN
-                           iurb         = ibuff(ib)
-                           buff_p(iurb) = buff_p(iurb) + area_one(ib)
-                        ENDIF
-                     ENDDO
-                     buff_p(:) = buff_p(:)/sum(area_one)
-                  ENDIF
-
-                  ! The number of URBAN ID of each type is assigned to urban pixels without URBAN ID in relative proportion
-                  DO iurb = 1, N_URB-1
-                     buff_count(iurb) = int(buff_p(iurb)*imiss)
-                  ENDDO
-                  buff_count(N_URB) = imiss - sum(buff_count(1:N_URB-1))
-
                   ! Some urban patches and NCAR/LCZ data are inconsistent (NCAR/LCZ has no urban ID),
                   ! so the these points are assigned
-                  IF (all(buff_count==0)) THEN
+                  IF (sum(area_one) == 0) THEN
                      ! If none of the urban pixels have an URBAN ID, they are assigned directly
                      IF (DEF_URBAN_type_scheme == 1) THEN
                         ibuff = 3
@@ -189,7 +177,27 @@ ENDIF
                         ibuff = 9
                      ENDIF
                   ELSE
-                     ! Otherwise, URBAN ID are assigned based on the previously calculated number
+                     buff_p = 0
+                     DO ib = 1, size(area_one)
+                        IF (ibuff(ib)>=1 .and. ibuff(ib)<=N_URB) THEN
+                           iurb         = ibuff(ib)
+                           buff_p(iurb) = buff_p(iurb) + area_one(ib)
+                        ENDIF
+                     ENDDO
+                     buff_p(:) = buff_p(:)/sum(area_one)
+
+                     ! The number of URBAN ID of each type is assigned to urban pixels without URBAN ID in relative proportion
+                     DO iurb = 1, N_URB-1
+                        buff_count(iurb) = int(buff_p(iurb)*imiss)
+                     ENDDO
+
+                     IF (buff_p(N_URB) > 0) THEN
+                        buff_count(N_URB) = imiss - sum(buff_count(1:N_URB-1))
+                     ELSE
+                        buff_count(N_URB-1) = buff_count(N_URB-1) + imiss - sum(buff_count(1:N_URB-1))
+                     ENDIF
+
+                     ! URBAN ID are assigned based on the previously calculated number
                      DO ib = 1, size(ibuff)
                         IF (ibuff(ib)<1 .or. ibuff(ib)>N_URB) THEN
                            type_loop: DO iurb = 1, N_URB

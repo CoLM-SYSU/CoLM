@@ -318,7 +318,7 @@ CONTAINS
         extkn           ! coefficient of leaf nitrogen allocation
 
    integer, dimension(ps:pe)  :: &
-        c3c4 ! C3/C4 plant type
+        c3c4            ! C3/C4 plant type
 
    real(r8), dimension(ps:pe) :: &
         kmax_sun,      &! Plant Hydraulics Parameters
@@ -1178,7 +1178,7 @@ CONTAINS
 
 ! note: calculate resistance for sunlit/shaded leaves
 !-----------------------------------------------------------------------
-               CALL stomata ( vmax25(i)    ,effcon(i) ,c3c4(i)   ,slti(i)   ,hlti(i)   ,&
+               CALL stomata ( vmax25(i)    ,effcon(i) ,slti(i)   ,hlti(i)   ,&
                     shti(i)    ,hhti(i)    ,trda(i)   ,trdm(i)   ,trop(i)   ,&
                     g1(i)      ,g0(i)      ,gradm(i)  ,binter(i) ,thm       ,&
                     psrf       ,po2m       ,pco2m     ,pco2a     ,eah       ,&
@@ -1188,9 +1188,9 @@ CONTAINS
 !End ozone stress variables
                     lambda(i),                         &
                     rbsun      ,raw        ,rstfacsun(i),cintsun(:,i),&
-                    assimsun(i),respcsun(i),rssun(i)   )
+                    assimsun(i),respcsun(i),rssun(i)   ,c3c4=c3c4(i))
 
-               CALL stomata ( vmax25(i)    ,effcon(i) ,c3c4(i)   ,slti(i)   ,hlti(i)   ,&
+               CALL stomata ( vmax25(i)    ,effcon(i) ,slti(i)   ,hlti(i)   ,&
                     shti(i)    ,hhti(i)    ,trda(i)   ,trdm(i)   ,trop(i)   ,&
                     g1(i)      ,g0(i)      ,gradm(i)  ,binter(i) ,thm       ,&
                     psrf       ,po2m       ,pco2m     ,pco2a     ,eah       ,&
@@ -1202,7 +1202,7 @@ CONTAINS
                     lambda(i)                                               ,&
 !WUE stomata model parameter
                     rbsha      ,raw        ,rstfacsha(i),cintsha(:,i),&
-                    assimsha(i),respcsha(i),rssha(i)   )
+                    assimsha(i),respcsha(i),rssha(i)   ,c3c4=c3c4(i))
 
                IF (DEF_USE_PLANTHYDRAULICS) THEN
 
@@ -1225,12 +1225,14 @@ CONTAINS
                   gssha(i) = gssha(i) * laisha(i) * 1.e-6
 
                   CALL update_photosyn(tl(i), po2m, pco2m, pco2a, parsun(i), psrf, rstfacsun(i), &
-                     rb(i), gssun(i), effcon(i), vmax25(i), c3c4(i), gradm(i), trop(i), slti(i), hlti(i), &
-                     shti(i), hhti(i), trda(i), trdm(i), cintsun(:,i), assimsun(i), respcsun(i))
+                     rb(i), gssun(i), effcon(i), vmax25(i), gradm(i), trop(i), slti(i), hlti(i), &
+                     shti(i), hhti(i), trda(i), trdm(i), cintsun(:,i), assimsun(i), respcsun(i), &
+                     c3c4=c3c4(i))
 
                   CALL update_photosyn(tl(i), po2m, pco2m, pco2a, parsha(i), psrf, rstfacsha(i), &
-                     rb(i), gssha(i), effcon(i), vmax25(i), c3c4(i), gradm(i), trop(i), slti(i), hlti(i), &
-                     shti(i), hhti(i), trda(i), trdm(i), cintsha(:,i), assimsha(i), respcsha(i))
+                     rb(i), gssha(i), effcon(i), vmax25(i), gradm(i), trop(i), slti(i), hlti(i), &
+                     shti(i), hhti(i), trda(i), trdm(i), cintsha(:,i), assimsha(i), respcsha(i), &
+                     c3c4=c3c4(i))
 
                   ! leaf scale stomata resistance
                   rssun(i) = tprcor / tl(i) / gssun(i)

@@ -73,7 +73,7 @@ CONTAINS
       reservoir_supply(i) = 0._r8
       river_supply(i) = 0._r8
       runoff_supply(i) = 0._r8
-      
+
       !  zero irrigation at the begin of the new year
       if (idate(2) == 1 .and. idate(3) == deltim)then
          sum_irrig(i) = 0._r8
@@ -81,7 +81,7 @@ CONTAINS
          sum_irrig_count(i) = 0._r8
          zwt_stand(i) = zwt(i) + 1._r8
          zwt_stand(i) = max(0., zwt_stand(i))
-         zwt_stand(i) = min(80., zwt_stand(i))         
+         zwt_stand(i) = min(80., zwt_stand(i))
       end if
 
 #ifdef CaMa_Flood
@@ -100,7 +100,7 @@ CONTAINS
       !    WRITE(*,*) "LHB debug line98 runoff error: p_iam_glb, ipatch, reservoirriver_supply ---> ", &
       !       p_iam_glb, i, reservoirriver_supply(i)
       ! ENDIF
-#endif 
+#endif
 
       ! !   calculate last day potential evapotranspiration
       ! CALL CalPotentialEvapotranspiration(i,idate,dlon,deltim)
@@ -260,7 +260,7 @@ CONTAINS
             waterstorage(i) = max(waterstorage(i) - irrig_rate(i)*deltim, 0._r8)
             IF (irrig_method_p(m) == irrig_method_drip) THEN
                qflx_irrig_drip = irrig_rate(i)
-            ELSEIF (irrig_method_p(m) == irrig_method_sprinkler) THEN 
+            ELSEIF (irrig_method_p(m) == irrig_method_sprinkler) THEN
                qflx_irrig_sprinkler = irrig_rate(i)
             ELSEIF (irrig_method_p(m) == irrig_method_flood) THEN
                qflx_irrig_flood = irrig_rate(i)
@@ -288,11 +288,11 @@ CONTAINS
 
       !   local variable
       integer :: m, ivt
-      real(r8):: ldate(3)
+      integer :: ldate(3)
       real(r8):: seconds_since_irrig_start_time
 
    !  adjust flood irrigation in rice to paddy irrigaiton
-      DO m = ps, pe 
+      DO m = ps, pe
          ivt = pftclass(m)
          IF ((ivt == 62) .and. (irrig_method_p(m) == irrig_method_flood)) THEN
             irrig_method_p(m) = irrig_method_paddy
@@ -329,7 +329,7 @@ CONTAINS
    !     real(r8), intent(in) :: dlon
    !     real(r8), intent(in) :: deltim
    !     !   local variable
-   !     real(r8):: ldate(3)
+   !     integer :: ldate(3)
    !     real(r8):: seconds_since_irrig_start_time
    !     real(r8) :: es,esdT,qs,qsdT     ! saturation vapour pressure
    !     real(r8) :: evsat               ! vapour pressure
@@ -379,13 +379,13 @@ CONTAINS
         !   DESCRIPTION:
         !   This subroutine is used to calculate how much irrigation supplied in each irrigated crop patch with water supply restriction
          integer,  intent(in) :: i
-         integer,  intent(in) :: nl_soil      
-         real(r8), intent(in) :: deltim       
+         integer,  intent(in) :: nl_soil
+         real(r8), intent(in) :: deltim
          real(r8), intent(in) :: dz_soi(1:nl_soil)
          real(r8), intent(in) :: zi_soi(1:nl_soil)
 
          real(r8) :: waterstorage_supply
-         
+
          IF (deficit_irrig(i) > 0._r8) THEN
             IF (DEF_IRRIGATION_ALLOCATION == 1) THEN
                actual_irrig(i) = deficit_irrig(i)
@@ -421,8 +421,8 @@ CONTAINS
                   CALL CalGroudwaterWithdrawal(i,nl_soil,deltim,dz_soi,zi_soi)
                   actual_irrig(i) = actual_irrig(i) + groundwater_supply(i)
                   waterstorage(i) = waterstorage(i) + groundwater_supply(i)
-               ENDIF     
-            ENDIF    
+               ENDIF
+            ENDIF
          ENDIF
    END SUBROUTINE CalIrrigationLimitedSupply
 
@@ -431,11 +431,11 @@ CONTAINS
       !   DESCRIPTION:
       !   This subroutine is used to calculate irrigation withdrawals for groudwater
       integer,  intent(in) :: i
-      integer,  intent(in) :: nl_soil      
-      real(r8), intent(in) :: deltim       
+      integer,  intent(in) :: nl_soil
+      real(r8), intent(in) :: deltim
       real(r8), intent(in) :: dz_soi(1:nl_soil)
       real(r8), intent(in) :: zi_soi(1:nl_soil)
-      
+
       IF (.not. DEF_USE_VariablySaturatedFlow) THEN
          CALL CalWithdrawalWATER(i,nl_soil,deltim,dz_soi,zi_soi)
       ELSE
@@ -450,7 +450,7 @@ CONTAINS
       !   This subroutine is used to calculate how much irrigation supplied in each irrigated crop patch with groundwater supply restriction
       IMPLICIT NONE
       integer,  INTENT(in) :: i
-      integer,  INTENT(in) :: nl_soil      
+      integer,  INTENT(in) :: nl_soil
       real(r8), INTENT(in) :: deltim              ! land model time step (sec)
       real(r8), INTENT(in) :: dz_soi  (1:nl_soil) ! layer depth (m)
       real(r8), INTENT(in) :: zi_soi  (1:nl_soil) ! interface level below a "z" level (m)
@@ -463,11 +463,11 @@ CONTAINS
       real(r8) :: eff_porosity(1:nl_soil)! effective porosity = porosity - vol_ice
       real(r8) :: xs               ! water needed to bring soil moisture to watmin (mm)
       real(r8) :: xsi              ! excess soil water above saturation at layer i (mm)
-      real(r8) :: xs1              ! excess soil water above saturation at layer 1 (mm)    
-      real(r8) :: pump_total     
-      real(r8) :: pump_layer   
+      real(r8) :: xs1              ! excess soil water above saturation at layer 1 (mm)
+      real(r8) :: pump_total
+      real(r8) :: pump_layer
       real(r8) :: max_groundwater_supply
-      real(r8) :: s_y              
+      real(r8) :: s_y
       real(r8) :: rous             ! specific yield [-]
    ! -------------------------------------------------------------------------
 

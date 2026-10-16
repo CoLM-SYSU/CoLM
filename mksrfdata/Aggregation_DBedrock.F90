@@ -67,7 +67,8 @@ SUBROUTINE Aggregation_DBedrock ( &
 
          CALL allocate_block_data (gland, dbedrock)
 
-         lndname = trim(dir_rawdata)//'/bedrock.nc'
+         !TODO: add dir, file name and var name
+         lndname = trim(dir_rawdata)//trim(DEF_rawdata%soil_bedrock%dir)//'/bedrock.nc'
          CALL ncio_read_block (lndname, 'dbedrock', gland, dbedrock)
 
 #ifdef USEMPI
@@ -119,7 +120,7 @@ SUBROUTINE Aggregation_DBedrock ( &
       typpatch = (/(ityp, ityp = 0, N_land_classification)/)
       lndname  = trim(dir_model_landdata) // '/diag/dbedrock_patch_' // trim(cyear) // '.nc'
       CALL srfdata_map_and_write (dbedrock_patches, landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'dbedrock', compress = 1, write_mode = 'one', create_mode=.true.)
+         -1.0e36_r8, lndname, 'dbedrock', compress = 6, write_mode = 'one', create_mode=.true.)
 #endif
 
       IF (p_is_worker) THEN

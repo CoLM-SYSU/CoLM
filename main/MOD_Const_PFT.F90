@@ -462,7 +462,7 @@ MODULE MOD_Const_PFT
 #endif
          /)
 
-      !C3C4 switch 1: C3, 0: C4
+   ! C3C4 flag 1: C3, 0: C4
    integer, parameter :: c3c4_p(0:N_PFT+N_CFT-1) &
       = (/1, 1, 1, 1, 1, 1, 1, 1&
         , 1, 1, 1, 1, 1, 1, 0, 1&

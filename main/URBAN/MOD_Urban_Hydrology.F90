@@ -71,8 +71,6 @@ CONTAINS
         mss_bcpho      ,mss_bcphi      ,mss_ocpho      ,mss_ocphi      ,&
         mss_dst1       ,mss_dst2       ,mss_dst3       ,mss_dst4       ,&
 ! END SNICAR model variables
-!  irrigaiton 
-        qflx_irrig_drip,qflx_irrig_flood,qflx_irrig_paddy              ,&
         ! output
         rsur           ,rnof           ,qinfl          ,zwt            ,&
         wdsrf          ,wa             ,qcharge        ,smp            ,hk)
@@ -184,13 +182,6 @@ CONTAINS
 ! Aerosol Fluxes (Jan. 07, 2023)
 ! END SNICAR model variables
 
-!  For irrigation 
-   real(r8), intent(in) :: &
-        qflx_irrig_drip               ,&! drip irrigation rate [mm/s]
-        qflx_irrig_flood              ,&! flood irrigation rate [mm/s]
-        qflx_irrig_paddy                ! paddy irrigation rate [mm/s]
-!  END irrigation
-
    integer, intent(in) :: &
         imelt_lake(maxsnl+1:nl_soil)    ! lake flag for melting or freezing snow and soil layer [-]
 
@@ -289,9 +280,7 @@ CONTAINS
 ! SNICAR model variables
              forc_aer                                                        ,&
              mss_bcpho   ,mss_bcphi   ,mss_ocpho   ,mss_ocphi                ,&
-             mss_dst1    ,mss_dst2    ,mss_dst3    ,mss_dst4                 ,&
-!  irrigation variables
-             qflx_irrig_drip   ,qflx_irrig_flood  ,qflx_irrig_paddy            )
+             mss_dst1    ,mss_dst2    ,mss_dst3    ,mss_dst4                  )
 
 !=======================================================================
 ! [2] for roof and impervious road

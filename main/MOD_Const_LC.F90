@@ -199,7 +199,7 @@ MODULE MOD_Const_LC
           0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08,&
           0.08, 0.08, 0.08, 0.05, 0.05, 0.05, 0.05, 0.05/)
 
-   !c3c4 flag
+   !C3C4 flag 1: C3, 0: C4
    integer, parameter, dimension(N_land_classification) :: c3c4_usgs &
       = (/1, 1, 1, 1, 1, 1, 1, 1,&
           1, 1, 1, 1, 1, 1, 1, 1,&
@@ -508,7 +508,7 @@ MODULE MOD_Const_LC
       = (/0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08,&
           0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08,&
           0.08 /)
-   
+
    !c3c4 flag
    integer, parameter, dimension(N_land_classification) :: c3c4_igbp &
       = (/1, 1, 1, 1, 1, 1, 1, 1,&
@@ -690,7 +690,8 @@ MODULE MOD_Const_LC
       d50,        &! depth at 50% roots
       beta         ! coefficient of root profile
 
-   integer, dimension(N_land_classification) :: c3c4 ! c3c4 flag
+   ! c3c4 flag
+   integer, dimension(N_land_classification) :: c3c4
 
 ! Plant Hydraulic Parameters
    real(r8), dimension(N_land_classification) :: &
@@ -718,6 +719,9 @@ MODULE MOD_Const_LC
 
    ! fraction of roots in each soil layer
    real(r8), dimension(nl_soil,N_land_classification) :: rootfr
+
+   ! land cover mapping look-up table
+   integer :: LC_Map(0:255)
 
    ! PUBLIC MEMBER FUNCTIONS:
    PUBLIC :: Init_LC_Const
@@ -870,6 +874,52 @@ ENDIF
                   - exp(-rootb(i) * zi_soi(nsl)) )
             ENDDO
          ENDDO
+      ENDIF
+
+      ! initialization
+      LC_Map(:) = 0
+
+      ! set the land cover look-up table for mapping
+      ! mapping from GLC_FCS30D ==> IGBP 17 classes
+      IF ( DEF_USE_GLC30 ) THEN
+            LC_Map(10)  = 12; LC_Map(20)  = 12;
+            LC_Map(11)  = 14; LC_Map(12)  = 14;
+            LC_Map(51)  =  2; LC_Map(52)  =  2;
+            LC_Map(61)  =  4; LC_Map(62)  =  4;
+            LC_Map(71)  =  1; LC_Map(72)  =  1;
+            LC_Map(81)  =  3; LC_Map(82)  =  3;
+            LC_Map(91)  =  5; LC_Map(92)  =  5;
+            LC_Map(120) =  7; LC_Map(121) =  7; LC_Map(122) =  7;
+            LC_Map(130) = 10; LC_Map(140) = 10;
+            LC_Map(150) = 16; LC_Map(152) = 16; LC_Map(153) = 16;
+            LC_Map(181) = 11; LC_Map(182) = 11; LC_Map(183) = 11;
+            LC_Map(184) = 11; LC_Map(185) = 11; LC_Map(186) = 11;
+            LC_Map(187) = 11;
+            LC_Map(190) = 13;
+            LC_Map(200) = 16; LC_Map(201) = 16; LC_Map(202) = 16;
+            LC_Map(210) = 17;
+            LC_Map(220) = 15;
+      ENDIF
+
+      ! mapping from ESA-CCI ==> IGBP 17 classes
+      IF ( DEF_USE_ESACCI ) THEN
+            LC_Map(10)  = 12; LC_Map(11)  = 12; LC_Map(20)  = 12;
+            LC_Map(12)  = 14; LC_Map(30)  = 14; LC_Map(40)  = 14;
+            LC_Map(50)  =  2;
+            LC_Map(60)  =  4; LC_Map(61)  =  4; LC_Map(62)  =  4;
+            LC_Map(70)  =  1; LC_Map(71)  =  1; LC_Map(72)  =  1;
+            LC_Map(80)  =  3; LC_Map(81)  =  3; LC_Map(82)  =  3;
+            LC_Map(90)  =  5;
+            LC_Map(100) =  8;
+            LC_Map(110) =  9;
+            LC_Map(120) =  7; LC_Map(121) =  7; LC_Map(122) =  7;
+            LC_Map(130) = 10; LC_Map(140) = 10;
+            LC_Map(150) = 16; LC_Map(152) = 16; LC_Map(153) = 16;
+            LC_Map(160) = 11; LC_Map(170) = 11; LC_Map(180) = 11;
+            LC_Map(190) = 13;
+            LC_Map(200) = 16; LC_Map(201) = 16; LC_Map(202) = 16;
+            LC_Map(210) = 17;
+            LC_Map(220) = 15;
       ENDIF
 
    END SUBROUTINE Init_LC_Const

@@ -105,7 +105,7 @@ CONTAINS
       write(cyear,'(i4.4)') lc_year
       landname = trim(dir_landdata)//'/diag/element_'//trim(cyear)//'.nc'
       CALL srfdata_map_and_write (elmid_r8, landelm%settyp, (/0,1/), m_elm2diag, &
-         -1.0e36_r8, landname, 'element', compress = 1, write_mode = 'one', &
+         -1.0e36_r8, landname, 'element', compress = 6, write_mode = 'one', &
          defval=0._r8, create_mode=.true.)
 
       IF (p_is_worker) deallocate (elmid_r8)
@@ -123,7 +123,7 @@ CONTAINS
       ENDIF
 
       CALL srfdata_map_and_write (landpatch%pctshared, landpatch%settyp, typindex, m_patch2diag, &
-         -1.0e36_r8, landname, 'patchfrac_elm', compress = 1, write_mode = 'one', defval=0._r8, &
+         -1.0e36_r8, landname, 'patchfrac_elm', compress = 6, write_mode = 'one', defval=0._r8, &
          stat_mode = 'fraction', pctshared = landpatch%pctshared, create_mode=.true.)
 
    END SUBROUTINE srfdata_diag_init

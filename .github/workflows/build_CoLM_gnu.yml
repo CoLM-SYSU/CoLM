@@ -3,6 +3,7 @@ on:
   pull_request:
     branches: 
       - master
+      - colm30
     paths-ignore:
       - 'postprocess/**'
       - 'preprocess/**'
@@ -13,6 +14,7 @@ on:
   push:
     branches:
       - master
+      - colm30
     paths-ignore:
       - 'postprocess/**'
       - 'preprocess/**'

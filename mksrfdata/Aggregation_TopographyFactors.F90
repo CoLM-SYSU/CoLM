@@ -480,23 +480,23 @@ SUBROUTINE Aggregation_TopographyFactors ( &
    DO i = 1, num_slope_type
       write(sdir,'(I0)') i
       CALL srfdata_map_and_write (slp_type_patches(i,:), landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'slp_'//trim(sdir), compress = 1, write_mode = 'one')
+         -1.0e36_r8, lndname, 'slp_'//trim(sdir), compress = 6, write_mode = 'one')
    ENDDO
 
    lndname  = trim(dir_model_landdata) // '/diag/topo_factor_asp_' // trim(cyear) // '.nc'
    DO i = 1, num_slope_type
       write(sdir,'(I0)') i
       CALL srfdata_map_and_write (asp_type_patches(i,:), landpatch%settyp, typpatch, m_patch2diag, &
-         -1.0e36_r8, lndname, 'asp_'//trim(sdir), compress = 1, write_mode = 'one')
+         -1.0e36_r8, lndname, 'asp_'//trim(sdir), compress = 6, write_mode = 'one')
    ENDDO
 
    lndname  = trim(dir_model_landdata) // '/diag/topo_factor_svf_' // trim(cyear) // '.nc'
    CALL srfdata_map_and_write (svf_patches, landpatch%settyp, typpatch, m_patch2diag, &
-      -1.0e36_r8, lndname, 'svf', compress = 1, write_mode = 'one')
+      -1.0e36_r8, lndname, 'svf', compress = 6, write_mode = 'one')
 
    lndname  = trim(dir_model_landdata) // '/diag/topo_factor_cur_' // trim(cyear) // '.nc'
    CALL srfdata_map_and_write (cur_patches, landpatch%settyp, typpatch, m_patch2diag, &
-      -1.0e36_r8, lndname, 'cur', compress = 1, write_mode = 'one')
+      -1.0e36_r8, lndname, 'cur', compress = 6, write_mode = 'one')
 
    lndname  = trim(dir_model_landdata) // '/diag/topo_factor_sf_lut_' // trim(cyear) // '.nc'
 
@@ -505,7 +505,7 @@ SUBROUTINE Aggregation_TopographyFactors ( &
          write(sdir,'(I0)') j
          write(sdir1,'(I0)') i
          CALL srfdata_map_and_write (sf_lut_patches(j,i,:), landpatch%settyp, typpatch, m_patch2diag, &
-            -1.0e36_r8, lndname, 'sf_'//trim(sdir)//'_'//trim(sdir1), compress = 1, write_mode = 'one')
+            -1.0e36_r8, lndname, 'sf_'//trim(sdir)//'_'//trim(sdir1), compress = 6, write_mode = 'one')
       ENDDO
    ENDDO
 #endif

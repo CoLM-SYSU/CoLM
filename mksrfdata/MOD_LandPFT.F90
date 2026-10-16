@@ -24,6 +24,7 @@ MODULE MOD_LandPFT
 !-----------------------------------------------------------------------
 
    USE MOD_Namelist
+   USE MOD_Grid
    USE MOD_Pixelset
    USE MOD_Const_LC
    USE MOD_Vars_Global
@@ -31,6 +32,7 @@ MODULE MOD_LandPFT
 
    ! ---- Instance ----
    integer :: numpft
+   type(grid_type)     :: grid_pft
    type(pixelset_type) :: landpft
 
    integer , allocatable :: pft2patch   (:)  !patch index of a PFT
@@ -62,8 +64,9 @@ CONTAINS
    IMPLICIT NONE
 
    integer, intent(in) :: lc_year
+
    ! Local Variables
-   character(len=256) :: dir_5x5, suffix, cyear
+   character(len=256) :: dir, fname, cyear
    type (block_data_real8_3d) :: pctpft
    real(r8), allocatable :: pctpft_patch(:,:), pctpft_one(:,:)
    real(r8), allocatable :: area_one  (:)
@@ -84,17 +87,20 @@ CONTAINS
 
       IF (p_is_io) THEN
 
-         CALL allocate_block_data (grid_patch, pctpft, N_PFT_modis, lb1 = 0)
+         CALL allocate_block_data (grid_pft, pctpft, N_PFT_modis, lb1 = 0)
          CALL flush_block_data (pctpft, 1.0)
 
-         dir_5x5 = trim(DEF_dir_rawdata) // '/plant_15s'
+         dir = trim(DEF_dir_rawdata) // trim(DEF_rawdata%pft%dir)
+
          ! add parameter input for time year
          write(cyear,'(i4.4)') lc_year
-         suffix  = 'MOD'//trim(cyear)
-         CALL read_5x5_data_pft (dir_5x5, suffix, grid_patch, 'PCT_PFT', pctpft)
+
+         fname = trim(DEF_rawdata%pft%fname) //'.'// trim(cyear)
+
+         CALL read_5x5_data_pft (dir, fname, grid_pft, 'PCT_PFT', pctpft)
 
 #ifdef USEMPI
-         CALL aggregation_data_daemon (grid_patch, data_r8_3d_in1 = pctpft, n1_r8_3d_in1 = N_PFT_modis)
+         CALL aggregation_data_daemon (grid_pft, data_r8_3d_in1 = pctpft, n1_r8_3d_in1 = N_PFT_modis)
 #endif
       ENDIF
 
@@ -131,7 +137,7 @@ CONTAINS
 #else
             IF (patchtypes(landpatch%settyp(ipatch)) == 0 .and. landpatch%settyp(ipatch)/=CROPLAND) THEN
 #endif
-               CALL aggregation_request_data (landpatch, ipatch, grid_patch, zip = .false., area = area_one, &
+               CALL aggregation_request_data (landpatch, ipatch, grid_pft, zip = .false., area = area_one, &
                   data_r8_3d_in1 = pctpft, data_r8_3d_out1 = pctpft_one, n1_r8_3d_in1 = N_PFT_modis, lb1_r8_3d_in1 = 0)
 
                sumarea = sum(area_one * sum(pctpft_one(0:N_PFT-1,:),dim=1))

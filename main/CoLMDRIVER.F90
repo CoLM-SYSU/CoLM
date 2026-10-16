@@ -262,7 +262,7 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
 
           ! VEGETATION INFORMATION
             htop(i)         ,hbot(i)         ,sqrtdi(m)       ,chil(m)         ,&
-            effcon(m)       ,vmax25(m)       ,c3c4(m)         ,slti(m)         ,hlti(m)         ,&
+            effcon(m)       ,vmax25(m)       ,slti(m)         ,hlti(m)         ,&
             shti(m)         ,hhti(m)         ,trda(m)         ,trdm(m)         ,&
             trop(m)         ,g1(m)           ,g0(m)           ,gradm(m)        ,&
             binter(m)       ,extkn(m)        ,rho(1:,1:,m)    ,tau(1:,1:,m)    ,&

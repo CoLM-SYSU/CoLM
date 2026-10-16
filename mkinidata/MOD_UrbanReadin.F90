@@ -119,11 +119,15 @@ CONTAINS
       ! READ in urban data
       !-----------------------------------
 
-      lndname = trim(dir_landdata)//'/urban/'//trim(cyear)//'/WT_ROOF.nc'
-      CALL ncio_read_vector (lndname, 'WT_ROOF'       , landurban, froof   )
+      lndname = trim(dir_landdata)//'/urban/'//trim(cyear)//'/PCT_ROOF.nc'
+      CALL ncio_read_vector (lndname, 'PCT_ROOF'       , landurban, froof   )
 
       lndname = trim(dir_landdata)//'/urban/'//trim(cyear)//'/HT_ROOF.nc'
       CALL ncio_read_vector (lndname, 'HT_ROOF'       , landurban, hroof   )
+
+      ! pervious fraction to ground area
+      lndname = trim(dir_landdata)//'/urban/'//trim(cyear)//'/WTROAD_PERV.nc'
+      CALL ncio_read_vector (lndname, 'WTROAD_PERV'   , landurban, fgper  )
 
       lndname = trim(dir_landdata)//'/urban/'//trim(cyear)//'/HLR_BLD.nc'
       CALL ncio_read_vector (lndname, 'BUILDING_HLR'  , landurban, hlr    )
@@ -144,9 +148,6 @@ CONTAINS
       CALL ncio_read_vector (lndname, 'POP_DEN'       , landurban, pop_den )
 
       lndname = trim(dir_landdata)//'/urban/'//trim(cyear)//'/urban.nc'
-
-      ! pervious fraction to ground area
-      CALL ncio_read_vector (lndname, 'WTROAD_PERV'   , landurban, fgper  )
 
       ! emissivity of roof
       CALL ncio_read_vector (lndname, 'EM_ROOF'       , landurban, em_roof)
@@ -217,9 +218,22 @@ CONTAINS
                flake(u) = 0.
             ENDIF
 
+            fveg_urb(u) = fveg_urb(u)/100. !urban tree percent
+            IF (flake(u) > 0) THEN
+               IF (1.-flake(u)-fveg_urb(u) > 0) THEN
+                  froof(u) = min(froof(u), 1.-flake(u)-fveg_urb(u))
+               ELSE
+                  flake(u)    = (1.-froof(u)) * flake(u)/(flake(u)+fveg_urb(u))
+                  fveg_urb(u) = 1. - froof(u) - flake(u)
+               ENDIF
+            ENDIF
+            froof(u) = min(0.9, froof(u)/(1.-flake(u)))
+
+            ! to constrain the building side length >= 10 m
+            IF (hroof(u)/hlr(u) < 10) hlr(u) = hroof(u)/10
+
             IF (DEF_URBAN_TREE) THEN
                ! set tree fractional cover (<= 1.-froof)
-               fveg_urb(u) = fveg_urb(u)/100. !urban tree percent
                IF (flake(u) < 1.) THEN
                   fveg_urb(u) = fveg_urb(u)/(1.-flake(u))
                ELSE

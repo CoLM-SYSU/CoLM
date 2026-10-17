@@ -842,6 +842,111 @@ MODULE MOD_Namelist
       logical :: ndep_to_sminn                    = .true.
       logical :: CONC_O2_UNSAT                    = .false.
       logical :: O2_DECOMP_DEPTH_UNSAT            = .false.
+      ! Fire history fields (available with BGC, including zero fire-off fluxes).
+      logical :: farea_burned = .true.
+      logical :: baf_crop = .true.
+      logical :: baf_peatf = .true.
+      logical :: nfire = .true.
+      logical :: fuelc = .true.
+      logical :: btran2 = .true.
+      logical :: pft_fire_closs = .true.
+      logical :: pft_fire_nloss = .true.
+      logical :: col_fire_closs = .true.
+      logical :: col_fire_nloss = .true.
+      logical :: somc_fire = .true.
+      logical :: litfire = .true.
+      logical :: somfire = .true.
+      logical :: totfire = .true.
+      logical :: m_leafc_to_fire = .false.
+      logical :: m_frootc_to_fire = .false.
+      logical :: m_livestemc_to_fire = .false.
+      logical :: m_deadstemc_to_fire = .false.
+      logical :: m_livecrootc_to_fire = .false.
+      logical :: m_deadcrootc_to_fire = .false.
+      logical :: m_leafc_storage_to_fire = .false.
+      logical :: m_frootc_storage_to_fire = .false.
+      logical :: m_livestemc_storage_to_fire = .false.
+      logical :: m_deadstemc_storage_to_fire = .false.
+      logical :: m_livecrootc_storage_to_fire = .false.
+      logical :: m_deadcrootc_storage_to_fire = .false.
+      logical :: m_gresp_storage_to_fire = .false.
+      logical :: m_leafc_xfer_to_fire = .false.
+      logical :: m_frootc_xfer_to_fire = .false.
+      logical :: m_livestemc_xfer_to_fire = .false.
+      logical :: m_deadstemc_xfer_to_fire = .false.
+      logical :: m_livecrootc_xfer_to_fire = .false.
+      logical :: m_deadcrootc_xfer_to_fire = .false.
+      logical :: m_gresp_xfer_to_fire = .false.
+      logical :: m_livestemc_to_deadstemc_fire = .false.
+      logical :: m_livecrootc_to_deadcrootc_fire = .false.
+      logical :: m_leafc_to_litter_fire = .false.
+      logical :: m_frootc_to_litter_fire = .false.
+      logical :: m_livestemc_to_litter_fire = .false.
+      logical :: m_deadstemc_to_litter_fire = .false.
+      logical :: m_livecrootc_to_litter_fire = .false.
+      logical :: m_deadcrootc_to_litter_fire = .false.
+      logical :: m_leafc_storage_to_litter_fire = .false.
+      logical :: m_frootc_storage_to_litter_fire = .false.
+      logical :: m_livestemc_storage_to_litter_fire = .false.
+      logical :: m_deadstemc_storage_to_litter_fire = .false.
+      logical :: m_livecrootc_storage_to_litter_fire = .false.
+      logical :: m_deadcrootc_storage_to_litter_fire = .false.
+      logical :: m_gresp_storage_to_litter_fire = .false.
+      logical :: m_leafc_xfer_to_litter_fire = .false.
+      logical :: m_frootc_xfer_to_litter_fire = .false.
+      logical :: m_livestemc_xfer_to_litter_fire = .false.
+      logical :: m_deadstemc_xfer_to_litter_fire = .false.
+      logical :: m_livecrootc_xfer_to_litter_fire = .false.
+      logical :: m_deadcrootc_xfer_to_litter_fire = .false.
+      logical :: m_gresp_xfer_to_litter_fire = .false.
+      logical :: m_leafn_to_fire = .false.
+      logical :: m_frootn_to_fire = .false.
+      logical :: m_livestemn_to_fire = .false.
+      logical :: m_deadstemn_to_fire = .false.
+      logical :: m_livecrootn_to_fire = .false.
+      logical :: m_deadcrootn_to_fire = .false.
+      logical :: m_leafn_storage_to_fire = .false.
+      logical :: m_frootn_storage_to_fire = .false.
+      logical :: m_livestemn_storage_to_fire = .false.
+      logical :: m_deadstemn_storage_to_fire = .false.
+      logical :: m_livecrootn_storage_to_fire = .false.
+      logical :: m_deadcrootn_storage_to_fire = .false.
+      logical :: m_leafn_xfer_to_fire = .false.
+      logical :: m_frootn_xfer_to_fire = .false.
+      logical :: m_livestemn_xfer_to_fire = .false.
+      logical :: m_deadstemn_xfer_to_fire = .false.
+      logical :: m_livecrootn_xfer_to_fire = .false.
+      logical :: m_deadcrootn_xfer_to_fire = .false.
+      logical :: m_livestemn_to_deadstemn_fire = .false.
+      logical :: m_livecrootn_to_deadcrootn_fire = .false.
+      logical :: m_retransn_to_fire = .false.
+      logical :: m_leafn_to_litter_fire = .false.
+      logical :: m_frootn_to_litter_fire = .false.
+      logical :: m_livestemn_to_litter_fire = .false.
+      logical :: m_deadstemn_to_litter_fire = .false.
+      logical :: m_livecrootn_to_litter_fire = .false.
+      logical :: m_deadcrootn_to_litter_fire = .false.
+      logical :: m_leafn_storage_to_litter_fire = .false.
+      logical :: m_frootn_storage_to_litter_fire = .false.
+      logical :: m_livestemn_storage_to_litter_fire = .false.
+      logical :: m_deadstemn_storage_to_litter_fire = .false.
+      logical :: m_livecrootn_storage_to_litter_fire = .false.
+      logical :: m_deadcrootn_storage_to_litter_fire = .false.
+      logical :: m_leafn_xfer_to_litter_fire = .false.
+      logical :: m_frootn_xfer_to_litter_fire = .false.
+      logical :: m_livestemn_xfer_to_litter_fire = .false.
+      logical :: m_deadstemn_xfer_to_litter_fire = .false.
+      logical :: m_livecrootn_xfer_to_litter_fire = .false.
+      logical :: m_deadcrootn_xfer_to_litter_fire = .false.
+      logical :: m_retransn_to_litter_fire = .false.
+      logical :: m_litr1_c_to_fire = .false.
+      logical :: m_litr1_n_to_fire = .false.
+      logical :: m_litr2_c_to_fire = .false.
+      logical :: m_litr2_n_to_fire = .false.
+      logical :: m_litr3_c_to_fire = .false.
+      logical :: m_litr3_n_to_fire = .false.
+      logical :: m_cwd_c_to_fire = .false.
+      logical :: m_cwd_n_to_fire = .false.
       logical :: abm                              = .false.
       logical :: gdp                              = .false.
       logical :: peatf                            = .false.
@@ -2310,6 +2415,110 @@ CONTAINS
       ENDIF
 #endif
       CALL sync_hist_vars_one (DEF_hist_vars%ndep_to_sminn                   , set_defaults)
+      CALL sync_hist_vars_one (DEF_hist_vars%farea_burned, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%baf_crop, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%baf_peatf, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%nfire, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%fuelc, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%btran2, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%pft_fire_closs, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%pft_fire_nloss, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%col_fire_closs, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%col_fire_nloss, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%somc_fire, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%litfire, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%somfire, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%totfire, set_defaults, default_value=.true.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafc_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootc_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemc_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemc_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootc_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootc_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafc_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootc_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemc_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemc_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootc_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootc_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_gresp_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafc_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootc_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemc_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemc_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootc_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootc_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_gresp_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemc_to_deadstemc_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootc_to_deadcrootc_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafc_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootc_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemc_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemc_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootc_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootc_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafc_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootc_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemc_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemc_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootc_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootc_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_gresp_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafc_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootc_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemc_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemc_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootc_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootc_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_gresp_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafn_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootn_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemn_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemn_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootn_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootn_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafn_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootn_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemn_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemn_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootn_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootn_storage_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafn_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootn_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemn_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemn_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootn_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootn_xfer_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemn_to_deadstemn_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootn_to_deadcrootn_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_retransn_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafn_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootn_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemn_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemn_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootn_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootn_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafn_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootn_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemn_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemn_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootn_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootn_storage_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_leafn_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_frootn_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livestemn_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadstemn_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_livecrootn_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_deadcrootn_xfer_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_retransn_to_litter_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_litr1_c_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_litr1_n_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_litr2_c_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_litr2_n_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_litr3_c_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_litr3_n_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_cwd_c_to_fire, set_defaults, default_value=.false.)
+      CALL sync_hist_vars_one (DEF_hist_vars%m_cwd_n_to_fire, set_defaults, default_value=.false.)
       IF(DEF_USE_NITRIF)THEN
          CALL sync_hist_vars_one (DEF_hist_vars%CONC_O2_UNSAT                , set_defaults)
          CALL sync_hist_vars_one (DEF_hist_vars%O2_DECOMP_DEPTH_UNSAT        , set_defaults)
@@ -2505,17 +2714,24 @@ CONTAINS
 
    END SUBROUTINE sync_hist_vars
 
-   SUBROUTINE sync_hist_vars_one (onoff, set_defaults)
+   SUBROUTINE sync_hist_vars_one (onoff, set_defaults, default_value)
 
    USE MOD_SPMD_Task
    IMPLICIT NONE
 
    logical, intent(inout) :: onoff
    logical, intent(in)    :: set_defaults
+   logical, intent(in), optional :: default_value
 
       IF (p_is_master) THEN
          IF (set_defaults) THEN
-            onoff = DEF_HIST_vars_out_default
+            ! Explicit field defaults override the global default only during initialization.
+            ! Subsequent synchronization preserves values read from the history namelist.
+            IF (present(default_value)) THEN
+               onoff = default_value
+            ELSE
+               onoff = DEF_HIST_vars_out_default
+            ENDIF
          ENDIF
       ENDIF
 

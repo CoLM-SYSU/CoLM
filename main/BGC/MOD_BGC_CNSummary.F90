@@ -16,7 +16,7 @@ MODULE MOD_BGC_CNSummary
 ! Xingjie Lu, 2022, modify original CLM5 to be compatible with CoLM code structure. 
 
    USE MOD_Precision
-   USE MOD_Namelist, only: DEF_USE_NITRIF, DEF_USE_DiagMatrix
+    USE MOD_Namelist, only: DEF_USE_NITRIF, DEF_USE_DiagMatrix, DEF_USE_FIRE
    USE MOD_Vars_PFTimeInvariants, only: pftclass
    USE MOD_Vars_PFTimeVariables, only:irrig_method_p, lai_p
    USE MOD_Vars_TimeInvariants, only: BD_all
@@ -44,7 +44,8 @@ MODULE MOD_BGC_CNSummary
        livestemn_storageCap, deadstemn_storageCap, livecrootn_storageCap, deadcrootn_storageCap, leafn_xferCap, &
        frootn_xferCap, livestemn_xferCap, deadstemn_xferCap, livecrootn_xferCap, deadcrootn_xferCap
    USE MOD_BGC_Vars_TimeInvariants, only: &
-       is_litter, is_soil, is_cwd, nfix_timeconst
+       is_litter, is_soil, is_cwd, nfix_timeconst, &
+       i_met_lit, i_cel_lit, i_lig_lit, i_cwd
    USE MOD_BGC_Vars_PFTimeVariables, only: &
        leafc_p, frootc_p, livestemc_p, deadstemc_p, livecrootc_p, deadcrootc_p, &
        leafc_storage_p, frootc_storage_p, livestemc_storage_p, &
@@ -91,10 +92,43 @@ MODULE MOD_BGC_CNSummary
 #ifdef CROP
        cropprod1c_loss, grainc_to_cropprodc, grainc_to_seed, grainn_to_cropprodn, &
 #endif
-       sminn_leached, sminn_leached_vr, smin_no3_leached, smin_no3_leached_vr, smin_no3_runoff, smin_no3_runoff_vr, &
-       f_n2o_nit, f_n2o_nit_vr, decomp_cpools_transport_tendency, decomp_npools_transport_tendency, &
-       denit, f_denit_vr, fire_closs, hrv_xsmrpool_to_atm, som_c_leached, som_n_leached, sminn_to_denit_excess_vr, &
-       sminn_to_denit_decomp_vr
+        sminn_leached, sminn_leached_vr, smin_no3_leached, smin_no3_leached_vr, smin_no3_runoff, smin_no3_runoff_vr, &
+        f_n2o_nit, f_n2o_nit_vr, decomp_cpools_transport_tendency, decomp_npools_transport_tendency, &
+        denit, f_denit_vr, m_decomp_cpools_to_fire_vr, m_decomp_npools_to_fire_vr, &
+       pft_fire_closs, pft_fire_nloss, litfire, &
+       somfire, totfire, m_leafc_to_fire, &
+       m_frootc_to_fire, m_livestemc_to_fire, m_deadstemc_to_fire, &
+       m_livecrootc_to_fire, m_deadcrootc_to_fire, m_leafc_storage_to_fire, &
+       m_frootc_storage_to_fire, m_livestemc_storage_to_fire, m_deadstemc_storage_to_fire, &
+       m_livecrootc_storage_to_fire, m_deadcrootc_storage_to_fire, m_gresp_storage_to_fire, &
+       m_leafc_xfer_to_fire, m_frootc_xfer_to_fire, m_livestemc_xfer_to_fire, &
+       m_deadstemc_xfer_to_fire, m_livecrootc_xfer_to_fire, m_deadcrootc_xfer_to_fire, &
+       m_gresp_xfer_to_fire, m_livestemc_to_deadstemc_fire, m_livecrootc_to_deadcrootc_fire, &
+       m_leafc_to_litter_fire, m_frootc_to_litter_fire, m_livestemc_to_litter_fire, &
+       m_deadstemc_to_litter_fire, m_livecrootc_to_litter_fire, m_deadcrootc_to_litter_fire, &
+       m_leafc_storage_to_litter_fire, m_frootc_storage_to_litter_fire, m_livestemc_storage_to_litter_fire, &
+       m_deadstemc_storage_to_litter_fire, m_livecrootc_storage_to_litter_fire, m_deadcrootc_storage_to_litter_fire, &
+       m_gresp_storage_to_litter_fire, m_leafc_xfer_to_litter_fire, m_frootc_xfer_to_litter_fire, &
+       m_livestemc_xfer_to_litter_fire, m_deadstemc_xfer_to_litter_fire, m_livecrootc_xfer_to_litter_fire, &
+       m_deadcrootc_xfer_to_litter_fire, m_gresp_xfer_to_litter_fire, m_leafn_to_fire, &
+       m_frootn_to_fire, m_livestemn_to_fire, m_deadstemn_to_fire, &
+       m_livecrootn_to_fire, m_deadcrootn_to_fire, m_leafn_storage_to_fire, &
+       m_frootn_storage_to_fire, m_livestemn_storage_to_fire, m_deadstemn_storage_to_fire, &
+       m_livecrootn_storage_to_fire, m_deadcrootn_storage_to_fire, m_leafn_xfer_to_fire, &
+       m_frootn_xfer_to_fire, m_livestemn_xfer_to_fire, m_deadstemn_xfer_to_fire, &
+       m_livecrootn_xfer_to_fire, m_deadcrootn_xfer_to_fire, m_livestemn_to_deadstemn_fire, &
+       m_livecrootn_to_deadcrootn_fire, m_retransn_to_fire, m_leafn_to_litter_fire, &
+       m_frootn_to_litter_fire, m_livestemn_to_litter_fire, m_deadstemn_to_litter_fire, &
+       m_livecrootn_to_litter_fire, m_deadcrootn_to_litter_fire, m_leafn_storage_to_litter_fire, &
+       m_frootn_storage_to_litter_fire, m_livestemn_storage_to_litter_fire, m_deadstemn_storage_to_litter_fire, &
+       m_livecrootn_storage_to_litter_fire, m_deadcrootn_storage_to_litter_fire, m_leafn_xfer_to_litter_fire, &
+       m_frootn_xfer_to_litter_fire, m_livestemn_xfer_to_litter_fire, m_deadstemn_xfer_to_litter_fire, &
+       m_livecrootn_xfer_to_litter_fire, m_deadcrootn_xfer_to_litter_fire, m_retransn_to_litter_fire, &
+       m_litr1_c_to_fire, m_litr1_n_to_fire, m_litr2_c_to_fire, &
+       m_litr2_n_to_fire, m_litr3_c_to_fire, m_litr3_n_to_fire, &
+       m_cwd_c_to_fire, m_cwd_n_to_fire, &
+        fire_closs, fire_nloss, somc_fire, hrv_xsmrpool_to_atm, som_c_leached, som_n_leached, &
+        sminn_to_denit_excess_vr, sminn_to_denit_decomp_vr
    USE MOD_BGC_Vars_1DPFTFluxes, only: &
        psn_to_cpool_p, leaf_mr_p, froot_mr_p, livestem_mr_p, livecroot_mr_p, &
        cpool_leaf_gr_p, cpool_froot_gr_p, cpool_livestem_gr_p, cpool_deadstem_gr_p, &
@@ -106,7 +140,7 @@ MODULE MOD_BGC_CNSummary
        cpool_livecroot_storage_gr_p, cpool_deadcroot_storage_gr_p, &
        grain_mr_p, xsmrpool_to_atm_p, cpool_grain_gr_p, &
        transfer_grain_gr_p, cpool_grain_storage_gr_p, soil_change_p, &
-       fire_closs_p, hrv_xsmrpool_to_atm_p, &
+        fire_closs_p, fire_nloss_p, hrv_xsmrpool_to_atm_p, &
        cpool_to_leafc_p, cpool_to_leafc_storage_p, &
 #ifdef CROP
        cropprod1c_loss_p, grainc_to_seed_p, grainc_to_food_p, grainn_to_food_p, &
@@ -117,7 +151,29 @@ MODULE MOD_BGC_CNSummary
        m_deadstemc_to_fire_p, m_deadstemc_storage_to_fire_p, m_deadstemc_xfer_to_fire_p, &
        m_livecrootc_to_fire_p, m_livecrootc_storage_to_fire_p, m_livecrootc_xfer_to_fire_p, &
        m_deadcrootc_to_fire_p, m_deadcrootc_storage_to_fire_p, m_deadcrootc_xfer_to_fire_p, &
-       m_gresp_storage_to_fire_p, m_gresp_xfer_to_fire_p
+        m_gresp_storage_to_fire_p, m_gresp_xfer_to_fire_p, &
+        m_leafn_to_fire_p, m_leafn_storage_to_fire_p, m_leafn_xfer_to_fire_p, &
+        m_frootn_to_fire_p, m_frootn_storage_to_fire_p, m_frootn_xfer_to_fire_p, &
+        m_livestemn_to_fire_p, m_livestemn_storage_to_fire_p, m_livestemn_xfer_to_fire_p, &
+        m_deadstemn_to_fire_p, m_deadstemn_storage_to_fire_p, m_deadstemn_xfer_to_fire_p, &
+        m_livecrootn_to_fire_p, m_livecrootn_storage_to_fire_p, m_livecrootn_xfer_to_fire_p, &
+        m_deadcrootn_to_fire_p, m_deadcrootn_storage_to_fire_p, m_deadcrootn_xfer_to_fire_p, &
+        m_retransn_to_fire_p, &
+        m_livestemc_to_deadstemc_fire_p, m_livecrootc_to_deadcrootc_fire_p, m_leafc_to_litter_fire_p, &
+        m_frootc_to_litter_fire_p, m_livestemc_to_litter_fire_p, m_deadstemc_to_litter_fire_p, &
+        m_livecrootc_to_litter_fire_p, m_deadcrootc_to_litter_fire_p, m_leafc_storage_to_litter_fire_p, &
+        m_frootc_storage_to_litter_fire_p, m_livestemc_storage_to_litter_fire_p, m_deadstemc_storage_to_litter_fire_p, &
+        m_livecrootc_storage_to_litter_fire_p, m_deadcrootc_storage_to_litter_fire_p, m_gresp_storage_to_litter_fire_p, &
+        m_leafc_xfer_to_litter_fire_p, m_frootc_xfer_to_litter_fire_p, m_livestemc_xfer_to_litter_fire_p, &
+        m_deadstemc_xfer_to_litter_fire_p, m_livecrootc_xfer_to_litter_fire_p, m_deadcrootc_xfer_to_litter_fire_p, &
+        m_gresp_xfer_to_litter_fire_p, m_livestemn_to_deadstemn_fire_p, &
+        m_livecrootn_to_deadcrootn_fire_p, m_leafn_to_litter_fire_p, m_frootn_to_litter_fire_p, &
+        m_livestemn_to_litter_fire_p, m_deadstemn_to_litter_fire_p, m_livecrootn_to_litter_fire_p, &
+        m_deadcrootn_to_litter_fire_p, m_leafn_storage_to_litter_fire_p, m_frootn_storage_to_litter_fire_p, &
+        m_livestemn_storage_to_litter_fire_p, m_deadstemn_storage_to_litter_fire_p, m_livecrootn_storage_to_litter_fire_p, &
+        m_deadcrootn_storage_to_litter_fire_p, m_leafn_xfer_to_litter_fire_p, m_frootn_xfer_to_litter_fire_p, &
+        m_livestemn_xfer_to_litter_fire_p, m_deadstemn_xfer_to_litter_fire_p, m_livecrootn_xfer_to_litter_fire_p, &
+        m_deadcrootn_xfer_to_litter_fire_p, m_retransn_to_litter_fire_p
    USE MOD_Vars_TimeVariables, only: &
        irrig_method_corn  , irrig_method_swheat, irrig_method_wwheat, irrig_method_soybean  , &
        irrig_method_cotton, irrig_method_rice1 , irrig_method_rice2 , irrig_method_sugarcane, &
@@ -195,9 +251,9 @@ CONTAINS
     
       CALL soilbiogeochem_nitrogenflux_summary(i,nl_soil,dz_soi,ndecomp_transitions,ndecomp_pools)
   
-      CALL cnveg_carbonflux_summary(i,ps,pe,deltim)
-  
-      CALL cnveg_nitrogenflux_summary(i,ps,pe)
+       CALL cnveg_carbonflux_summary(i,ps,pe,nl_soil,dz_soi,ndecomp_pools,deltim)
+   
+       CALL cnveg_nitrogenflux_summary(i,ps,pe,nl_soil,dz_soi,ndecomp_pools)
 
    END SUBROUTINE CNDriverSummarizeFluxes
 
@@ -672,7 +728,7 @@ CONTAINS
 
    END SUBROUTINE soilbiogeochem_nitrogenflux_summary
 
-   SUBROUTINE cnveg_carbonflux_summary(i,ps,pe,deltim)
+   SUBROUTINE cnveg_carbonflux_summary(i,ps,pe,nl_soil,dz_soi,ndecomp_pools,deltim)
 
 ! !DESCRIPTION
 ! summarizes vegetationi C flux varaibles.
@@ -686,10 +742,13 @@ CONTAINS
    integer, intent(in) :: i       ! patch index
    integer, intent(in) :: ps      ! start pft index
    integer, intent(in) :: pe      ! END pft index
+   integer, intent(in) :: nl_soil ! number of total soil layers
+   real(r8),intent(in) :: dz_soi(1:nl_soil) ! thicknesses of each soil layer (m)
+   integer, intent(in) :: ndecomp_pools ! number of total soil & litter pools in the decompositions
    real(r8),intent(in) :: deltim  ! time step in seconds
    real(r8) :: ar_p
 
-   integer m
+   integer m, j, l
    real(r8) nfixlags
 
       gpp(i) = sum(psn_to_cpool_p(ps:pe) * pftfrac(ps:pe))
@@ -847,31 +906,99 @@ CONTAINS
       ENDIF
 #endif
 
-    !fire module is not activated yet.
-      DO m = ps, pe
-         fire_closs_p(m) = m_leafc_to_fire_p(m) &
-                         + m_leafc_storage_to_fire_p(m) &
-                         + m_leafc_xfer_to_fire_p(m) &
-                         + m_frootc_to_fire_p(m) &
-                         + m_frootc_storage_to_fire_p(m) &
-                         + m_frootc_xfer_to_fire_p(m) &
-                         + m_livestemc_to_fire_p(m) &
-                         + m_livestemc_storage_to_fire_p(m) &
-                         + m_livestemc_xfer_to_fire_p(m) &
-                         + m_deadstemc_to_fire_p(m) &
-                         + m_deadstemc_storage_to_fire_p(m) &
-                         + m_deadstemc_xfer_to_fire_p(m) &
-                         + m_livecrootc_to_fire_p(m) &
-                         + m_livecrootc_storage_to_fire_p(m) &
-                         + m_livecrootc_xfer_to_fire_p(m) &
-                         + m_deadcrootc_to_fire_p(m) &
-                         + m_deadcrootc_storage_to_fire_p(m) &
-                         + m_deadcrootc_xfer_to_fire_p(m) &
-                         + m_gresp_storage_to_fire_p(m) &
-                         + m_gresp_xfer_to_fire_p(m)
-      ENDDO
-  
-      fire_closs(i)          = sum(fire_closs_p(ps:pe)          * pftfrac(ps:pe))
+    ! Aggregate fire flux diagnostics at patch level before history accumulation.
+      IF (DEF_USE_FIRE) THEN
+         DO m = ps, pe
+            fire_closs_p(m) = m_leafc_to_fire_p(m) &
+                            + m_leafc_storage_to_fire_p(m) &
+                            + m_leafc_xfer_to_fire_p(m) &
+                            + m_frootc_to_fire_p(m) &
+                            + m_frootc_storage_to_fire_p(m) &
+                            + m_frootc_xfer_to_fire_p(m) &
+                            + m_livestemc_to_fire_p(m) &
+                            + m_livestemc_storage_to_fire_p(m) &
+                            + m_livestemc_xfer_to_fire_p(m) &
+                            + m_deadstemc_to_fire_p(m) &
+                            + m_deadstemc_storage_to_fire_p(m) &
+                            + m_deadstemc_xfer_to_fire_p(m) &
+                            + m_livecrootc_to_fire_p(m) &
+                            + m_livecrootc_storage_to_fire_p(m) &
+                            + m_livecrootc_xfer_to_fire_p(m) &
+                            + m_deadcrootc_to_fire_p(m) &
+                            + m_deadcrootc_storage_to_fire_p(m) &
+                            + m_deadcrootc_xfer_to_fire_p(m) &
+                            + m_gresp_storage_to_fire_p(m) &
+                            + m_gresp_xfer_to_fire_p(m)
+         ENDDO
+
+         pft_fire_closs(i) = sum(fire_closs_p(ps:pe) * pftfrac(ps:pe))
+         m_leafc_to_fire(i) = sum(m_leafc_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootc_to_fire(i) = sum(m_frootc_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemc_to_fire(i) = sum(m_livestemc_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemc_to_fire(i) = sum(m_deadstemc_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootc_to_fire(i) = sum(m_livecrootc_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootc_to_fire(i) = sum(m_deadcrootc_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafc_storage_to_fire(i) = sum(m_leafc_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootc_storage_to_fire(i) = sum(m_frootc_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemc_storage_to_fire(i) = sum(m_livestemc_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemc_storage_to_fire(i) = sum(m_deadstemc_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootc_storage_to_fire(i) = sum(m_livecrootc_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootc_storage_to_fire(i) = sum(m_deadcrootc_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_gresp_storage_to_fire(i) = sum(m_gresp_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafc_xfer_to_fire(i) = sum(m_leafc_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootc_xfer_to_fire(i) = sum(m_frootc_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemc_xfer_to_fire(i) = sum(m_livestemc_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemc_xfer_to_fire(i) = sum(m_deadstemc_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootc_xfer_to_fire(i) = sum(m_livecrootc_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootc_xfer_to_fire(i) = sum(m_deadcrootc_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_gresp_xfer_to_fire(i) = sum(m_gresp_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemc_to_deadstemc_fire(i) = sum(m_livestemc_to_deadstemc_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootc_to_deadcrootc_fire(i) = sum(m_livecrootc_to_deadcrootc_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafc_to_litter_fire(i) = sum(m_leafc_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootc_to_litter_fire(i) = sum(m_frootc_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemc_to_litter_fire(i) = sum(m_livestemc_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemc_to_litter_fire(i) = sum(m_deadstemc_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootc_to_litter_fire(i) = sum(m_livecrootc_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootc_to_litter_fire(i) = sum(m_deadcrootc_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafc_storage_to_litter_fire(i) = sum(m_leafc_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootc_storage_to_litter_fire(i) = sum(m_frootc_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemc_storage_to_litter_fire(i) = sum(m_livestemc_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemc_storage_to_litter_fire(i) = sum(m_deadstemc_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootc_storage_to_litter_fire(i) = sum(m_livecrootc_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootc_storage_to_litter_fire(i) = sum(m_deadcrootc_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_gresp_storage_to_litter_fire(i) = sum(m_gresp_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafc_xfer_to_litter_fire(i) = sum(m_leafc_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootc_xfer_to_litter_fire(i) = sum(m_frootc_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemc_xfer_to_litter_fire(i) = sum(m_livestemc_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemc_xfer_to_litter_fire(i) = sum(m_deadstemc_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootc_xfer_to_litter_fire(i) = sum(m_livecrootc_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootc_xfer_to_litter_fire(i) = sum(m_deadcrootc_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_gresp_xfer_to_litter_fire(i) = sum(m_gresp_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+
+         fire_closs(i) = pft_fire_closs(i)
+         DO j = 1, nl_soil
+            DO l = 1, ndecomp_pools
+               IF (is_litter(l) .or. is_cwd(l)) THEN
+                  fire_closs(i) = fire_closs(i) + m_decomp_cpools_to_fire_vr(j,l,i) * dz_soi(j)
+               ENDIF
+            ENDDO
+         ENDDO
+
+         m_litr1_c_to_fire(i) = sum(m_decomp_cpools_to_fire_vr(1:nl_soil,i_met_lit,i) * dz_soi(1:nl_soil))
+         m_litr2_c_to_fire(i) = sum(m_decomp_cpools_to_fire_vr(1:nl_soil,i_cel_lit,i) * dz_soi(1:nl_soil))
+         m_litr3_c_to_fire(i) = sum(m_decomp_cpools_to_fire_vr(1:nl_soil,i_lig_lit,i) * dz_soi(1:nl_soil))
+         m_cwd_c_to_fire(i) = sum(m_decomp_cpools_to_fire_vr(1:nl_soil,i_cwd,i) * dz_soi(1:nl_soil))
+
+         litfire(i) = 0._r8
+         somfire(i) = 0._r8
+         DO l = 1, ndecomp_pools
+            IF (is_litter(l)) litfire(i) = litfire(i) + &
+               sum(m_decomp_cpools_to_fire_vr(1:nl_soil,l,i) * dz_soi(1:nl_soil))
+            IF (is_soil(l)) somfire(i) = somfire(i) + &
+               sum(m_decomp_cpools_to_fire_vr(1:nl_soil,l,i) * dz_soi(1:nl_soil))
+         ENDDO
+         totfire(i) = fire_closs(i) + somfire(i) + somc_fire(i)
+      ENDIF
       hrv_xsmrpool_to_atm(i) = sum(hrv_xsmrpool_to_atm_p(ps:pe) * pftfrac(ps:pe))
   
       nfixlags = nfix_timeconst * 86400._r8
@@ -884,7 +1011,7 @@ CONTAINS
 
    END SUBROUTINE cnveg_carbonflux_summary
 
-   SUBROUTINE cnveg_nitrogenflux_summary(i,ps,pe)
+   SUBROUTINE cnveg_nitrogenflux_summary(i,ps,pe,nl_soil,dz_soi,ndecomp_pools)
 
 ! !DESCRIPTION
 ! summarizes vegetationi N flux varaibles.
@@ -895,9 +1022,14 @@ CONTAINS
 ! !REVISION:
 ! Xingjie Lu, 2022, modify original CLM5 to be compatible with CoLM code structure. 
 
-   integer, intent(in) :: i  ! patch index
-   integer, intent(in) :: ps ! start pft index
-   integer, intent(in) :: pe ! end pft index
+   integer, intent(in) :: i       ! patch index
+   integer, intent(in) :: ps      ! start pft index
+   integer, intent(in) :: pe      ! end pft index
+   integer, intent(in) :: nl_soil ! number of total soil layers
+   real(r8),intent(in) :: dz_soi(1:nl_soil) ! thicknesses of each soil layer (m)
+   integer, intent(in) :: ndecomp_pools ! number of total soil & litter pools in the decompositions
+
+   integer m, j, l
 
 #ifdef CROP
       IF(patchclass(i) .eq. 12)THEN
@@ -911,9 +1043,89 @@ CONTAINS
          grainn_to_cropprodn (i) = 0._r8
       ENDIF
 #endif
-   END SUBROUTINE cnveg_nitrogenflux_summary
+      IF (DEF_USE_FIRE) THEN
+         DO m = ps, pe
+            fire_nloss_p(m) = m_leafn_to_fire_p(m) &
+                            + m_leafn_storage_to_fire_p(m) &
+                            + m_leafn_xfer_to_fire_p(m) &
+                            + m_frootn_to_fire_p(m) &
+                            + m_frootn_storage_to_fire_p(m) &
+                            + m_frootn_xfer_to_fire_p(m) &
+                            + m_livestemn_to_fire_p(m) &
+                            + m_livestemn_storage_to_fire_p(m) &
+                            + m_livestemn_xfer_to_fire_p(m) &
+                            + m_deadstemn_to_fire_p(m) &
+                            + m_deadstemn_storage_to_fire_p(m) &
+                            + m_deadstemn_xfer_to_fire_p(m) &
+                            + m_livecrootn_to_fire_p(m) &
+                            + m_livecrootn_storage_to_fire_p(m) &
+                            + m_livecrootn_xfer_to_fire_p(m) &
+                            + m_deadcrootn_to_fire_p(m) &
+                            + m_deadcrootn_storage_to_fire_p(m) &
+                            + m_deadcrootn_xfer_to_fire_p(m) &
+                            + m_retransn_to_fire_p(m)
+         ENDDO
 
-END MODULE MOD_BGC_CNSummary
+         pft_fire_nloss(i) = sum(fire_nloss_p(ps:pe) * pftfrac(ps:pe))
+         m_leafn_to_fire(i) = sum(m_leafn_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootn_to_fire(i) = sum(m_frootn_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemn_to_fire(i) = sum(m_livestemn_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemn_to_fire(i) = sum(m_deadstemn_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootn_to_fire(i) = sum(m_livecrootn_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootn_to_fire(i) = sum(m_deadcrootn_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafn_storage_to_fire(i) = sum(m_leafn_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootn_storage_to_fire(i) = sum(m_frootn_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemn_storage_to_fire(i) = sum(m_livestemn_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemn_storage_to_fire(i) = sum(m_deadstemn_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootn_storage_to_fire(i) = sum(m_livecrootn_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootn_storage_to_fire(i) = sum(m_deadcrootn_storage_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafn_xfer_to_fire(i) = sum(m_leafn_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootn_xfer_to_fire(i) = sum(m_frootn_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemn_xfer_to_fire(i) = sum(m_livestemn_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemn_xfer_to_fire(i) = sum(m_deadstemn_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootn_xfer_to_fire(i) = sum(m_livecrootn_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootn_xfer_to_fire(i) = sum(m_deadcrootn_xfer_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemn_to_deadstemn_fire(i) = sum(m_livestemn_to_deadstemn_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootn_to_deadcrootn_fire(i) = sum(m_livecrootn_to_deadcrootn_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_retransn_to_fire(i) = sum(m_retransn_to_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafn_to_litter_fire(i) = sum(m_leafn_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootn_to_litter_fire(i) = sum(m_frootn_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemn_to_litter_fire(i) = sum(m_livestemn_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemn_to_litter_fire(i) = sum(m_deadstemn_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootn_to_litter_fire(i) = sum(m_livecrootn_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootn_to_litter_fire(i) = sum(m_deadcrootn_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafn_storage_to_litter_fire(i) = sum(m_leafn_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootn_storage_to_litter_fire(i) = sum(m_frootn_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemn_storage_to_litter_fire(i) = sum(m_livestemn_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemn_storage_to_litter_fire(i) = sum(m_deadstemn_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootn_storage_to_litter_fire(i) = sum(m_livecrootn_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootn_storage_to_litter_fire(i) = sum(m_deadcrootn_storage_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_leafn_xfer_to_litter_fire(i) = sum(m_leafn_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_frootn_xfer_to_litter_fire(i) = sum(m_frootn_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livestemn_xfer_to_litter_fire(i) = sum(m_livestemn_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadstemn_xfer_to_litter_fire(i) = sum(m_deadstemn_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_livecrootn_xfer_to_litter_fire(i) = sum(m_livecrootn_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_deadcrootn_xfer_to_litter_fire(i) = sum(m_deadcrootn_xfer_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+         m_retransn_to_litter_fire(i) = sum(m_retransn_to_litter_fire_p(ps:pe) * pftfrac(ps:pe))
+
+         fire_nloss(i) = pft_fire_nloss(i)
+         DO j = 1, nl_soil
+            DO l = 1, ndecomp_pools
+               IF (is_litter(l) .or. is_cwd(l)) THEN
+                  fire_nloss(i) = fire_nloss(i) + m_decomp_npools_to_fire_vr(j,l,i) * dz_soi(j)
+               ENDIF
+            ENDDO
+         ENDDO
+
+         m_litr1_n_to_fire(i) = sum(m_decomp_npools_to_fire_vr(1:nl_soil,i_met_lit,i) * dz_soi(1:nl_soil))
+         m_litr2_n_to_fire(i) = sum(m_decomp_npools_to_fire_vr(1:nl_soil,i_cel_lit,i) * dz_soi(1:nl_soil))
+         m_litr3_n_to_fire(i) = sum(m_decomp_npools_to_fire_vr(1:nl_soil,i_lig_lit,i) * dz_soi(1:nl_soil))
+         m_cwd_n_to_fire(i) = sum(m_decomp_npools_to_fire_vr(1:nl_soil,i_cwd,i) * dz_soi(1:nl_soil))
+      ENDIF
+
+    END SUBROUTINE cnveg_nitrogenflux_summary
+
+ END MODULE MOD_BGC_CNSummary
 
 
 #endif

@@ -102,6 +102,11 @@ MODULE MOD_BGC_Vars_TimeInvariants
    real(r8) :: soilpsi_off                    ! critical soil water potential threshold for offset
 
    real(r8) :: occur_hi_gdp_tree              ! fire occurance for high GDP areas that are tree dominated (fraction)
+   real(r8) :: nonborpeat_fire_precip_denom
+   real(r8) :: borpeat_fire_soilmoist_denom
+   real(r8) :: prh30
+   real(r8) :: max_rh30_affecting_fuel
+   real(r8) :: ignition_efficiency
    real(r8) :: lfuel                          ! lower threshold of fuel mass (gC/m2) for ignition, Li et al.(2014)
    real(r8) :: ufuel                          ! upper threshold of fuel mass (gC/m2) for ignition, Li et al.(2014)
    real(r8) :: cropfire_a1                    ! a1 parameter for cropland fire in (Li et. al., 2014) (1/hr)
@@ -277,6 +282,11 @@ CONTAINS
       CALL ncio_read_bcast_serial (file_restart, 'soilpsi_off         ', soilpsi_off         )
 
       CALL ncio_read_bcast_serial (file_restart, 'occur_hi_gdp_tree   ', occur_hi_gdp_tree   )
+      CALL ncio_read_bcast_serial (file_restart, 'nonborpeat_fire_precip_denom ',nonborpeat_fire_precip_denom )
+      CALL ncio_read_bcast_serial (file_restart, 'borpeat_fire_soilmoist_denom ',borpeat_fire_soilmoist_denom )
+      CALL ncio_read_bcast_serial (file_restart, 'prh30                        ',prh30                        )
+      CALL ncio_read_bcast_serial (file_restart, 'max_rh30_affecting_fuel      ',max_rh30_affecting_fuel      )
+      CALL ncio_read_bcast_serial (file_restart, 'ignition_efficiency          ',ignition_efficiency          )
       CALL ncio_read_bcast_serial (file_restart, 'lfuel               ', lfuel               )
       CALL ncio_read_bcast_serial (file_restart, 'ufuel               ', ufuel               )
       CALL ncio_read_bcast_serial (file_restart, 'cropfire_a1         ', cropfire_a1         )
@@ -433,6 +443,11 @@ CONTAINS
          CALL ncio_write_serial (file_restart, 'soilpsi_off         ', soilpsi_off         )
 
          CALL ncio_write_serial (file_restart, 'occur_hi_gdp_tree   ', occur_hi_gdp_tree   )
+         CALL ncio_write_serial (file_restart, 'nonborpeat_fire_precip_denom ',nonborpeat_fire_precip_denom )
+         CALL ncio_write_serial (file_restart, 'borpeat_fire_soilmoist_denom ',borpeat_fire_soilmoist_denom )
+         CALL ncio_write_serial (file_restart, 'prh30                        ',prh30                        )
+         CALL ncio_write_serial (file_restart, 'max_rh30_affecting_fuel      ',max_rh30_affecting_fuel      )
+         CALL ncio_write_serial (file_restart, 'ignition_efficiency          ',ignition_efficiency          )
          CALL ncio_write_serial (file_restart, 'lfuel               ', lfuel               )
          CALL ncio_write_serial (file_restart, 'ufuel               ', ufuel               )
          CALL ncio_write_serial (file_restart, 'cropfire_a1         ', cropfire_a1         )

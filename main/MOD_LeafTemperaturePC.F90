@@ -1794,7 +1794,7 @@ ENDIF
                rst(i) = 2.0e4
             ENDIF
             assim(i) = assimsun(i) + assimsha(i)
-            respc(i) = respcsun(i) + respcsha(i) + rsoil
+            respc(i) = respcsun(i) + respcsha(i)
 
 ! canopy fluxes and total assimilation and respiration
             fsenl(i) = fsenl(i) + fsenl_dtl(i)*dtl(it-1,i) &

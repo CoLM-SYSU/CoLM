@@ -197,9 +197,11 @@ MODULE MOD_BGC_Vars_TimeVariables
    real(r8), allocatable :: nfire                    (:)      ! fire counts (count km-2 s-1)
    real(r8), allocatable :: fsat                     (:)      !
    real(r8), allocatable :: prec10                   (:)      ! 10-day running mean of total precipitation (mm -1)
+   real(r8), allocatable :: prec30                   (:)      ! 30-day running mean of total      precipitation  (mm -1)
    real(r8), allocatable :: prec60                   (:)      ! 60-day running mean of total      precipitation  (mm -1)
    real(r8), allocatable :: prec365                  (:)      ! 365-day running mean of tota     l precipitation (mm -1)
    real(r8), allocatable :: prec_today               (:)      ! today's daily precipitation (mm -1)
+   real(r8), allocatable :: rh30_today               (:)      ! today's daily precipitation (mm -1)
    real(r8), allocatable :: prec_daily               (:,:)    ! daily total precipitation (mm -1)
    real(r8), allocatable :: wf2                      (:)      ! soil moisture (K)
    real(r8), allocatable :: tsoi17                   (:)      ! soil temperature (cm3 cm-3)
@@ -506,9 +508,11 @@ CONTAINS
             allocate (nfire                        (numpatch))                            ; nfire                 (:) = spval
             allocate (fsat                         (numpatch))                            ; fsat                  (:) = spval
             allocate (prec10                       (numpatch))                            ; prec10                (:) = spval
+            allocate (prec30                       (numpatch))                            ; prec30                (:) = spval
             allocate (prec60                       (numpatch))                            ; prec60                (:) = spval
             allocate (prec365                      (numpatch))                            ; prec365               (:) = spval
             allocate (prec_today                   (numpatch))                            ; prec_today            (:) = spval
+            allocate (rh30_today                   (numpatch))                            ; rh30_today            (:) = spval
             allocate (prec_daily               (365,numpatch))                            ; prec_daily          (:,:) = spval! daily total precipitation      [mm/day]
             allocate (wf2                          (numpatch))                            ; wf2                   (:) = spval
             allocate (tsoi17                       (numpatch))                            ; tsoi17                (:) = spval
@@ -802,9 +806,11 @@ CONTAINS
             deallocate (nfire                        )
             deallocate (fsat                         )
             deallocate (prec10                       )
+            deallocate (prec30                       )
             deallocate (prec60                       )
             deallocate (prec365                      )
             deallocate (prec_today                   )
+            deallocate (rh30_today                   )
             deallocate (prec_daily                   )
             deallocate (wf2                          )
             deallocate (tsoi17                       )
@@ -981,9 +987,11 @@ CONTAINS
       ENDIF
 
       CALL ncio_write_vector (file_restart, 'prec10               ', 'patch', landpatch, prec10               )
+      CALL ncio_write_vector (file_restart, 'prec30               ', 'patch', landpatch, prec30               )
       CALL ncio_write_vector (file_restart, 'prec60               ', 'patch', landpatch, prec60               )
       CALL ncio_write_vector (file_restart, 'prec365              ', 'patch', landpatch, prec365              )
       CALL ncio_write_vector (file_restart, 'prec_today           ', 'patch', landpatch, prec_today           )
+      CALL ncio_write_vector (file_restart, 'rh30_today           ', 'patch', landpatch, rh30_today           )
       CALL ncio_write_vector (file_restart, 'prec_daily           ', 'doy'   ,       365, 'patch', landpatch, prec_daily  )
       CALL ncio_write_vector (file_restart, 'tsoi17               ', 'patch', landpatch, tsoi17               )
       CALL ncio_write_vector (file_restart, 'rh30                 ', 'patch', landpatch, rh30                 )
@@ -1144,9 +1152,11 @@ CONTAINS
       ENDIF
 
       CALL ncio_read_vector (file_restart, 'prec10               ', landpatch, prec10               )
+      CALL ncio_read_vector (file_restart, 'prec30               ', landpatch, prec30               )
       CALL ncio_read_vector (file_restart, 'prec60               ', landpatch, prec60               )
       CALL ncio_read_vector (file_restart, 'prec365              ', landpatch, prec365              )
       CALL ncio_read_vector (file_restart, 'prec_today           ', landpatch, prec_today           )
+      CALL ncio_read_vector (file_restart, 'rh30_today           ', landpatch, rh30_today           )
       CALL ncio_read_vector (file_restart, 'prec_daily           ',       365, landpatch, prec_daily)
       CALL ncio_read_vector (file_restart, 'tsoi17               ', landpatch, tsoi17               )
       CALL ncio_read_vector (file_restart, 'rh30                 ', landpatch, rh30                 )
@@ -1438,9 +1448,11 @@ CONTAINS
       CALL check_vector_data ('nfire                    ', nfire                    )
       CALL check_vector_data ('fsat                     ', fsat                     )
       CALL check_vector_data ('prec10                   ', prec10                   )
+      CALL check_vector_data ('prec30                   ', prec30                   )
       CALL check_vector_data ('prec60                   ', prec60                   )
       CALL check_vector_data ('prec365                  ', prec365                  )
       CALL check_vector_data ('prec_today               ', prec_today               )
+      CALL check_vector_data ('rh30_today               ', rh30_today               )
       CALL check_vector_data ('prec_daily               ', prec_daily               )
       CALL check_vector_data ('wf2                      ', wf2                      )
       CALL check_vector_data ('tsoi17                   ', tsoi17                   )

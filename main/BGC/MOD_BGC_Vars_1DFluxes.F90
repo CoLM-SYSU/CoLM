@@ -79,7 +79,105 @@ MODULE MOD_BGC_Vars_1DFluxes
    real(r8), allocatable :: hr                         (:) ! heterotrophic respiration (gC m-2 s-1)
    real(r8), allocatable :: er                         (:) ! total ecosystem respiration, autotrophic + heterotrophic (gC m-2 s-1)
    real(r8), allocatable :: fire_closs                 (:) ! total C emissions due to fire (gC m-2 s-1)
+   real(r8), allocatable :: fire_btran2(:) ! diagnostic normalized fire wetness (unitless)
    real(r8), allocatable :: fire_nloss                 (:) ! total N emissions due to fire (gN m-2 s-1)
+
+! patch-level fire diagnostics used by history output
+   real(r8), allocatable :: pft_fire_closs(:)
+   real(r8), allocatable :: pft_fire_nloss(:)
+   real(r8), allocatable :: litfire(:)
+   real(r8), allocatable :: somfire(:)
+   real(r8), allocatable :: totfire(:)
+   real(r8), allocatable :: m_leafc_to_fire(:)
+   real(r8), allocatable :: m_frootc_to_fire(:)
+   real(r8), allocatable :: m_livestemc_to_fire(:)
+   real(r8), allocatable :: m_deadstemc_to_fire(:)
+   real(r8), allocatable :: m_livecrootc_to_fire(:)
+   real(r8), allocatable :: m_deadcrootc_to_fire(:)
+   real(r8), allocatable :: m_leafc_storage_to_fire(:)
+   real(r8), allocatable :: m_frootc_storage_to_fire(:)
+   real(r8), allocatable :: m_livestemc_storage_to_fire(:)
+   real(r8), allocatable :: m_deadstemc_storage_to_fire(:)
+   real(r8), allocatable :: m_livecrootc_storage_to_fire(:)
+   real(r8), allocatable :: m_deadcrootc_storage_to_fire(:)
+   real(r8), allocatable :: m_gresp_storage_to_fire(:)
+   real(r8), allocatable :: m_leafc_xfer_to_fire(:)
+   real(r8), allocatable :: m_frootc_xfer_to_fire(:)
+   real(r8), allocatable :: m_livestemc_xfer_to_fire(:)
+   real(r8), allocatable :: m_deadstemc_xfer_to_fire(:)
+   real(r8), allocatable :: m_livecrootc_xfer_to_fire(:)
+   real(r8), allocatable :: m_deadcrootc_xfer_to_fire(:)
+   real(r8), allocatable :: m_gresp_xfer_to_fire(:)
+   real(r8), allocatable :: m_livestemc_to_deadstemc_fire(:)
+   real(r8), allocatable :: m_livecrootc_to_deadcrootc_fire(:)
+   real(r8), allocatable :: m_leafc_to_litter_fire(:)
+   real(r8), allocatable :: m_frootc_to_litter_fire(:)
+   real(r8), allocatable :: m_livestemc_to_litter_fire(:)
+   real(r8), allocatable :: m_deadstemc_to_litter_fire(:)
+   real(r8), allocatable :: m_livecrootc_to_litter_fire(:)
+   real(r8), allocatable :: m_deadcrootc_to_litter_fire(:)
+   real(r8), allocatable :: m_leafc_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_frootc_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_livestemc_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_deadstemc_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_livecrootc_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_deadcrootc_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_gresp_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_leafc_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_frootc_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_livestemc_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_deadstemc_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_livecrootc_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_deadcrootc_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_gresp_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_leafn_to_fire(:)
+   real(r8), allocatable :: m_frootn_to_fire(:)
+   real(r8), allocatable :: m_livestemn_to_fire(:)
+   real(r8), allocatable :: m_deadstemn_to_fire(:)
+   real(r8), allocatable :: m_livecrootn_to_fire(:)
+   real(r8), allocatable :: m_deadcrootn_to_fire(:)
+   real(r8), allocatable :: m_leafn_storage_to_fire(:)
+   real(r8), allocatable :: m_frootn_storage_to_fire(:)
+   real(r8), allocatable :: m_livestemn_storage_to_fire(:)
+   real(r8), allocatable :: m_deadstemn_storage_to_fire(:)
+   real(r8), allocatable :: m_livecrootn_storage_to_fire(:)
+   real(r8), allocatable :: m_deadcrootn_storage_to_fire(:)
+   real(r8), allocatable :: m_leafn_xfer_to_fire(:)
+   real(r8), allocatable :: m_frootn_xfer_to_fire(:)
+   real(r8), allocatable :: m_livestemn_xfer_to_fire(:)
+   real(r8), allocatable :: m_deadstemn_xfer_to_fire(:)
+   real(r8), allocatable :: m_livecrootn_xfer_to_fire(:)
+   real(r8), allocatable :: m_deadcrootn_xfer_to_fire(:)
+   real(r8), allocatable :: m_livestemn_to_deadstemn_fire(:)
+   real(r8), allocatable :: m_livecrootn_to_deadcrootn_fire(:)
+   real(r8), allocatable :: m_retransn_to_fire(:)
+   real(r8), allocatable :: m_leafn_to_litter_fire(:)
+   real(r8), allocatable :: m_frootn_to_litter_fire(:)
+   real(r8), allocatable :: m_livestemn_to_litter_fire(:)
+   real(r8), allocatable :: m_deadstemn_to_litter_fire(:)
+   real(r8), allocatable :: m_livecrootn_to_litter_fire(:)
+   real(r8), allocatable :: m_deadcrootn_to_litter_fire(:)
+   real(r8), allocatable :: m_leafn_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_frootn_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_livestemn_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_deadstemn_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_livecrootn_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_deadcrootn_storage_to_litter_fire(:)
+   real(r8), allocatable :: m_leafn_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_frootn_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_livestemn_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_deadstemn_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_livecrootn_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_deadcrootn_xfer_to_litter_fire(:)
+   real(r8), allocatable :: m_retransn_to_litter_fire(:)
+   real(r8), allocatable :: m_litr1_c_to_fire(:)
+   real(r8), allocatable :: m_litr1_n_to_fire(:)
+   real(r8), allocatable :: m_litr2_c_to_fire(:)
+   real(r8), allocatable :: m_litr2_n_to_fire(:)
+   real(r8), allocatable :: m_litr3_c_to_fire(:)
+   real(r8), allocatable :: m_litr3_n_to_fire(:)
+   real(r8), allocatable :: m_cwd_c_to_fire(:)
+   real(r8), allocatable :: m_cwd_n_to_fire(:)
    real(r8), allocatable :: hrv_xsmrpool_to_atm        (:) ! maintenance respiration storage C to atmosphere due to harvest (gC m-2 s-1)
    real(r8), allocatable :: wood_harvestc              (:) ! harvested wood C (gC m-2 s-1)
    real(r8), allocatable :: wood_harvestn              (:) ! harvested wood N (gN m-2 s-1)
@@ -270,7 +368,103 @@ CONTAINS
             allocate (hr                         (numpatch)) ; hr                         (:) = spval
             allocate (er                         (numpatch)) ; er                         (:) = spval
             allocate (fire_closs                 (numpatch)) ; fire_closs                 (:) = spval
+            allocate (fire_btran2(numpatch)); fire_btran2(:) = spval
             allocate (fire_nloss                 (numpatch)) ; fire_nloss                 (:) = spval
+            allocate (pft_fire_closs(numpatch)); pft_fire_closs(:) = spval
+            allocate (pft_fire_nloss(numpatch)); pft_fire_nloss(:) = spval
+            allocate (litfire(numpatch)); litfire(:) = spval
+            allocate (somfire(numpatch)); somfire(:) = spval
+            allocate (totfire(numpatch)); totfire(:) = spval
+            allocate (m_leafc_to_fire(numpatch)); m_leafc_to_fire(:) = spval
+            allocate (m_frootc_to_fire(numpatch)); m_frootc_to_fire(:) = spval
+            allocate (m_livestemc_to_fire(numpatch)); m_livestemc_to_fire(:) = spval
+            allocate (m_deadstemc_to_fire(numpatch)); m_deadstemc_to_fire(:) = spval
+            allocate (m_livecrootc_to_fire(numpatch)); m_livecrootc_to_fire(:) = spval
+            allocate (m_deadcrootc_to_fire(numpatch)); m_deadcrootc_to_fire(:) = spval
+            allocate (m_leafc_storage_to_fire(numpatch)); m_leafc_storage_to_fire(:) = spval
+            allocate (m_frootc_storage_to_fire(numpatch)); m_frootc_storage_to_fire(:) = spval
+            allocate (m_livestemc_storage_to_fire(numpatch)); m_livestemc_storage_to_fire(:) = spval
+            allocate (m_deadstemc_storage_to_fire(numpatch)); m_deadstemc_storage_to_fire(:) = spval
+            allocate (m_livecrootc_storage_to_fire(numpatch)); m_livecrootc_storage_to_fire(:) = spval
+            allocate (m_deadcrootc_storage_to_fire(numpatch)); m_deadcrootc_storage_to_fire(:) = spval
+            allocate (m_gresp_storage_to_fire(numpatch)); m_gresp_storage_to_fire(:) = spval
+            allocate (m_leafc_xfer_to_fire(numpatch)); m_leafc_xfer_to_fire(:) = spval
+            allocate (m_frootc_xfer_to_fire(numpatch)); m_frootc_xfer_to_fire(:) = spval
+            allocate (m_livestemc_xfer_to_fire(numpatch)); m_livestemc_xfer_to_fire(:) = spval
+            allocate (m_deadstemc_xfer_to_fire(numpatch)); m_deadstemc_xfer_to_fire(:) = spval
+            allocate (m_livecrootc_xfer_to_fire(numpatch)); m_livecrootc_xfer_to_fire(:) = spval
+            allocate (m_deadcrootc_xfer_to_fire(numpatch)); m_deadcrootc_xfer_to_fire(:) = spval
+            allocate (m_gresp_xfer_to_fire(numpatch)); m_gresp_xfer_to_fire(:) = spval
+            allocate (m_livestemc_to_deadstemc_fire(numpatch)); m_livestemc_to_deadstemc_fire(:) = spval
+            allocate (m_livecrootc_to_deadcrootc_fire(numpatch)); m_livecrootc_to_deadcrootc_fire(:) = spval
+            allocate (m_leafc_to_litter_fire(numpatch)); m_leafc_to_litter_fire(:) = spval
+            allocate (m_frootc_to_litter_fire(numpatch)); m_frootc_to_litter_fire(:) = spval
+            allocate (m_livestemc_to_litter_fire(numpatch)); m_livestemc_to_litter_fire(:) = spval
+            allocate (m_deadstemc_to_litter_fire(numpatch)); m_deadstemc_to_litter_fire(:) = spval
+            allocate (m_livecrootc_to_litter_fire(numpatch)); m_livecrootc_to_litter_fire(:) = spval
+            allocate (m_deadcrootc_to_litter_fire(numpatch)); m_deadcrootc_to_litter_fire(:) = spval
+            allocate (m_leafc_storage_to_litter_fire(numpatch)); m_leafc_storage_to_litter_fire(:) = spval
+            allocate (m_frootc_storage_to_litter_fire(numpatch)); m_frootc_storage_to_litter_fire(:) = spval
+            allocate (m_livestemc_storage_to_litter_fire(numpatch)); m_livestemc_storage_to_litter_fire(:) = spval
+            allocate (m_deadstemc_storage_to_litter_fire(numpatch)); m_deadstemc_storage_to_litter_fire(:) = spval
+            allocate (m_livecrootc_storage_to_litter_fire(numpatch)); m_livecrootc_storage_to_litter_fire(:) = spval
+            allocate (m_deadcrootc_storage_to_litter_fire(numpatch)); m_deadcrootc_storage_to_litter_fire(:) = spval
+            allocate (m_gresp_storage_to_litter_fire(numpatch)); m_gresp_storage_to_litter_fire(:) = spval
+            allocate (m_leafc_xfer_to_litter_fire(numpatch)); m_leafc_xfer_to_litter_fire(:) = spval
+            allocate (m_frootc_xfer_to_litter_fire(numpatch)); m_frootc_xfer_to_litter_fire(:) = spval
+            allocate (m_livestemc_xfer_to_litter_fire(numpatch)); m_livestemc_xfer_to_litter_fire(:) = spval
+            allocate (m_deadstemc_xfer_to_litter_fire(numpatch)); m_deadstemc_xfer_to_litter_fire(:) = spval
+            allocate (m_livecrootc_xfer_to_litter_fire(numpatch)); m_livecrootc_xfer_to_litter_fire(:) = spval
+            allocate (m_deadcrootc_xfer_to_litter_fire(numpatch)); m_deadcrootc_xfer_to_litter_fire(:) = spval
+            allocate (m_gresp_xfer_to_litter_fire(numpatch)); m_gresp_xfer_to_litter_fire(:) = spval
+            allocate (m_leafn_to_fire(numpatch)); m_leafn_to_fire(:) = spval
+            allocate (m_frootn_to_fire(numpatch)); m_frootn_to_fire(:) = spval
+            allocate (m_livestemn_to_fire(numpatch)); m_livestemn_to_fire(:) = spval
+            allocate (m_deadstemn_to_fire(numpatch)); m_deadstemn_to_fire(:) = spval
+            allocate (m_livecrootn_to_fire(numpatch)); m_livecrootn_to_fire(:) = spval
+            allocate (m_deadcrootn_to_fire(numpatch)); m_deadcrootn_to_fire(:) = spval
+            allocate (m_leafn_storage_to_fire(numpatch)); m_leafn_storage_to_fire(:) = spval
+            allocate (m_frootn_storage_to_fire(numpatch)); m_frootn_storage_to_fire(:) = spval
+            allocate (m_livestemn_storage_to_fire(numpatch)); m_livestemn_storage_to_fire(:) = spval
+            allocate (m_deadstemn_storage_to_fire(numpatch)); m_deadstemn_storage_to_fire(:) = spval
+            allocate (m_livecrootn_storage_to_fire(numpatch)); m_livecrootn_storage_to_fire(:) = spval
+            allocate (m_deadcrootn_storage_to_fire(numpatch)); m_deadcrootn_storage_to_fire(:) = spval
+            allocate (m_leafn_xfer_to_fire(numpatch)); m_leafn_xfer_to_fire(:) = spval
+            allocate (m_frootn_xfer_to_fire(numpatch)); m_frootn_xfer_to_fire(:) = spval
+            allocate (m_livestemn_xfer_to_fire(numpatch)); m_livestemn_xfer_to_fire(:) = spval
+            allocate (m_deadstemn_xfer_to_fire(numpatch)); m_deadstemn_xfer_to_fire(:) = spval
+            allocate (m_livecrootn_xfer_to_fire(numpatch)); m_livecrootn_xfer_to_fire(:) = spval
+            allocate (m_deadcrootn_xfer_to_fire(numpatch)); m_deadcrootn_xfer_to_fire(:) = spval
+            allocate (m_livestemn_to_deadstemn_fire(numpatch)); m_livestemn_to_deadstemn_fire(:) = spval
+            allocate (m_livecrootn_to_deadcrootn_fire(numpatch)); m_livecrootn_to_deadcrootn_fire(:) = spval
+            allocate (m_retransn_to_fire(numpatch)); m_retransn_to_fire(:) = spval
+            allocate (m_leafn_to_litter_fire(numpatch)); m_leafn_to_litter_fire(:) = spval
+            allocate (m_frootn_to_litter_fire(numpatch)); m_frootn_to_litter_fire(:) = spval
+            allocate (m_livestemn_to_litter_fire(numpatch)); m_livestemn_to_litter_fire(:) = spval
+            allocate (m_deadstemn_to_litter_fire(numpatch)); m_deadstemn_to_litter_fire(:) = spval
+            allocate (m_livecrootn_to_litter_fire(numpatch)); m_livecrootn_to_litter_fire(:) = spval
+            allocate (m_deadcrootn_to_litter_fire(numpatch)); m_deadcrootn_to_litter_fire(:) = spval
+            allocate (m_leafn_storage_to_litter_fire(numpatch)); m_leafn_storage_to_litter_fire(:) = spval
+            allocate (m_frootn_storage_to_litter_fire(numpatch)); m_frootn_storage_to_litter_fire(:) = spval
+            allocate (m_livestemn_storage_to_litter_fire(numpatch)); m_livestemn_storage_to_litter_fire(:) = spval
+            allocate (m_deadstemn_storage_to_litter_fire(numpatch)); m_deadstemn_storage_to_litter_fire(:) = spval
+            allocate (m_livecrootn_storage_to_litter_fire(numpatch)); m_livecrootn_storage_to_litter_fire(:) = spval
+            allocate (m_deadcrootn_storage_to_litter_fire(numpatch)); m_deadcrootn_storage_to_litter_fire(:) = spval
+            allocate (m_leafn_xfer_to_litter_fire(numpatch)); m_leafn_xfer_to_litter_fire(:) = spval
+            allocate (m_frootn_xfer_to_litter_fire(numpatch)); m_frootn_xfer_to_litter_fire(:) = spval
+            allocate (m_livestemn_xfer_to_litter_fire(numpatch)); m_livestemn_xfer_to_litter_fire(:) = spval
+            allocate (m_deadstemn_xfer_to_litter_fire(numpatch)); m_deadstemn_xfer_to_litter_fire(:) = spval
+            allocate (m_livecrootn_xfer_to_litter_fire(numpatch)); m_livecrootn_xfer_to_litter_fire(:) = spval
+            allocate (m_deadcrootn_xfer_to_litter_fire(numpatch)); m_deadcrootn_xfer_to_litter_fire(:) = spval
+            allocate (m_retransn_to_litter_fire(numpatch)); m_retransn_to_litter_fire(:) = spval
+            allocate (m_litr1_c_to_fire(numpatch)); m_litr1_c_to_fire(:) = spval
+            allocate (m_litr1_n_to_fire(numpatch)); m_litr1_n_to_fire(:) = spval
+            allocate (m_litr2_c_to_fire(numpatch)); m_litr2_c_to_fire(:) = spval
+            allocate (m_litr2_n_to_fire(numpatch)); m_litr2_n_to_fire(:) = spval
+            allocate (m_litr3_c_to_fire(numpatch)); m_litr3_c_to_fire(:) = spval
+            allocate (m_litr3_n_to_fire(numpatch)); m_litr3_n_to_fire(:) = spval
+            allocate (m_cwd_c_to_fire(numpatch)); m_cwd_c_to_fire(:) = spval
+            allocate (m_cwd_n_to_fire(numpatch)); m_cwd_n_to_fire(:) = spval
             allocate (hrv_xsmrpool_to_atm        (numpatch)) ; hrv_xsmrpool_to_atm        (:) = spval
             allocate (wood_harvestc              (numpatch)) ; wood_harvestc              (:) = spval
             allocate (wood_harvestn              (numpatch)) ; wood_harvestn              (:) = spval
@@ -449,7 +643,103 @@ CONTAINS
             deallocate (hr                         )
             deallocate (er                         )
             deallocate (fire_closs                 )
+            deallocate (fire_btran2)
             deallocate (fire_nloss                 )
+            deallocate (pft_fire_closs)
+            deallocate (pft_fire_nloss)
+            deallocate (litfire)
+            deallocate (somfire)
+            deallocate (totfire)
+            deallocate (m_leafc_to_fire)
+            deallocate (m_frootc_to_fire)
+            deallocate (m_livestemc_to_fire)
+            deallocate (m_deadstemc_to_fire)
+            deallocate (m_livecrootc_to_fire)
+            deallocate (m_deadcrootc_to_fire)
+            deallocate (m_leafc_storage_to_fire)
+            deallocate (m_frootc_storage_to_fire)
+            deallocate (m_livestemc_storage_to_fire)
+            deallocate (m_deadstemc_storage_to_fire)
+            deallocate (m_livecrootc_storage_to_fire)
+            deallocate (m_deadcrootc_storage_to_fire)
+            deallocate (m_gresp_storage_to_fire)
+            deallocate (m_leafc_xfer_to_fire)
+            deallocate (m_frootc_xfer_to_fire)
+            deallocate (m_livestemc_xfer_to_fire)
+            deallocate (m_deadstemc_xfer_to_fire)
+            deallocate (m_livecrootc_xfer_to_fire)
+            deallocate (m_deadcrootc_xfer_to_fire)
+            deallocate (m_gresp_xfer_to_fire)
+            deallocate (m_livestemc_to_deadstemc_fire)
+            deallocate (m_livecrootc_to_deadcrootc_fire)
+            deallocate (m_leafc_to_litter_fire)
+            deallocate (m_frootc_to_litter_fire)
+            deallocate (m_livestemc_to_litter_fire)
+            deallocate (m_deadstemc_to_litter_fire)
+            deallocate (m_livecrootc_to_litter_fire)
+            deallocate (m_deadcrootc_to_litter_fire)
+            deallocate (m_leafc_storage_to_litter_fire)
+            deallocate (m_frootc_storage_to_litter_fire)
+            deallocate (m_livestemc_storage_to_litter_fire)
+            deallocate (m_deadstemc_storage_to_litter_fire)
+            deallocate (m_livecrootc_storage_to_litter_fire)
+            deallocate (m_deadcrootc_storage_to_litter_fire)
+            deallocate (m_gresp_storage_to_litter_fire)
+            deallocate (m_leafc_xfer_to_litter_fire)
+            deallocate (m_frootc_xfer_to_litter_fire)
+            deallocate (m_livestemc_xfer_to_litter_fire)
+            deallocate (m_deadstemc_xfer_to_litter_fire)
+            deallocate (m_livecrootc_xfer_to_litter_fire)
+            deallocate (m_deadcrootc_xfer_to_litter_fire)
+            deallocate (m_gresp_xfer_to_litter_fire)
+            deallocate (m_leafn_to_fire)
+            deallocate (m_frootn_to_fire)
+            deallocate (m_livestemn_to_fire)
+            deallocate (m_deadstemn_to_fire)
+            deallocate (m_livecrootn_to_fire)
+            deallocate (m_deadcrootn_to_fire)
+            deallocate (m_leafn_storage_to_fire)
+            deallocate (m_frootn_storage_to_fire)
+            deallocate (m_livestemn_storage_to_fire)
+            deallocate (m_deadstemn_storage_to_fire)
+            deallocate (m_livecrootn_storage_to_fire)
+            deallocate (m_deadcrootn_storage_to_fire)
+            deallocate (m_leafn_xfer_to_fire)
+            deallocate (m_frootn_xfer_to_fire)
+            deallocate (m_livestemn_xfer_to_fire)
+            deallocate (m_deadstemn_xfer_to_fire)
+            deallocate (m_livecrootn_xfer_to_fire)
+            deallocate (m_deadcrootn_xfer_to_fire)
+            deallocate (m_livestemn_to_deadstemn_fire)
+            deallocate (m_livecrootn_to_deadcrootn_fire)
+            deallocate (m_retransn_to_fire)
+            deallocate (m_leafn_to_litter_fire)
+            deallocate (m_frootn_to_litter_fire)
+            deallocate (m_livestemn_to_litter_fire)
+            deallocate (m_deadstemn_to_litter_fire)
+            deallocate (m_livecrootn_to_litter_fire)
+            deallocate (m_deadcrootn_to_litter_fire)
+            deallocate (m_leafn_storage_to_litter_fire)
+            deallocate (m_frootn_storage_to_litter_fire)
+            deallocate (m_livestemn_storage_to_litter_fire)
+            deallocate (m_deadstemn_storage_to_litter_fire)
+            deallocate (m_livecrootn_storage_to_litter_fire)
+            deallocate (m_deadcrootn_storage_to_litter_fire)
+            deallocate (m_leafn_xfer_to_litter_fire)
+            deallocate (m_frootn_xfer_to_litter_fire)
+            deallocate (m_livestemn_xfer_to_litter_fire)
+            deallocate (m_deadstemn_xfer_to_litter_fire)
+            deallocate (m_livecrootn_xfer_to_litter_fire)
+            deallocate (m_deadcrootn_xfer_to_litter_fire)
+            deallocate (m_retransn_to_litter_fire)
+            deallocate (m_litr1_c_to_fire)
+            deallocate (m_litr1_n_to_fire)
+            deallocate (m_litr2_c_to_fire)
+            deallocate (m_litr2_n_to_fire)
+            deallocate (m_litr3_c_to_fire)
+            deallocate (m_litr3_n_to_fire)
+            deallocate (m_cwd_c_to_fire)
+            deallocate (m_cwd_n_to_fire)
             deallocate (hrv_xsmrpool_to_atm        )
             deallocate (wood_harvestc              )
             deallocate (wood_harvestn              )
@@ -633,7 +923,103 @@ SUBROUTINE set_1D_BGCFluxes(Values, Nan)
             hr                         (:)   = Values
             er                         (:)   = Values
             fire_closs                 (:)   = Values
+            fire_btran2(:) = Values
             fire_nloss                 (:)   = Values
+            pft_fire_closs(:) = Values
+            pft_fire_nloss(:) = Values
+            litfire(:) = Values
+            somfire(:) = Values
+            totfire(:) = Values
+            m_leafc_to_fire(:) = Values
+            m_frootc_to_fire(:) = Values
+            m_livestemc_to_fire(:) = Values
+            m_deadstemc_to_fire(:) = Values
+            m_livecrootc_to_fire(:) = Values
+            m_deadcrootc_to_fire(:) = Values
+            m_leafc_storage_to_fire(:) = Values
+            m_frootc_storage_to_fire(:) = Values
+            m_livestemc_storage_to_fire(:) = Values
+            m_deadstemc_storage_to_fire(:) = Values
+            m_livecrootc_storage_to_fire(:) = Values
+            m_deadcrootc_storage_to_fire(:) = Values
+            m_gresp_storage_to_fire(:) = Values
+            m_leafc_xfer_to_fire(:) = Values
+            m_frootc_xfer_to_fire(:) = Values
+            m_livestemc_xfer_to_fire(:) = Values
+            m_deadstemc_xfer_to_fire(:) = Values
+            m_livecrootc_xfer_to_fire(:) = Values
+            m_deadcrootc_xfer_to_fire(:) = Values
+            m_gresp_xfer_to_fire(:) = Values
+            m_livestemc_to_deadstemc_fire(:) = Values
+            m_livecrootc_to_deadcrootc_fire(:) = Values
+            m_leafc_to_litter_fire(:) = Values
+            m_frootc_to_litter_fire(:) = Values
+            m_livestemc_to_litter_fire(:) = Values
+            m_deadstemc_to_litter_fire(:) = Values
+            m_livecrootc_to_litter_fire(:) = Values
+            m_deadcrootc_to_litter_fire(:) = Values
+            m_leafc_storage_to_litter_fire(:) = Values
+            m_frootc_storage_to_litter_fire(:) = Values
+            m_livestemc_storage_to_litter_fire(:) = Values
+            m_deadstemc_storage_to_litter_fire(:) = Values
+            m_livecrootc_storage_to_litter_fire(:) = Values
+            m_deadcrootc_storage_to_litter_fire(:) = Values
+            m_gresp_storage_to_litter_fire(:) = Values
+            m_leafc_xfer_to_litter_fire(:) = Values
+            m_frootc_xfer_to_litter_fire(:) = Values
+            m_livestemc_xfer_to_litter_fire(:) = Values
+            m_deadstemc_xfer_to_litter_fire(:) = Values
+            m_livecrootc_xfer_to_litter_fire(:) = Values
+            m_deadcrootc_xfer_to_litter_fire(:) = Values
+            m_gresp_xfer_to_litter_fire(:) = Values
+            m_leafn_to_fire(:) = Values
+            m_frootn_to_fire(:) = Values
+            m_livestemn_to_fire(:) = Values
+            m_deadstemn_to_fire(:) = Values
+            m_livecrootn_to_fire(:) = Values
+            m_deadcrootn_to_fire(:) = Values
+            m_leafn_storage_to_fire(:) = Values
+            m_frootn_storage_to_fire(:) = Values
+            m_livestemn_storage_to_fire(:) = Values
+            m_deadstemn_storage_to_fire(:) = Values
+            m_livecrootn_storage_to_fire(:) = Values
+            m_deadcrootn_storage_to_fire(:) = Values
+            m_leafn_xfer_to_fire(:) = Values
+            m_frootn_xfer_to_fire(:) = Values
+            m_livestemn_xfer_to_fire(:) = Values
+            m_deadstemn_xfer_to_fire(:) = Values
+            m_livecrootn_xfer_to_fire(:) = Values
+            m_deadcrootn_xfer_to_fire(:) = Values
+            m_livestemn_to_deadstemn_fire(:) = Values
+            m_livecrootn_to_deadcrootn_fire(:) = Values
+            m_retransn_to_fire(:) = Values
+            m_leafn_to_litter_fire(:) = Values
+            m_frootn_to_litter_fire(:) = Values
+            m_livestemn_to_litter_fire(:) = Values
+            m_deadstemn_to_litter_fire(:) = Values
+            m_livecrootn_to_litter_fire(:) = Values
+            m_deadcrootn_to_litter_fire(:) = Values
+            m_leafn_storage_to_litter_fire(:) = Values
+            m_frootn_storage_to_litter_fire(:) = Values
+            m_livestemn_storage_to_litter_fire(:) = Values
+            m_deadstemn_storage_to_litter_fire(:) = Values
+            m_livecrootn_storage_to_litter_fire(:) = Values
+            m_deadcrootn_storage_to_litter_fire(:) = Values
+            m_leafn_xfer_to_litter_fire(:) = Values
+            m_frootn_xfer_to_litter_fire(:) = Values
+            m_livestemn_xfer_to_litter_fire(:) = Values
+            m_deadstemn_xfer_to_litter_fire(:) = Values
+            m_livecrootn_xfer_to_litter_fire(:) = Values
+            m_deadcrootn_xfer_to_litter_fire(:) = Values
+            m_retransn_to_litter_fire(:) = Values
+            m_litr1_c_to_fire(:) = Values
+            m_litr1_n_to_fire(:) = Values
+            m_litr2_c_to_fire(:) = Values
+            m_litr2_n_to_fire(:) = Values
+            m_litr3_c_to_fire(:) = Values
+            m_litr3_n_to_fire(:) = Values
+            m_cwd_c_to_fire(:) = Values
+            m_cwd_n_to_fire(:) = Values
             hrv_xsmrpool_to_atm        (:)   = Values
             wood_harvestc              (:)   = Values
             wood_harvestn              (:)   = Values

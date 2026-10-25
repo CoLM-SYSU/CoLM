@@ -26,10 +26,14 @@
    USE MOD_Precision
    USE MOD_Namelist, only: DEF_USE_SASU, DEF_USE_DiagMatrix, DEF_USE_NITRIF, DEF_USE_CNSOYFIXN, DEF_USE_FIRE, DEF_USE_IRRIGATION
    USE MOD_Const_Physical, only: tfrz, denh2o, denice
-   USE MOD_Vars_PFTimeInvariants, only: pftfrac
+   USE MOD_Vars_PFTimeInvariants, only: pftfrac, pftclass
    USE MOD_LandPFT, only: patch_pft_s, patch_pft_e
    USE MOD_BGC_Vars_1DFluxes, only: plant_ndemand, ndep_to_sminn
-   USE MOD_BGC_Vars_1DPFTFluxes, only: plant_ndemand_p, cpool_to_leafc_p, crop_seedc_to_leaf_p
+   USE MOD_BGC_Vars_1DPFTFluxes, only: plant_ndemand_p, cpool_to_leafc_p, crop_seedc_to_leaf_p, &
+                                       leafc_storage_to_xfer_p, cpool_to_leafc_storage_p, &
+                                       leafc_xfer_to_leafc_p, leafc_to_litter_p
+   USE MOD_BGC_Vars_PFTimeVariables, only: onset_flag_p, dormant_flag_p, offset_flag_p, &
+                                       days_active_p, lgsf_p, bgtr_p, leafc_storage_p, leafc_p
    USE MOD_BGC_Veg_CNMResp, only: CNMResp
    USE MOD_BGC_Soil_BiogeochemDecompCascadeBGC, only: decomp_rate_constants_bgc
    USE MOD_BGC_Soil_BiogeochemPotential, only: SoilBiogeochemPotential
@@ -160,6 +164,22 @@
       ENDIF
   
       CALL CNVegStructUpdate(i,ps,pe,deltim,npcropmin)
+
+   ! DBGSTO: storage-pool budget of a target cell (lat=-12.1875, lon=23.75)
+      IF (abs(dlat - (-12.1875_r8)) < 0.01_r8 .and. abs(dlon - 23.75_r8) < 0.01_r8) THEN
+         IF (idate(3) == 0 .or. onset_flag_p(ps) > 0.5_r8) THEN
+            write(*, &
+               '(A7,1X,I5,1X,I4,1X,I5,1X,I2,1X,L1,1X,L1,1X,L1,1X,F8.2,1X,F6.4,1X,E11.4,'//&
+               '1X,F11.4,1X,F11.4,1X,F10.4,1X,F10.4,1X,F10.4,1X,F10.4,1X,F10.4)') &
+               'DBGSTO', idate(1), idate(2), idate(3), pftclass(ps), &
+               onset_flag_p(ps), dormant_flag_p(ps), offset_flag_p(ps), &
+               days_active_p(ps), lgsf_p(ps), bgtr_p(ps), &
+               leafc_storage_p(ps), leafc_p(ps), &
+               cpool_to_leafc_storage_p(ps)*86400._r8, cpool_to_leafc_p(ps)*86400._r8, &
+               leafc_storage_to_xfer_p(ps)*86400._r8, leafc_xfer_to_leafc_p(ps)*86400._r8, &
+               leafc_to_litter_p(ps)*86400._r8
+         ENDIF
+      ENDIF
 
    END SUBROUTINE bgc_driver
 

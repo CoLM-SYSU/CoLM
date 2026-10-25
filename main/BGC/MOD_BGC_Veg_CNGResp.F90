@@ -100,7 +100,7 @@ CONTAINS
 
          transfer_leaf_gr_p             (m) = leafc_xfer_to_leafc_p          (m) * grperc(ivt) * (1._r8 - grpnow(ivt)) * respfact_leaf_storage
 
-         cpool_froot_gr_p               (m) = cpool_to_frootc_p              (m) * grperc(ivt) * respfact_froot * respfact_froot
+         cpool_froot_gr_p               (m) = cpool_to_frootc_p              (m) * grperc(ivt) * respfact_froot
 
          cpool_froot_storage_gr_p       (m) = cpool_to_frootc_storage_p      (m) * grperc(ivt) * grpnow(ivt) * respfact_froot_storage
 

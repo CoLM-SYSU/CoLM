@@ -129,6 +129,7 @@ cat>${CASEPATH}/${CASENAME}/${NMLNAME}<<EOF
    DEF_simulation_time%spinup_month = 1
    DEF_simulation_time%spinup_day   = 365
    DEF_simulation_time%spinup_sec   = 86400
+   DEF_simulation_time%spinup_repeat = 0
 
    DEF_simulation_time%timestep     = 1800.
 
@@ -188,9 +189,9 @@ if [ ${SITELIST} == Null ];then
 	   *) echo Error: wrong Forcing name ${Forcing}; exit ;;
    esac
    ROOTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../../
-   sed -i "10i\ DEF_nx_blocks = ${NX_BLOCK}"   ${CASEPATH}/${CASENAME}/${NMLNAME}
-   sed -i "11i\ DEF_ny_blocks = ${NY_BLOCK}"   ${CASEPATH}/${CASENAME}/${NMLNAME}
-   sed -i "12i\ DEF_PIO_groupsize = ${NGROUP}" ${CASEPATH}/${CASENAME}/${NMLNAME}
+   sed -i "10i\   DEF_nx_blocks = ${NX_BLOCK}"   ${CASEPATH}/${CASENAME}/${NMLNAME}
+   sed -i "11i\   DEF_ny_blocks = ${NY_BLOCK}"   ${CASEPATH}/${CASENAME}/${NMLNAME}
+   sed -i "12i\   DEF_PIO_groupsize = ${NGROUP}" ${CASEPATH}/${CASENAME}/${NMLNAME}
    mkdir -p ${CASEPATH}/${CASENAME}/bld/run/
    cp -p ${ROOTPATH}/run/forcing/${Forcing}.nml  ${CASEPATH}/${CASENAME}/bld/run/${Forcing}.nml
    echo $ForcingPATH ${SCRIPT_DIR}/machine.config
@@ -199,6 +200,7 @@ else
    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
    ForcingPATH=$(awk -v s="FORCINGPATH" '$1 == s {print $2}' ${SCRIPT_DIR}/machine.config)
    SITEDATA="'"${ForcingPATH}/$(awk -v s="$SITENAME" '$1 == s {print $7}' ${SITELIST})"'"
+   ForcingNML=${ForcingPATH}/$(awk -v s="$SITENAME" '$1 == s {print $6}' ${SITELIST})../Forcingnml
    echo SITEDATA $SITEDATA
    sed -i "10i\ SITE_fsitedata = ${SITEDATA}          " ${CASEPATH}/${CASENAME}/${NMLNAME}
    sed -i "11i\ USE_SITE_pctpfts         = .true.     " ${CASEPATH}/${CASENAME}/${NMLNAME}
@@ -211,8 +213,8 @@ else
    sed -i "18i\ USE_SITE_dbedrock        = .false.    " ${CASEPATH}/${CASENAME}/${NMLNAME}
    sed -i "19i\ USE_SITE_topography      = .false.    " ${CASEPATH}/${CASENAME}/${NMLNAME}
    mkdir -p ${CASEPATH}/${CASENAME}/bld/run/
-   echo copy $ForcingPATH/SinglePt/Forcingnml/${SITENAME}.nml ${CASEPATH}/${CASENAME}/bld/run/
-   cp -p $ForcingPATH/SinglePt/Forcingnml/${SITENAME}.nml ${CASEPATH}/${CASENAME}/bld/run/
+   echo copy $ForcingNML/${SITENAME}.nml ${CASEPATH}/${CASENAME}/bld/run/
+   cp -p $ForcingNML/${SITENAME}.nml ${CASEPATH}/${CASENAME}/bld/run/
    ForcingPATHNAME="'${ForcingPATH}"/"$(awk -v s="${SITENAME}" '$1 == s {print $6}' ${SITELIST})'"
    echo sed -i "/DEF_dir_forcing/c\DEF_dir_forcing              = ${ForcingPATHNAME}" ${CASEPATH}/${CASENAME}/bld/run/${SITENAME}.nml
    sed -i "/DEF_dir_forcing/c\DEF_dir_forcing              = ${ForcingPATHNAME}" ${CASEPATH}/${CASENAME}/bld/run/${SITENAME}.nml

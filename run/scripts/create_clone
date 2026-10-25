@@ -43,15 +43,26 @@ CreateClone()
    sed -i "s|$SourceName|$DestName|g" "./case.submit"
    sed -i "s|$SourcePath|$DestPath|g" "./case.submit"
    cp -p $SourcePath/$SourceName/input_$SourceName.nml ./input_$DestName.nml
-   sed -i "s|$SourceName|$DestName|g" ./input_$DestName.nml
+   sed -i "s|$SourcePath/$SourceName|$DestPath/$DestName|g" ./input_$DestName.nml
    sed -i "s|$SourcePath|$DestPath|g" ./input_$DestName.nml
+   sed -i "s|^\( *DEF_CASE_NAME *= *'\)$SourceName'|\1$DestName'|" ./input_$DestName.nml
    if [ -f $SourcePath/$SourceName/input_${SourceName}-SASU.nml ];then
       cp -p $SourcePath/$SourceName/input_${SourceName}-SASU.nml ./input_${DestName}-SASU.nml
-      sed -i "s|$SourceName|$DestName|g" ./input_${DestName}-SASU.nml
+      sed -i "s|$SourcePath/$SourceName|$DestPath/$DestName|g" ./input_${DestName}-SASU.nml
       sed -i "s|$SourcePath|$DestPath|g" ./input_${DestName}-SASU.nml
+      sed -i "s|^\( *DEF_CASE_NAME *= *'\)$SourceName'|\1$DestName'|" ./input_${DestName}-SASU.nml
    fi
    if [ -f $SourcePath/$SourceName/history.nml ];then
       cp -p $SourcePath/$SourceName/history.nml ./
+   fi
+   echo check forcing namelist consistency
+   ForcingNML=$(grep -m1 'DEF_forcing_namelist' ./input_$DestName.nml | sed "s|.*'\([^']*\)'.*|\1|")
+   if [ -n "$ForcingNML" ] && [ ! -f "$ForcingNML" ]; then
+      echo "WARNING: forcing namelist not found: $ForcingNML"
+   fi
+   SiteData=$(grep -m1 'SITE_fsitedata' ./input_$DestName.nml | sed "s|.*'\([^']*\)'.*|\1|")
+   if [ -n "$SiteData" ] && [ ! -f "$SiteData" ]; then
+      echo "WARNING: SITE_fsitedata not found: $SiteData"
    fi
    
    echo copy source files 

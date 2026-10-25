@@ -42,7 +42,7 @@ MODULE MOD_BGC_Veg_CNPhenology
        t_soisno, smp
 
    USE MOD_BGC_Vars_TimeVariables, only: &
-       dayl, prev_dayl, prec10, prec60, prec365, prec_today, prec_daily, accumnstep
+       dayl, prev_dayl, prec10, prec30, prec60, prec365, rh30, prec_today, prec_daily, rh30_today, accumnstep
 
    USE MOD_Vars_PFTimeVariables, only: &
        tref_p       ,tlai_p
@@ -125,13 +125,14 @@ MODULE MOD_BGC_Veg_CNPhenology
        phenology_to_met_n , phenology_to_cel_n , phenology_to_lig_n, &
        grainc_to_cropprodc, grainn_to_cropprodn
 
-   USE MOD_Vars_1DForcing, only: forc_prc, forc_prl
+   USE MOD_Vars_1DForcing, only: forc_prc, forc_prl, forc_q, forc_psrf, forc_t
 
    USE MOD_TimeManager
    USE MOD_Precision
    USE MOD_Namelist, only: DEF_USE_FERT
    USE MOD_BGC_Daylength, only: daylength
    USE MOD_SPMD_Task
+   USE MOD_Qsadv
 
    IMPLICIT NONE
 
@@ -250,6 +251,7 @@ CONTAINS
    logical , parameter :: isconst_baset = .true. ! .true. for constant base temperature
                                                 ! .false. for latidinal varied base temperature
    real(r8) stepperday,  nsteps
+   real(r8) qsat, dqsatdt, es, esdt
    integer month, mday
    !-----------------------------------------------------------------------
 
@@ -270,7 +272,7 @@ CONTAINS
          ELSE
             tref_min_inst_p(m) = min(tref_min_inst_p(m) , tref_p(m))
          ENDIF
-         IF(idate(3) .eq. 84600)THEN
+         IF(idate(3) .eq. 86400 - nint(deltim))THEN
             tref_max_p(m) = tref_max_inst_p(m)
             tref_min_p(m) = tref_min_inst_p(m)
          ENDIF
@@ -280,8 +282,15 @@ CONTAINS
       accumnstep(i) = accumnstep(i) + 1
       prec_today(i) = forc_prc(i) + forc_prl(i)
 
+      CALL qsadv(forc_t(i),forc_psrf(i),es,esdt,qsat,dqsatdt)
+      rh30_today(i) = 100._r8 * (forc_q(i) / qsat)
+
       nsteps = amin1(10._r8 * stepperday, accumnstep(i))
       prec10     (i)  = ( prec10  (i) * (nsteps - 1) + prec_today(i) ) / nsteps
+
+      nsteps = amin1(30._r8 * stepperday, accumnstep(i))
+      prec30     (i) = ( prec30 (i) * (nsteps - 1) + prec_today(i) ) / nsteps
+      rh30       (i) = ( rh30   (i) * (nsteps - 1) + rh30_today(i) ) / nsteps
 
       nsteps = amin1(60._r8 * stepperday, accumnstep(i))
       prec60     (i) = ( prec60 (i) * (nsteps - 1) + prec_today(i) ) / nsteps
@@ -512,7 +521,7 @@ CONTAINS
 
               ! IF this is the END of the offset_period, reset phenology
               ! flags and indices
-               IF (offset_counter_p(m) == 0.0_r8) THEN
+               IF (abs(offset_counter_p(m)) .lt. 0.1_r8) THEN
                  ! this code block was originally handled by CALL cn_offset_cleanup(i)
                  ! inlined during vectorization
 
@@ -534,7 +543,7 @@ CONTAINS
 
               ! IF this is the END of the onset period, reset phenology
               ! flags and indices
-               IF (onset_counter_p(m) == 0.0_r8) THEN
+               IF (abs(onset_counter_p(m)) .lt. 0.1_r8) THEN
                  ! this code block was originally handled by CALL cn_onset_cleanup(i)
                  ! inlined during vectorization
 
@@ -709,7 +718,7 @@ CONTAINS
 
            ! IF this is the END of the offset_period, reset phenology
            ! flags and indices
-               IF (offset_counter_p(m) == 0._r8) THEN
+               IF (abs(offset_counter_p(m)) .lt. 0.1_r8) THEN
               ! this code block was originally handled by CALL cn_offset_cleanup(i)
               ! inlined during vectorization
                   offset_flag_p(m) = 0._r8
@@ -730,7 +739,7 @@ CONTAINS
 
            ! IF this is the END of the onset period, reset phenology
            ! flags and indices
-               IF (onset_counter_p(m) == 0.0_r8) THEN
+               IF (abs(onset_counter_p(m)) .lt. 0.1_r8) THEN
               ! this code block was originally handled by CALL cn_onset_cleanup(i)
               ! inlined during vectorization
                   onset_flag_p(m) = 0._r8

@@ -47,7 +47,8 @@ CONTAINS
       real(r8), allocatable :: lat(:), lon(:)
       type(block_data_real8_2d) :: f_xy_fire
 
-      file_fire = trim(DEF_dir_runtime) // '/fire/abm_colm_double_fillcoast.nc'
+!      file_fire = trim(DEF_dir_runtime) // '/fire/abm_colm_double_fillcoast.nc'
+      file_fire = trim(DEF_dir_runtime) // '/fire/abm_colm_double_fillcoast_c260910.nc'
 
       CALL ncio_read_bcast_serial (file_fire, 'lat', lat)
       CALL ncio_read_bcast_serial (file_fire, 'lon', lon)
@@ -63,7 +64,8 @@ CONTAINS
          CALL allocate_block_data (grid_fire, f_xy_fire)
       ENDIF
 
-      file_fire = trim(DEF_dir_runtime) // '/fire/abm_colm_double_fillcoast.nc'
+!      file_fire = trim(DEF_dir_runtime) // '/fire/abm_colm_double_fillcoast.nc'
+      file_fire = trim(DEF_dir_runtime) // '/fire/abm_colm_double_fillcoast_c260910.nc'
       IF (p_is_io) THEN
          CALL ncio_read_block (file_fire, 'abm', grid_fire, f_xy_fire)
       ENDIF
@@ -72,7 +74,8 @@ CONTAINS
       CALL check_vector_data ('abm', abm_lf)
 #endif
 
-      file_fire = trim(DEF_dir_runtime) // '/fire/peatf_colm_360x720_c100428.nc'
+!      file_fire = trim(DEF_dir_runtime) // '/fire/peatf_colm_360x720_c100428.nc'
+      file_fire = trim(DEF_dir_runtime) // '/fire/peatf_colm_360x720_c260910.nc'
       IF (p_is_io) THEN
          CALL ncio_read_block (file_fire, 'peatf', grid_fire, f_xy_fire)
       ENDIF
@@ -81,7 +84,8 @@ CONTAINS
       CALL check_vector_data ('peatf', peatf_lf)
 #endif
 
-      file_fire = trim(DEF_dir_runtime) // '/fire/gdp_colm_360x720_c100428.nc'
+!      file_fire = trim(DEF_dir_runtime) // '/fire/gdp_colm_360x720_c100428.nc'
+      file_fire = trim(DEF_dir_runtime) // '/fire/gdp_colm_360x720_fix_c100428.nc'
       IF (p_is_io) THEN
          CALL ncio_read_block (file_fire, 'gdp', grid_fire, f_xy_fire)
       ENDIF
@@ -120,7 +124,8 @@ CONTAINS
       itime = max(1850,min(YY,2016)) - 1849
 
       file_fire = trim(DEF_dir_runtime) &
-         // '/fire/colmforc.Li_2017_HYDEv3.2_CMIP6_hdm_0.5x0.5_AVHRR_simyr1850-2016_c180202.nc'
+!         // '/fire/colmforc.Li_2017_HYDEv3.2_CMIP6_hdm_0.5x0.5_AVHRR_simyr1850-2016_c180202.nc'
+         // '/fire/colmforc.Li_2025_CMIP7_hdm_0.5x0.5_simyr1850-2025_c251013.nc'
 
       IF (p_is_io) THEN
          CALL allocate_block_data  (grid_fire, f_xy_fire)

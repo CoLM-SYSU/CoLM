@@ -230,6 +230,13 @@ CONTAINS
       CALL check_block_data ('Ozone', f_ozone)
 #endif
 
+      ! The first time-step precedes the first three-hour update boundary.
+      ! Populate patch forcing immediately instead of leaving it uninitialized.
+      CALL mg2p_ozone%grid2pset (f_ozone, forc_ozone)
+#ifdef RangeCheck
+      CALL check_vector_data ('Ozone', forc_ozone)
+#endif
+
    END SUBROUTINE init_ozone_data
 
    SUBROUTINE update_ozone_data (time, deltim)

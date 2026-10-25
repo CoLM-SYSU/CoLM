@@ -270,7 +270,7 @@ CONTAINS
          !wfc = porsl(1)*(-3399._r8/psi0(1))**(-1./bsw(1))
 #endif
 #ifdef vanGenuchten_Mualem_SOIL_MODEL
-         wfc = theta_r(1)+(porsl(1)-theta_r(1))*(1+(alpha_vgm(1)*339.9)**n_vgm(1))**(1.0/n_vgm(1)-1)
+         wfc = theta_r(1)+(porsl(1)-theta_r(1))*(1+(alpha_vgm(1)*3399.)**n_vgm(1))**(1.0/n_vgm(1)-1)
 #endif
 
          ! Lee and Pielke 1992 beta

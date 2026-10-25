@@ -212,7 +212,7 @@ CONTAINS
    integer :: ncid, varid
 
       CALL nccheck( nf90_open (trim(filename), NF90_WRITE, ncid) )
-      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid))
+      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid), trim(varname))
       CALL nccheck (nf90_redef (ncid))
       CALL nccheck (nf90_put_att (ncid, varid, trim(attrname), trim(attrval)))
       CALL nccheck (nf90_enddef (ncid))
@@ -233,7 +233,7 @@ CONTAINS
    integer :: ncid, varid
 
       CALL nccheck( nf90_open (trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid))
+      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid), trim(varname))
       CALL nccheck (nf90_get_att   (ncid, varid, trim(attrname), attrval))
       CALL nccheck( nf90_close (ncid))
 
@@ -252,7 +252,7 @@ CONTAINS
    integer :: ncid, varid
 
       CALL nccheck( nf90_open (trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid))
+      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid), trim(varname))
       CALL nccheck (nf90_get_att (ncid, varid, trim(attrname), attrval))
       CALL nccheck (nf90_close (ncid))
 
@@ -271,7 +271,7 @@ CONTAINS
    integer :: ncid, varid
 
       CALL nccheck( nf90_open (trim(filename), NF90_WRITE, ncid) )
-      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid))
+      CALL nccheck (nf90_inq_varid (ncid, trim(varname), varid), trim(varname))
       CALL nccheck (nf90_redef (ncid))
       CALL nccheck (nf90_put_att (ncid, varid, trim(attrname), attrval))
       CALL nccheck (nf90_enddef (ncid))
@@ -295,7 +295,7 @@ CONTAINS
    integer, allocatable :: dimids(:)
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
 
       CALL nccheck( nf90_inquire_variable(ncid, varid, ndims = ndims) )
       allocate (dimids(ndims))
@@ -361,7 +361,7 @@ CONTAINS
    integer, allocatable :: dimids(:)
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
 
       CALL nccheck( nf90_inquire_variable(ncid, varid, ndims = ndims) )
       allocate (dimids(ndims))
@@ -388,7 +388,7 @@ CONTAINS
       CALL check_ncfile_exist (filename)
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -411,7 +411,7 @@ CONTAINS
       CALL check_ncfile_exist (filename)
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -437,7 +437,7 @@ CONTAINS
       allocate (rdata (varsize(1)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -465,7 +465,7 @@ CONTAINS
       allocate (rdata (varsize(1)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -493,7 +493,7 @@ CONTAINS
       allocate (rdata (varsize(1)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -523,7 +523,7 @@ CONTAINS
       allocate (rdata (varsize(1)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -551,7 +551,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -579,7 +579,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -608,7 +608,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
 
       IF ((varsize(1) > 1000) .and. (varsize(2) > 100000)) THEN
          dsp = 0
@@ -649,7 +649,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -679,7 +679,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
 
       IF ((varsize(1) > 1000) .and. (varsize(2) > 100000)) THEN
          dsp = 0
@@ -719,7 +719,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2), varsize(3)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -748,7 +748,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2), varsize(3)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -777,7 +777,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2), varsize(3), varsize(4)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -806,7 +806,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2), varsize(3), varsize(4), varsize(5)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata) )
       CALL nccheck( nf90_close(ncid) )
 
@@ -1083,7 +1083,7 @@ CONTAINS
       allocate (rdata (datastt(1):dataend(1), datastt(2):dataend(2)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata, &
          (/datastt(1),datastt(2)/), (/dataend(1)-datastt(1)+1, dataend(2)-datastt(2)+1/)) )
       CALL nccheck( nf90_close(ncid) )
@@ -1109,7 +1109,7 @@ CONTAINS
       allocate (rdata (datastt(1):dataend(1), datastt(2):dataend(2)) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata, &
          (/datastt(1),datastt(2)/), (/dataend(1)-datastt(1)+1, dataend(2)-datastt(2)+1/)) )
       CALL nccheck( nf90_close(ncid) )
@@ -1139,7 +1139,7 @@ CONTAINS
       allocate (rdata (varsize(1), varsize(2), timestt:timeend) )
 
       CALL nccheck( nf90_open(trim(filename), NF90_NOWRITE, ncid) )
-      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid) )
+      CALL nccheck( nf90_inq_varid(ncid, trim(dataname), varid), trim(dataname) )
       CALL nccheck( nf90_get_var(ncid, varid, rdata, &
          (/1,1,timestt/), (/varsize(1),varsize(2), timeend-timestt+1/)) )
       CALL nccheck( nf90_close(ncid) )

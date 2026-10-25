@@ -1372,6 +1372,7 @@ CONTAINS
    integer  :: ilev
    real(r8) :: air_m1, wa_m1, dwat, dwat_s
    real(r8) :: alp, zwf_this, zwt_this, vl_wa
+   logical  :: dried(lb:ub)
 
    real(r8) :: dmss, mblc
 
@@ -1382,15 +1383,44 @@ CONTAINS
          ENDIF
       ENDIF
 
-      DO ilev = lb, ub
+      ilev = lb
+      dried(lb:ub) = .false.
+      DO WHILE (ilev <= ub)
 
          dwat = (q(ilev-1) - q(ilev)) * dt
          wa_m1 = (wt_m1(ilev)+wf_m1(ilev)) * vl_s(ilev) &
             + (dz(ilev)-wt_m1(ilev)-wf_m1(ilev)) * vl_m1(ilev)
-         IF (dwat <= - wa_m1) THEN
-            q(ilev) = q(ilev-1) + wa_m1/dt
-         ENDIF
 
+         IF (wa_m1+dwat < -tol_z) THEN
+            IF (ilev > lb) THEN
+               IF ((q(ilev-1) < 0) .and. (.not. dried(ilev-1))) THEN
+                  q(ilev-1) = min(q(ilev)-wa_m1/dt, 0.)
+                  ilev = ilev - 1
+               ELSE
+                  q(ilev) = q(ilev-1) + wa_m1/dt
+                  IF (dried(ilev-1)) THEN
+                     dried(ilev) = .true.
+                  ENDIF
+                  ilev = ilev + 1
+               ENDIF
+            ELSE
+               IF (ubc_typ == BC_RAINFALL) then
+                  IF ((dp_m1+(ubc_val-q(lb-1))*dt) > -(wa_m1+dwat)) THEN
+                     q(lb-1) = q(lb) - wa_m1/dt
+                  ELSE
+                     q(lb-1) = dp_m1/dt + ubc_val
+                     q(lb) = q(lb-1) + wa_m1/dt
+                     dried(lb) = .true.
+                  ENDIF
+               ELSE
+                  q(lb) = q(lb-1) + wa_m1/dt
+                  dried(lb) = .true.
+               ENDIF
+               ilev = ilev + 1
+            ENDIF
+         ELSE
+            ilev = ilev + 1
+         ENDIF
       ENDDO
 
       IF ((lbc_typ == BC_FIX_FLUX) .and. (q(ub) < lbc_val)) THEN
@@ -1400,7 +1430,7 @@ CONTAINS
             dwat = (q(ilev-1) - q(ilev)) * dt
             wa_m1 = (wt_m1(ilev)+wf_m1(ilev)) * vl_s(ilev) &
                + (dz(ilev)-wt_m1(ilev)-wf_m1(ilev)) * vl_m1(ilev)
-            IF (dwat <= - wa_m1) THEN
+            IF (wa_m1 < - dwat) THEN
                q(ilev-1) = q(ilev) - wa_m1/dt
             ENDIF
          ENDDO

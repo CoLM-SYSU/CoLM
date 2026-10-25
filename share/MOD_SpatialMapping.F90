@@ -2617,7 +2617,7 @@ CONTAINS
             xblk = gblock%xblkme(iblkme)
             yblk = gblock%yblkme(iblkme)
 
-            WHERE (sumdata%blk(xblk,yblk)%val /= this%missing_value)
+            WHERE ((sumdata%blk(xblk,yblk)%val /= this%missing_value).and.(sumdata%blk(xblk,yblk)%val /= 0.))
                sumdata%blk(xblk,yblk)%val = gdata%blk(xblk,yblk)%val / sumdata%blk(xblk,yblk)%val
             ENDWHERE
          ENDDO

@@ -65,6 +65,47 @@ MODULE MOD_NetCDFVector
 CONTAINS
 
    !---------------------------------------------------------
+   logical FUNCTION ncio_vector_exist (filename, dataname, pixelset)
+
+   USE MOD_NetCDFSerial
+   USE MOD_SPMD_Task
+   USE MOD_Block
+   USE MOD_Pixelset
+   IMPLICIT NONE
+
+   character(len=*), intent(in) :: filename
+   character(len=*), intent(in) :: dataname
+   type(pixelset_type), intent(in) :: pixelset
+
+   ! Local variables
+   integer :: iblkgrp, iblk, jblk
+   character(len=256) :: fileblock
+   logical :: any_data_exists
+
+      any_data_exists = .false.
+
+      IF (p_is_io) THEN
+         DO iblkgrp = 1, pixelset%nblkgrp
+            iblk = pixelset%xblkgrp(iblkgrp)
+            jblk = pixelset%yblkgrp(iblkgrp)
+
+            CALL get_filename_block (filename, iblk, jblk, fileblock)
+            IF (ncio_var_exist(fileblock,dataname,readflag=.false.)) THEN
+               any_data_exists = .true.
+               exit
+            ENDIF
+         ENDDO
+      ENDIF
+
+#ifdef USEMPI
+      CALL mpi_allreduce (MPI_IN_PLACE, any_data_exists, 1, MPI_LOGICAL, MPI_LOR, p_comm_glb, p_err)
+#endif
+
+      ncio_vector_exist = any_data_exists
+
+   END FUNCTION ncio_vector_exist
+
+   !---------------------------------------------------------
    SUBROUTINE ncio_read_vector_int32_1d ( &
          filename, dataname, pixelset, rdata, defval)
 

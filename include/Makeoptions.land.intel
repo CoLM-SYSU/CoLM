@@ -2,10 +2,10 @@
 # mpif90 - ifort 
 # 
 
- FF = mpif90
+ FF = /opt/mpich-intel/bin/mpif90
 
- NETCDF_LIB = /opt/netcdf-c-4.9.2-fortran-4.6.0-intel/lib
- NETCDF_INC = /opt/netcdf-c-4.9.2-fortran-4.6.0-intel/include
+ NETCDF_LIB = /opt/netcdf-intel/lib
+ NETCDF_INC = /opt/netcdf-intel/include
 
  MOD_CMD = -module 
 

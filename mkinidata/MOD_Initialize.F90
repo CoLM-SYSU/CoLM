@@ -485,17 +485,16 @@ ENDIF
       ! (see Niu et al., 2005)
       IF (DEF_Runoff_SCHEME == 0) THEN
 
-         IF (DEF_TOPMOD_method == 0) THEN
-
-            IF (p_is_worker) THEN
-               IF (numpatch > 0) THEN
-                  ! equal to 'wtfact = 0.38' and 'fff = 0.5'
-                  fsatmax(:) = 0.38
-                  fsatdcf(:) = 0.125
-               ENDIF
+         ! (DEF_TOPMOD_method == 0) or as default
+         IF (p_is_worker) THEN
+            IF (numpatch > 0) THEN
+               ! equal to 'wtfact = 0.38' and 'fff = 0.5'
+               fsatmax(:) = 0.38
+               fsatdcf(:) = 0.125
             ENDIF
+         ENDIF
 
-         ELSEIF (DEF_TOPMOD_method == 1) THEN
+         IF (DEF_TOPMOD_method == 1) THEN
 
             ftopo = trim(dir_landdata)//'/topography/'//trim(cyear)//'/fsatmax_patches.nc'
             CALL ncio_read_vector (ftopo, 'fsatmax_patches', landpatch, fsatmax)
@@ -680,19 +679,28 @@ ENDIF
       soilpsi_off     = -0.8
 
       ! constant for fire module
+      occur_hi_gdp_tree        = 0.33
+      borealat                 = 60._r8
+      non_boreal_peatfire_c    = 0.71e-4_r8
+      nonborpeat_fire_precip_denom = 6.5_r8
+      boreal_peatfire_c        = 0.28e-4_r8
+      borpeat_fire_soilmoist_denom = 0.35_r8
+      prh30                    = 0.6_r8
+      max_rh30_affecting_fuel  = 95._r8
+      ignition_efficiency      = 0.22_r8
       occur_hi_gdp_tree        = 0.39_r8
       lfuel                    = 75._r8
-      ufuel                    = 650._r8
+      ufuel                    = 825._r8
       cropfire_a1              = 0.3_r8
       borealat                 = 40._r8/(4.*atan(1.))
       troplat                  = 23.5_r8/(4.*atan(1.))
-      non_boreal_peatfire_c    = 0.001_r8
-      boreal_peatfire_c        = 4.2e-5_r8
+      non_boreal_peatfire_c    = 0.000071_r8
+      boreal_peatfire_c        = 0.28e-4_r8
       rh_low                   = 30.0_r8
-      rh_hgh                   = 80.0_r8
-      bt_min                   = 0.3_r8
-      bt_max                   = 0.7_r8
-      pot_hmn_ign_counts_alpha = 0.0035_r8
+      rh_hgh                   = 85.0_r8
+      bt_min                   = 0.85_r8
+      bt_max                   = 0.98_r8
+      pot_hmn_ign_counts_alpha = 0.01_r8
       g0_fire                  = 0.05_r8
 
       sf     = 0.1_r8
@@ -1036,12 +1044,18 @@ ENDIF
                         IF(isevg(ivt))THEN
                            leafc_p            (m) = amin1(leafcin_p(m),300._r8)
                            frootc_p           (m) = frootcin_p(m)
-                        ELSE
-                           leafc_p            (m) = amin1(leafcin_p(m),300._r8)
-                           leafc_storage_p    (m) = amin1(leafc_storagein_p(m),600._r8)
-                           frootc_p           (m) = frootcin_p(m)
-                           frootc_storage_p   (m) = frootc_storagein_p(m)
-                        ENDIF
+                         ELSE
+                            leafc_p            (m) = amin1(leafcin_p(m),300._r8)
+                            leafc_storage_p    (m) = amin1(leafc_storagein_p(m),600._r8)
+                            frootc_p           (m) = frootcin_p(m)
+                            frootc_storage_p   (m) = frootc_storagein_p(m)
+                            IF(leafc_storage_p(m) <= 0._r8)THEN
+                               leafc_storage_p(m) = fstor2tran * max(leafc_p(m), 1._r8)
+                            ENDIF
+                            IF(frootc_storage_p(m) <= 0._r8)THEN
+                               frootc_storage_p(m) = fstor2tran * max(frootc_p(m), 1._r8)
+                            ENDIF
+                         ENDIF
                         IF(woody(ivt).eq. 1)THEN
                            deadstemc_p        (m) = deadstemcin_p(m)
                            livestemc_p        (m) = livestemcin_p(m)

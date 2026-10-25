@@ -152,7 +152,8 @@ SUBROUTINE Aggregation_TopoWetness ( &
                sigma_twi = sqrt(sum((twi_sort-mean_twi)**2) / (npxl-1))
 
                IF (sigma_twi > 0) THEN
-                  skew_twi  = real(npxl)/((npxl-1)*(npxl-2)) * sum((twi_sort-mean_twi)**3) / sigma_twi**3
+                  skew_twi  = real(npxl)/(real(npxl-1)*real(npxl-2)) &
+                     * sum((twi_sort-mean_twi)**3) / sigma_twi**3
                   IF (skew_twi > 0) THEN
                      alp_twi_patches(ipatch) = (2./skew_twi)**2
                      chi_twi_patches(ipatch) = sigma_twi*skew_twi/2
@@ -223,7 +224,8 @@ SUBROUTINE Aggregation_TopoWetness ( &
                sigma_twi = sqrt(sum((twi_sort-mean_twi)**2) / (npxl-1))
 
                IF (sigma_twi > 0) THEN
-                  skew_twi  = real(npxl)/((npxl-1)*(npxl-2)) * sum((twi_sort-mean_twi)**3) / sigma_twi**3
+                  skew_twi  = real(npxl)/(real(npxl-1)*real(npxl-2)) &
+                     * sum((twi_sort-mean_twi)**3) / sigma_twi**3
                   IF (skew_twi > 0) THEN
                      alp_twi = (2./skew_twi)**2
                      chi_twi = sigma_twi*skew_twi/2

@@ -2,10 +2,10 @@
 # mpif90 - gfortran 
 # 
 
-  FF = mpif90 -fopenmp
+  FF = /opt/mpich-gnu/bin/mpif90 -fopenmp
    
-  NETCDF_LIB = /opt/netcdf-c-4.9.2-fortran-4.6.0-gnu/lib
-  NETCDF_INC = /opt/netcdf-c-4.9.2-fortran-4.6.0-gnu/include
+  NETCDF_LIB = /opt/netcdf-gnu/lib
+  NETCDF_INC = /opt/netcdf-gnu/include
    
   MOD_CMD = -J
 

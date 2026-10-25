@@ -80,9 +80,11 @@ Help()
    echo '          -g grid_g144x96 -s pc -m vg -b) Global 2.5x1.875; Lat-lon grid '
    echo '          cells; IGBP PC subgrid; vanGenuchten Mualem model; bgc on; crop '
    echo '          off; lulcc off; urban off; cama off'
-   echo '       6. SinglePt_US-Bo1_PC_VG'
+   echo '       6. SinglePt_${SITENAME}_PC_VG'
    echo '          equivalent to the custom configuration (-L SiteList -s pc -m vg '
-   echo '          -g single_US-Bo1); IGBP PFT subgrid;  vanGenuchten Mualem model; '
+   echo '          -g single_${SITENAME}); IGBP PC subgrid; vanGenuchten Mualem model; '
+   echo '          SITENAME must be presented in SITELIST.'
+   echo '          For example: SinglePt_IT-Isp_PC_VG, SinglePt_AT-Neu_PC_VG.'
    echo '          bgc off; crop off; lulcc off; urban off; cama off'
    echo 
    echo '   following option is only valid when "-c|--config" is absent, if '
@@ -237,16 +239,6 @@ CheckSiteList()
    fi
 }
 #--------------------------------------------------------------------------------------
-# Assign following path before running the scripts
-
-#machine = land
-#ROOT=/home/luxj/CoLM202X/
-#RAWDATA=/tera07/CLMrawdata/
-#RUNTIME=/tera07/CoLMruntime/
-#MAKEOPTION=$ROOT/include/Makeoption
-#FORCINGNML=$ROOT/run/forcing/GSWP3.nml
-
-#machine = baiduboat
 #machine.config
 if [ ! -f machine.config ];then
    echo machine.config does not exist
@@ -260,27 +252,7 @@ RUNTIME=`awk '/RUNTIME/ {print $2}' $CONFIG`
 MAKEOPTION=$ROOT/include/`awk '/MAKEOPTION/ {print $2}' $CONFIG`
 FORCINGPATH=`awk '/FORCINGPATH/ {print $2}' $CONFIG`
 
-#ROOT=/share/home/dq010/CoLM202X-test20240803/
-#RAWDATA=/share/home/dq010/CoLM/data/rawdata/CROP-NITRIF/CLMrawdata_updating/
-#RUNTIME=/share/home/dq010/CoLM/data/rawdata/CROP-NITRIF/CoLMruntime//
-#MAKEOPTION=$ROOT/include/Makeoptions.SYSU-BaiduBoat
-#FORCINGPATH=/share/home/dq010/CoLM/data/inputdata/atm/GSWP3/
 HEADER=$ROOT/run/scripts/batch.config
-
-#echo ROOT is $ROOT
-#echo RAWDATA is $RAWDATA
-#echo RUNTIME is $RUNTIME
-#echo MAKEOPTION is $MAKEOPTION
-#echo FORCINGPATH is $FORCINGPATH
-
-#machine = earthlab
-#ROOT=/data/sysu_daiyj_01/luxj/CoLM202X/
-#RAWDATA=/data/sysu_daiyj_01/data_mpi/CLMrawdata_igbp/
-#RUNTIME=/data/sysu_daiyj_01/data_mpi/CoLMruntime/
-#MAKEOPTION=$ROOT/include/Makeoptions-earthlab-par
-#FORCINGPATH=/data/zhangh/data/lifang/GSWP-future/SSP126/
-#HEADER=$ROOT/run/scripts/jobs.config
-#CONFIG=$ROOT/run/scripts/machine.config
 
 while getopts ":hbprlun:i:t:e:c:g:s:f:m:L:" options ;
 do
@@ -349,7 +321,7 @@ if [ ! -z "$ConfigName" ]; then
    if [ ! -z "${SpinupScheme}" ];then
       echo "Warning: -c|--config option is present, ignore -i|--spinup $SpinupScheme option"
    fi
-   if [ ! -z "${SITELIST}" ];then
+   if [ ! -z "${SITELIST}" ] && [[ ! "${ConfigName}" == SinglePt_*_PC_VG ]];then
       echo "Warning: -c|--config option is present, ignore -L|--sitelist $SITELIST option"
    fi
    case $ConfigName in
@@ -383,6 +355,8 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
       Global_Grid_50km_USGS_VG)
 	 IsDefBGC="#undef"
@@ -414,6 +388,8 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
       Global_Grid_50km_IGBP_VG)
 	 IsDefBGC="#undef"
@@ -445,6 +421,8 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
       Global_Grid_2x2_PFT_VG_BGC)
 	 IsDefBGC="#define"
@@ -477,6 +455,8 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
       Global_Grid_2x2_PFT_VG_BGC-spinup)
 	 IsDefBGC="#define"
@@ -542,6 +522,8 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
       Global_Grid_2x2_PFT_VG_BGC_CROP)
 	 IsDefBGC="#define"
@@ -574,6 +556,8 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
       Global_Grid_50km_PFT_VG_CaMa)
 	 IsDefBGC="#undef"
@@ -606,6 +590,8 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
       RegGuangdong_Grid_10km_PFT_VG_BGC_CROP)
 	 IsDefBGC="#define"
@@ -638,8 +624,10 @@ if [ ! -z "$ConfigName" ]; then
 	 SITENAME=Null
 	 SITELIST=Null
          Forcing=CRUJRA
+	 startyr=1980
+         endyr=2023
 	 ;;
-      SinglePt_US-Bo1_PC_VG)
+      SinglePt_*_PC_VG)
 	 IsDefBGC="#undef"
          IsDefCrop="#undef"
 	 IsDefCaMa="#undef"
@@ -667,8 +655,11 @@ if [ ! -z "$ConfigName" ]; then
   	 nx_block=Null
 	 ny_block=Null
 	 nGroup=Null
-	 SITENAME=US-Bo1
-	 SITELIST=SiteList
+	 SITENAME=${ConfigName#SinglePt_}
+	 SITENAME=${SITENAME%_PC_VG}
+	 if [ -z "${SITELIST}" ];then
+	    SITELIST=SiteList
+	 fi
 	 if [ ! -f $SITELIST ];then
             echo "Error: site list $SITELIST does not exist"
 	    exit 1
@@ -682,7 +673,7 @@ if [ ! -z "$ConfigName" ]; then
 	 ;;
       *)
          echo "Error: the argument for the -c|--config option is incorret."
-	 echo "The argument -g $RConfigName is unknown. Check available option by -h|--help"
+	 echo "The argument -c $ConfigName is unknown. Check available option by -h|--help"
 	 exit
 	 ;;
    esac      
@@ -1324,7 +1315,7 @@ $IsDefUrban URBAN_MODEL
 ! 3. If defined, debug information is output.
 #define CoLMDEBUG
 ! 3.1 If defined, range of variables is checked.
-#define RangeCheck
+#undef RangeCheck
 ! 3.1 If defined, surface data in vector is mapped to gridded data for checking.
 #undef SrfdataDiag
 
@@ -1384,4 +1375,3 @@ $IsDefLuLCC LULCC
 EOF
 
 ln -sf $MAKEOPTION bld/include/Makeoptions
-

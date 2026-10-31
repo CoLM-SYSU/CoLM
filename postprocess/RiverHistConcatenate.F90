@@ -63,11 +63,6 @@ PROGRAM river_hist_concatenate
 
 #ifdef USEMPI
       CALL spmd_init
-
-      IF (.not. p_is_master) THEN
-         CALL spmd_exit
-         STOP
-      ENDIF
 #endif
 
       CALL getarg (1, nlfile)
@@ -88,6 +83,20 @@ PROGRAM river_hist_concatenate
       CALL reject_unquotable (filetarget, 'target')
 
       CALL read_namelist (nlfile)
+
+#ifdef USEMPI
+      ! Bug fix: the merge runs on the master alone, but read_namelist
+      ! broadcasts over p_comm_glb, so every process has to take part in it.
+      ! The other processes used to leave before it, into the barrier of
+      ! spmd_exit, while the master was in the broadcast: unmatched collectives
+      ! on one communicator (a hang or an MPI error with more than one process).
+      ! Now they leave after it; their spmd_exit barrier pairs with the one the
+      ! master enters at the end.
+      IF (.not. p_is_master) THEN
+         CALL spmd_exit
+         STOP
+      ENDIF
+#endif
 
       filetmp  = trim(filetarget) // '.tmp'
       filedone = trim(filetarget) // '.complete'
@@ -359,6 +368,10 @@ CONTAINS
       CALL ncio_write_serial (trim(filetmp), 'lat_ucat', lat, 'lat_ucat')
       CALL ncio_write_serial (trim(filetmp), 'lon_ucat', lon, 'lon_ucat')
       CALL ncio_write_serial (trim(filetmp), 'time', tvals_global, 'time')
+      ! ncio_write_serial writes values only; the units (the date origin) and
+      ! long_name that ncio_write_time put on the shards are carried over
+      ! here, as in the file DEF_HIST_mode='one' writes.
+      CALL copy_var_attrs ('time')
 
       totalnumucat = 0
       DO ish = 0, seg_shards(rec_seg(1))-1
@@ -374,6 +387,13 @@ CONTAINS
       DO ivar = 1, nvar
          CALL rebuild_ucat_variable (trim(varnames(ivar)))
       ENDDO
+
+      ! Bug fix: the (time) window variables and the time-independent
+      ! (unitcat_local) fields, e.g. mask_complete_upstream, are not
+      ! (unitcat_local, time) fields, so collect_varnames skips them and they
+      ! were missing from the aggregate although the 'one' file has them.
+      CALL rebuild_window_variables ()
+      CALL rebuild_static_ucat_variables ()
 
       CALL rebuild_resv_variables ()
       CALL rebuild_bif_matrix ()
@@ -452,6 +472,119 @@ CONTAINS
       deallocate (grid)
 
    END SUBROUTINE rebuild_ucat_variable
+
+   !> The per-record history window, (time) on every shard: each global
+   !! record is taken from shard 0 of the segment that owns it.
+   SUBROUTINE rebuild_window_variables ()
+
+   character(len=*), parameter :: names(2) = &
+      [character(len=32) :: 'history_window_seconds', 'history_window_end_minutes']
+   integer  :: iv, it, vid, e
+   real(r8) :: val(1)
+   logical  :: present_on_shard
+
+      DO iv = 1, size(names)
+         CALL shard_name (1, 0, fname)
+         ierr = nf90_open (trim(fname), NF90_NOWRITE, ncid)
+         present_on_shard = nf90_inq_varid (ncid, trim(names(iv)), vid) == NF90_NOERR
+         ierr = nf90_close (ncid)
+         IF (.not. present_on_shard) CYCLE
+
+         DO it = 1, ntime
+            CALL shard_name (rec_seg(it), 0, fname)
+            ierr = nf90_open (trim(fname), NF90_NOWRITE, ncid)
+            e = nf90_inq_varid (ncid, trim(names(iv)), vid)
+            IF (e == NF90_NOERR) e = nf90_get_var (ncid, vid, val, start=[rec_local(it)], count=[1])
+            IF (e /= NF90_NOERR) THEN
+               write(*,'(4A)') 'ERROR: cannot read ', trim(names(iv)), ' from ', trim(fname)
+               CALL CoLM_stop ('river_hist_concatenate: missing history window record')
+            ENDIF
+            ierr = nf90_close (ncid)
+            CALL ncio_write_serial_time (trim(filetmp), trim(names(iv)), it, val(1), 'time')
+         ENDDO
+         CALL copy_var_attrs (trim(names(iv)))
+      ENDDO
+
+   END SUBROUTINE rebuild_window_variables
+
+   !> Time-independent real (unitcat_local) fields of the first segment, put on
+   !! the grid by the (x,y) each shard stores for its own ids, as the 'one'
+   !! writer does (missing cells SPVAL).  The id and index variables are
+   !! integers and are not fields.
+   SUBROUTINE rebuild_static_ucat_variables ()
+
+   character(len=256) :: names(64), nm
+   real(r8), allocatable :: grid(:,:), vals(:)
+   integer,  allocatable :: ids(:), xs(:), ys(:)
+   integer :: nv, v, nd, e, xtype, dimids(NF90_MAX_VAR_DIMS), udim
+   integer :: nnames, iv, k, n, vid
+
+      CALL shard_name (1, 0, fname)
+      ierr = nf90_open (trim(fname), NF90_NOWRITE, ncid)
+      nnames = 0
+      e = nf90_inq_dimid (ncid, 'unitcat_local', udim)
+      IF (e == NF90_NOERR) THEN
+         ierr = nf90_inquire (ncid, nVariables=nv)
+         DO v = 1, nv
+            e = nf90_inquire_variable (ncid, v, name=nm, xtype=xtype, ndims=nd, dimids=dimids)
+            IF (nd /= 1) CYCLE
+            IF (dimids(1) /= udim) CYCLE
+            IF (xtype /= NF90_DOUBLE .and. xtype /= NF90_FLOAT) CYCLE
+            IF (nnames == size(names)) CALL CoLM_stop ('river_hist_concatenate: too many static fields')
+            nnames = nnames + 1
+            names(nnames) = nm
+         ENDDO
+      ENDIF
+      ierr = nf90_close (ncid)
+      IF (nnames == 0) RETURN
+
+      allocate (grid(nlon,nlat))
+      DO iv = 1, nnames
+         grid = SPVAL
+         seen_ucat = 0
+         DO ish = 0, seg_shards(1)-1
+            CALL shard_name (1, ish, fname)
+            ierr = nf90_open (trim(fname), NF90_NOWRITE, ncid)
+            IF (nf90_inq_varid (ncid, trim(names(iv)), vid) /= NF90_NOERR) THEN
+               ierr = nf90_close (ncid); CYCLE
+            ENDIF
+            CALL read_int (ncid, 'ucat_ucid', ids)
+            CALL read_int (ncid, 'x_ucat',    xs)
+            CALL read_int (ncid, 'y_ucat',    ys)
+            n = size(ids)
+            IF (n > 0) THEN
+               allocate (vals(n))
+               e = nf90_get_var (ncid, vid, vals)
+               IF (e /= NF90_NOERR) CALL CoLM_stop ('river_hist_concatenate: cannot read a static field')
+               DO k = 1, n
+                  IF (ids(k) < 1 .or. ids(k) > totalnumucat) &
+                     CALL CoLM_stop ('river_hist_concatenate: id out of range')
+                  IF (seen_ucat(ids(k)) /= 0) CALL CoLM_stop ('river_hist_concatenate: duplicate id')
+                  seen_ucat(ids(k)) = 1
+                  IF (xs(k) < 1 .or. xs(k) > nlon .or. ys(k) < 1 .or. ys(k) > nlat) &
+                     CALL CoLM_stop ('river_hist_concatenate: grid index out of range')
+                  grid(xs(k),ys(k)) = vals(k)
+               ENDDO
+               deallocate (vals)
+            ENDIF
+            IF (allocated(ids)) deallocate (ids)
+            IF (allocated(xs))  deallocate (xs)
+            IF (allocated(ys))  deallocate (ys)
+            ierr = nf90_close (ncid)
+         ENDDO
+         IF (count(seen_ucat == 0) > 0) THEN
+            write(*,'(A,I0,A,A)') 'ERROR: ', count(seen_ucat == 0), &
+               ' unit catchments missing from the shard set for ', trim(names(iv))
+            CALL CoLM_stop ('river_hist_concatenate: incomplete coverage')
+         ENDIF
+         CALL ncio_write_serial (trim(filetmp), trim(names(iv)), grid, &
+            'lon_ucat', 'lat_ucat', DEF_REST_CompressLevel)
+         CALL copy_var_attrs (trim(names(iv)))
+         CALL ncio_put_attr (trim(filetmp), trim(names(iv)), 'missing_value', SPVAL)
+      ENDDO
+      deallocate (grid)
+
+   END SUBROUTINE rebuild_static_ucat_variables
 
    !> Reservoir fields are (reservoir_local, time) -- the same shape as a
    !! unit-catchment field, which is why they must be selected by dimension

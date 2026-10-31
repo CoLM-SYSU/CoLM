@@ -101,6 +101,12 @@ PROGRAM CoLM
    USE MOD_Aerosol, only: AerosolDepInit, AerosolDepReadin
 
    USE MOD_ParameterOptimization
+#ifdef MaterialTransport
+   USE MOD_MT_Runtime, only: mt_runtime_land_init, mt_runtime_forcing_init, &
+      mt_runtime_history_restore, mt_runtime_lulcc_forcing_save, mt_runtime_lulcc_forcing_restore, &
+      mt_runtime_land_final, mt_runtime_registry_final, mt_read_forcing, mt_forcing_reset, &
+      mt_reset_rnof_step, mt_bgc_data_init_year, save_history_acc_restart
+#endif
 
 #ifdef DataAssimilation
    USE MOD_DA_Main
@@ -146,6 +152,7 @@ PROGRAM CoLM
    integer :: e_year, e_month, e_day, e_seconds, e_julian
    integer :: p_year, p_month, p_day, p_seconds, p_julian
    integer :: lc_year, lai_year
+   integer :: bgc_data_year   ! start year of the ndep/fire data, sdate(1) as upstream
    integer :: month, mday, year_p, month_p, mday_p, month_prev, mday_prev
    integer :: n_spinupcycle, i_spinupcycle, istep
    logical :: is_spinup
@@ -314,6 +321,9 @@ PROGRAM CoLM
       CALL allocate_TimeVariables  ()
       CALL READ_TimeVariables (jdate, lc_year, casename, dir_restart)
 
+#ifdef MaterialTransport
+      CALL mt_runtime_land_init (s_month, lc_year, jdate, casename, dir_restart, dir_landdata)
+#endif
       ! Read in SNICAR optical and aging parameters
       IF (DEF_USE_SNICAR) THEN
          CALL SnowOptics_init( DEF_file_snowoptics ) ! SNICAR optical parameters
@@ -337,6 +347,9 @@ PROGRAM CoLM
       ! Initialize meteorological forcing data module
       CALL allocate_1D_Forcing ()
       CALL forcing_init (dir_forcing, deltim, ststamp, lc_year, etstamp)
+#ifdef MaterialTransport
+      CALL mt_runtime_forcing_init ()
+#endif
       CALL allocate_2D_Forcing (gforc)
 
       ! Initialize history data module
@@ -369,10 +382,20 @@ PROGRAM CoLM
          CALL init_nitrif_data (ststamp)
       ENDIF
 
+      ! bgc_data_year replaces the former literal sdate(1) in the three calls
+      ! below and is equal to it unless materials are enabled. With
+      ! materials, a start at 00:00 on 1 January would otherwise read the
+      ! data of the previous year (sdate is adj2end'ed), so that a restarted
+      ! run differs from an unbroken one; see MOD_MT_HostFixes.
+      bgc_data_year = sdate(1)
+#ifdef MaterialTransport
+      bgc_data_year = mt_bgc_data_init_year (sdate(1), s_year)
+#endif
+
       IF (DEF_NDEP_FREQUENCY==1)THEN ! Initial annual ndep data readin
-         CALL init_ndep_data_annually (sdate(1))
+         CALL init_ndep_data_annually (bgc_data_year)
       ELSEIF(DEF_NDEP_FREQUENCY==2)THEN ! Initial monthly ndep data readin
-         CALL init_ndep_data_monthly (sdate(1),s_month)
+         CALL init_ndep_data_monthly (bgc_data_year,s_month)
       ELSE
          write(6,*) 'ERROR: DEF_NDEP_FREQUENCY should be only 1-2, Current is:', &
                      DEF_NDEP_FREQUENCY
@@ -380,7 +403,7 @@ PROGRAM CoLM
       ENDIF
 
       IF (DEF_USE_FIRE) THEN
-         CALL init_fire_data (sdate(1))
+         CALL init_fire_data (bgc_data_year)
          CALL init_lightning_data (sdate)
       ENDIF
 #endif
@@ -394,6 +417,10 @@ PROGRAM CoLM
 #endif
 #ifdef GridRiverLakeFlow
       CALL grid_riverlake_flow_init (s_year, is_spinup)
+#endif
+
+#ifdef MaterialTransport
+      CALL mt_runtime_history_restore (jdate)
 #endif
 
       CALL ParaOpt_init (jdate, lc_year)
@@ -432,6 +459,9 @@ PROGRAM CoLM
          ! Read in the meteorological forcing
          ! ----------------------------------------------------------------------
          CALL read_forcing (jdate, dir_forcing, is_spinup)
+#ifdef MaterialTransport
+         CALL mt_read_forcing (jdate, dir_forcing)
+#endif
 
          IF(DEF_USE_OZONEDATA)THEN
             CALL update_Ozone_data(itstamp, deltim)
@@ -489,8 +519,18 @@ PROGRAM CoLM
 
          ! Call CoLM driver
          ! ----------------------------------------------------------------------
+#ifdef MaterialTransport
+         ! Lake/waterbody substeps of this land step accumulate into
+         ! mt_rnof_step; clear it once per main step, before any land patch
+         ! physics and before the river coupling reads it later this step.
+         IF (p_is_worker) CALL mt_reset_rnof_step ()
+#endif
          IF (p_is_worker) THEN
+#ifdef MaterialTransport
+            CALL CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oroflag,istep)
+#else
             CALL CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oroflag)
+#endif
          ENDIF
 
 #if (defined CatchLateralFlow)
@@ -532,6 +572,9 @@ PROGRAM CoLM
             CALL deallocate_1D_Forcing
             CALL deallocate_1D_Fluxes
 
+#ifdef MaterialTransport
+            CALL mt_runtime_lulcc_forcing_save ()
+#endif
             CALL forcing_final ()
             CALL hist_final    ()
 
@@ -544,6 +587,9 @@ PROGRAM CoLM
             ! Allocate Forcing and Fluxes variable of next year
             CALL allocate_1D_Forcing
             CALL forcing_init (dir_forcing, deltim, itstamp, jdate(1), lulcc_call=.true.)
+#ifdef MaterialTransport
+            CALL mt_runtime_lulcc_forcing_restore ()
+#endif
 
             CALL hist_init (dir_hist, lulcc_call=.true.)
             CALL allocate_1D_Fluxes
@@ -599,6 +645,13 @@ PROGRAM CoLM
 #else
             CALL WRITE_TimeVariables (jdate, lc_year,  casename, dir_restart)
 #endif
+#ifdef MaterialTransport
+            ! History-accumulator sidecar, written with the restart it belongs
+            ! to.  Its reader discards a window that is already complete at
+            ! this point (a daily restart always is), so only a restart in the
+            ! middle of a window continues that window.
+            CALL save_history_acc_restart (jdate)
+#endif
 
 #if (defined CaMa_Flood)
 #ifdef USEMPI
@@ -650,6 +703,9 @@ PROGRAM CoLM
                   itstamp = ststamp
                   CALL adj2begin(jdate)
                   CALL forcing_reset ()
+#ifdef MaterialTransport
+                  CALL mt_forcing_reset ()
+#endif
                ELSE
                   is_spinup = .false.
                ENDIF
@@ -665,6 +721,9 @@ PROGRAM CoLM
          istep = istep + 1
 
       ENDDO TIMELOOP
+#ifdef MaterialTransport
+         CALL mt_runtime_land_final ()
+#endif
 
       CALL deallocate_TimeInvariants ()
       CALL deallocate_TimeVariables  ()
@@ -682,6 +741,9 @@ PROGRAM CoLM
 
 #if (defined GridRiverLakeFlow)
       CALL grid_riverlake_flow_final ()
+#endif
+#ifdef MaterialTransport
+      CALL mt_runtime_registry_final ()
 #endif
 
       CALL forcing_final ()

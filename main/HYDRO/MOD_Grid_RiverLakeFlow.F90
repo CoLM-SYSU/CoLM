@@ -15,6 +15,10 @@ MODULE MOD_Grid_RiverLakeFlow
    USE MOD_Grid_RiverLakeNetwork
    USE MOD_Grid_RiverLakeTimeVars
    USE MOD_Grid_Reservoir
+   ! Outflow of the cells directly upstream of a built reservoir (CaMa-Flood's
+   ! kinematic treatment against the reservoir backwater; see that module).
+   USE MOD_Grid_ReservoirUpstream, only: reservoir_upstream_init, reservoir_upstream_mark, &
+      reservoir_upstream_outflow, reservoir_upstream_final
    USE MOD_Grid_RiverLakeHist
    USE MOD_Grid_RiverLakeLevee, only: has_levee, levsto, levdph, levee_init, read_levee_restart, &
       levee_visible_volume_from_stage, levee_repartition_storage, levee_apply_protected_flux, levee_final, &
@@ -22,6 +26,16 @@ MODULE MOD_Grid_RiverLakeFlow
    USE MOD_Grid_RiverLakeBifurcation, only: bifurcation_init, read_bifurcation_restart, &
       bifurcation_final, bifurcation_calc, &
       bif_hflux_sum, bif_hflux_lev, bif_lev_hflux_sum, bif_path_active
+#ifdef MaterialTransport
+   ! Material transport: the mt_rlc_* calls below (one per marked block) change
+   ! only material pools, never the river water state, so the host solution
+   ! is the same as without them.
+   USE MOD_MT_RiverLakeCoupling, only: mt_rlc_init, mt_rlc_runoff_input, mt_rlc_begin_routing, &
+      mt_rlc_levee_repartition, mt_rlc_equilibrate_cell, mt_rlc_substep, mt_rlc_inland_depression, &
+      mt_rlc_diag_accumulate, mt_rlc_debug_discharge, mt_rlc_end_routing, mt_rlc_flood_init, &
+      mt_rlc_flood_withhold, mt_rlc_flood_publish_reset, mt_rlc_flood_publish_cell, &
+      mt_rlc_flood_publish_push, mt_rlc_flood_debit, mt_rlc_final
+#endif
    IMPLICIT NONE
 
    real(r8), parameter :: RIVERMIN  = 1.e-5_r8
@@ -78,6 +92,8 @@ CONTAINS
 
       integer :: i, irsv
       logical :: bif_restart_loaded
+      real(r8) :: migrated_stage
+      logical, allocatable :: levee_storage_folded(:)
 
       acctime_rnof_max = DEF_GRIDBASED_ROUTING_MAX_DT
 
@@ -100,13 +116,18 @@ CONTAINS
       ENDIF
 
 
+      ! static slope of the cells upstream of reservoirs (reads topo_distance)
+      IF (DEF_Reservoir_Method > 0) CALL reservoir_upstream_init ()
+
+      allocate (levee_storage_folded(numucat))
+      levee_storage_folded = .false.
       CALL levee_init()
       IF (len_trim(gridriver_restart_file) > 0) THEN
          CALL read_levee_restart(gridriver_restart_file, &
             restart_transaction_validated, restart_feature_manifest_present, &
             restart_levee_enabled, fold_protected_to_visible = .not. DEF_USE_LEVEE, &
             volwater_ucat_io = volwater_ucat, volwater_ucat_valid_io = volwater_ucat_valid, &
-            wdsrf_ucat_in = wdsrf_ucat)
+            wdsrf_ucat_in = wdsrf_ucat, storage_folded_out = levee_storage_folded)
       ENDIF
 
       IF (DEF_USE_BIFURCATION) THEN
@@ -123,15 +144,35 @@ CONTAINS
          ENDIF
       ENDIF
 
-      IF (.not. (DEF_USE_BIFURCATION .or. DEF_USE_LEVEE) .and. restart_levee_enabled &
-          .and. volwater_ucat_valid .and. p_is_worker) THEN
+      ! Folding changes storage; disabling levees also changes the stage-volume
+      ! curve when the old protected pool was empty. Preserve extrapolation
+      ! history for ordinary cells whose stored stage already matches the curve.
+      IF (volwater_ucat_valid .and. p_is_worker) THEN
          DO i = 1, numucat
-            wdsrf_ucat(i) = floodplain_curve(i)%depth(volwater_ucat(i))
+            IF (lake_type(i) == 2) CYCLE
+            IF (.not. levee_storage_folded(i)) THEN
+               IF (.not. restart_levee_enabled) CYCLE
+               IF (DEF_USE_LEVEE .and. has_levee(i)) CYCLE
+               ! Cold-start zero storage is rebuilt from its positive stage below.
+               IF (volwater_ucat(i) <= 0._r8 .and. wdsrf_ucat(i) > RIVERMIN) CYCLE
+               migrated_stage = floodplain_curve(i)%depth(volwater_ucat(i))
+               IF (abs(migrated_stage - wdsrf_ucat(i)) <= &
+                   64._r8 * epsilon(1._r8) * max(1._r8, abs(migrated_stage), abs(wdsrf_ucat(i)))) CYCLE
+            ELSE
+               migrated_stage = floodplain_curve(i)%depth(volwater_ucat(i))
+            ENDIF
+            wdsrf_ucat(i) = migrated_stage
+            wdsrf_ucat_prev(i) = wdsrf_ucat(i)
          ENDDO
       ENDIF
+      deallocate (levee_storage_folded)
 
       CALL rebuild_volwater_ucat ()
 
+#ifdef MaterialTransport
+      ! material pools from the river restart, else from the water state
+      CALL mt_rlc_init (start_year, gridriver_restart_file)
+#endif
 
       gridriver_restart_file = ''
 
@@ -221,6 +262,11 @@ CONTAINS
       IF (numinpm > 0) flood_grid_area = max(flood_grid_area, push_ucat2inpm%sum_area)
       deallocate(grid_area_local)
 
+#ifdef MaterialTransport
+      ! material of the flood credit, on the same patches
+      CALL mt_rlc_flood_init ()
+#endif
+
    END SUBROUTINE init_flood_feedback
 
    ! ---------
@@ -242,6 +288,12 @@ CONTAINS
          IF (allocated(filter_rnof)) deallocate(filter_rnof)
          allocate (filter_rnof (numpatch))
          filter_rnof = .false.
+      ENDIF
+
+      ! the network was rebuilt: rebuild the slope of the cells upstream of reservoirs
+      IF (DEF_Reservoir_Method > 0) THEN
+         CALL reservoir_upstream_final ()
+         CALL reservoir_upstream_init ()
       ENDIF
 
       CALL allocate_flood_patch ()
@@ -276,6 +328,9 @@ CONTAINS
          flood_depth_patch = 0._r8
          flood_fraction_patch = 0._r8
       ENDIF
+#ifdef MaterialTransport
+      CALL mt_rlc_flood_withhold ()
+#endif
 
    END SUBROUTINE withhold_flood_feedback
 
@@ -303,14 +358,15 @@ CONTAINS
    integer  :: i_local_min, nsub_warn, nsub_abort
    real(r8) :: dt_this
    real(r8) :: dt_local_min, sub_span, dt_report
-   integer  :: sed_clock_start, sed_clock_end, sed_clock_rate
-   real(r8) :: sed_elapsed
 
    real(r8), allocatable :: rnof_gd(:)
    real(r8), allocatable :: rnof_uc(:)
 
 
    logical,  allocatable :: is_built_resv(:)
+   ! downstream cell is a built reservoir: kinematic outflow (MOD_Grid_ReservoirUpstream)
+   logical,  allocatable :: is_resv_upstream(:)
+   real(r8), allocatable :: veloc_kine(:)
 
    real(r8), allocatable :: wdsrf_next(:)
    real(r8), allocatable :: veloc_next(:)
@@ -350,7 +406,7 @@ CONTAINS
    real(r8) :: veloct_fc, height_fc, momen_fc, zsurf_fc
    real(r8) :: bedelv_fc, height_up, height_dn
    real(r8) :: vwave_up, vwave_dn, hflux_up, hflux_dn, mflux_up, mflux_dn
-   real(r8) :: volwater, friction, floodarea, rivsto_hist
+   real(r8) :: volwater, friction, floodarea, rivsto_hist, depression_capacity
    real(r8) :: fldfrc_levee, visible_hflux, protected_hflux, protected_clip
    real(r8) :: vis_vol_bef_lv, levsto_bef_lv, vis_vol_bef_lv2, levsto_bef_lv2
    real(r8) :: totalflood_evap, totalflood_infil, flood_vec(3)
@@ -388,10 +444,13 @@ CONTAINS
          IF (numucat > 0) THEN
             acc_rnof_uc = acc_rnof_uc + rnof_uc*1.e-3*deltime
          ENDIF
+#ifdef MaterialTransport
+         ! material of the runoff, mapped as the runoff water
+         CALL mt_rlc_runoff_input (filter_rnof, rnof_uc, deltime)
+#endif
 
          deallocate(rnof_gd)
          deallocate(rnof_uc)
-
 
       ENDIF
 
@@ -418,6 +477,10 @@ CONTAINS
       IF (p_is_worker) THEN
 
          allocate (is_built_resv (numucat))
+         allocate (is_resv_upstream (numucat))
+         allocate (veloc_kine    (numucat))
+         is_resv_upstream = .false.
+         veloc_kine = 0._r8
          allocate (wdsrf_next    (numucat))
          allocate (veloc_next    (numucat))
          allocate (hflux_fc      (numucat))
@@ -454,6 +517,10 @@ CONTAINS
             allocate (volresv_safe(0))
          ENDIF
 
+#ifdef MaterialTransport
+         ! the accumulated runoff material joins the input, as acc_rnof_uc below
+         CALL mt_rlc_begin_routing ()
+#endif
 
 #ifdef CoLMDEBUG
          totalrnof = sum(acc_rnof_uc)
@@ -502,6 +569,10 @@ CONTAINS
                   CALL levee_repartition_storage(i, volwater, wdsrf_ucat(i), fldfrc_levee, &
                      vis_vol_bef_lv, levsto_bef_lv)
                   levee_floodarea(i) = fldfrc_levee * topo_area(i)
+#ifdef MaterialTransport
+                  CALL mt_rlc_levee_repartition (i, vis_vol_bef_lv, levsto_bef_lv, &
+                     volwater, levsto(i), with_input = .true.)
+#endif
                ELSE
                   wdsrf_ucat(i) = floodplain_curve(i)%depth (volwater)
                   ! wdsrf_ucat(i) changed: refresh the stored volume read below
@@ -517,10 +588,14 @@ CONTAINS
                ENDIF
             ELSE
                volresv(ucat2resv(i)) = volwater
+               wdsrf_ucat(i) = floodplain_curve(i)%depth (volwater)
             ENDIF
 
          ENDDO
 
+
+         ! cells whose downstream cell is a built reservoir, for this call
+         IF (DEF_Reservoir_Method > 0) CALL reservoir_upstream_mark (is_built_resv, is_resv_upstream)
 
          ntimestep = 0
 #ifdef CoLMDEBUG
@@ -625,7 +700,23 @@ CONTAINS
                   CYCLE
                ENDIF
 
-               IF ((ucat_next(i) > 0) .or. (ucat_next(i) == -9)) THEN
+               IF (is_resv_upstream(i)) THEN
+                  ! Outflow into a built reservoir: kinematic wave of this cell, not
+                  ! an HLL face with the reservoir level, which is the level of the
+                  ! whole reservoir volume in one cell and backs water up into the
+                  ! cells upstream (see MOD_Grid_ReservoirUpstream).  The reservoir
+                  ! does not use momentum and this cell's momentum is replaced by
+                  ! the kinematic velocity below, so no pressure term is added.
+                  IF (DEF_USE_BIFURCATION .or. DEF_USE_LEVEE) THEN
+                     volwater = volwater_ucat(i)
+                  ELSE
+                     volwater = volwater_curve(i)
+                  ENDIF
+                  CALL reservoir_upstream_outflow (i, wdsrf_ucat(i), volwater, hflux_fc(i), veloc_kine(i))
+                  mflux_fc(i) = hflux_fc(i) * veloc_kine(i)
+                  zgrad_dn(i) = 0.
+
+               ELSEIF ((ucat_next(i) > 0) .or. (ucat_next(i) == -9)) THEN
 
                   IF (ucat_next(i) > 0) THEN
                      ! both rivers are dry.
@@ -696,6 +787,10 @@ CONTAINS
                   ! assume: 1. downstream river bed is equal to this river bed.
                   !         2. downstream water surface is equal to this river depth.
                   !         3. downstream water velocity is equal to this velocity.
+                  ! No downstream face exists, so its pressure (zgrad) contribution
+                  ! is zero; leaving it unset fed an uninitialised value into
+                  ! push_ups2ucat_sum -> sum_zgrad_riv.
+                  zgrad_dn(i) = 0.
 
                   veloc_riv(i) = max(veloc_riv(i), 0.)
 
@@ -739,6 +834,8 @@ CONTAINS
                ELSEIF (ucat_next(i) == -10) THEN ! inland depression
                   hflux_fc(i) = 0
                   mflux_fc(i) = 0
+                  ! No outflow face; keep the upstream pressure sum deterministic.
+                  zgrad_dn(i) = 0.
                ENDIF
 
                sum_hflux_riv(i) = sum_hflux_riv(i) + hflux_fc(i)
@@ -792,7 +889,8 @@ CONTAINS
                      irsv = ucat2resv(i)
                      qresv_in(irsv) = - sum_hflux_riv(i) + qresv_ups_prev(irsv)
 
-                     IF (volresv(irsv) > 1.e-4 * volresv_total(irsv)) THEN
+                     IF (volresv(irsv) > 1.e-4 * volresv_total(irsv) .or. &
+                         (DEF_Reservoir_Method == 2 .and. volresv(irsv) > 0._r8)) THEN
                         CALL reservoir_operation (DEF_Reservoir_Method, &
                            irsv, qresv_in(irsv), volresv(irsv), qresv_out(irsv))
                      ELSE
@@ -822,8 +920,12 @@ CONTAINS
 
                ! hflux_sumups now holds the release of the reservoirs directly upstream
                DO i = 1, numucat
-                  IF (ucatfilter(i) .and. is_built_resv(i)) &
+                  IF (ucatfilter(i) .and. is_built_resv(i)) THEN
                      qresv_ups_prev(ucat2resv(i)) = hflux_sumups(i)
+                     ! Dispatch above intentionally uses the lagged upstream
+                     ! release; history records the current water balance.
+                     qresv_in(ucat2resv(i)) = hflux_fc(i) - sum_hflux_riv(i)
+                  ENDIF
                ENDDO
 
             ENDIF
@@ -878,7 +980,8 @@ CONTAINS
                ENDIF
 
                ! constraint 3: Avoid change of flow direction (only for rivers)
-               IF (DEF_GRIDBASED_ROUTING_MOMENTUM_DT_LIMIT .and. (.not. is_built_resv(i))) THEN
+               IF (DEF_GRIDBASED_ROUTING_MOMENTUM_DT_LIMIT .and. (.not. is_built_resv(i)) &
+                   .and. (.not. is_resv_upstream(i))) THEN
                   IF (abs(veloc_riv(i)) > 0.1_r8 .and. &
                       veloc_riv(i) * (sum_mflux_riv(i)-sum_zgrad_riv(i)) > 0._r8) THEN
                      dt_this = min(dt_this, &
@@ -897,6 +1000,18 @@ CONTAINS
             ENDDO
 
             IF (DEF_USE_BIFURCATION) THEN
+               ! Bug fix: synchronize dt BEFORE the outgoing-face limiter below.
+               ! The limiter scales the fluxes by volwater / (outflow * dt), and the
+               ! dt was the bound of this worker's cells only; the synchronization
+               ! (formerly after the limiter) can only shorten it, and the fluxes
+               ! already cut with the longer dt stayed cut.  So where the limiter
+               ! acted (ordinary_scale < 1) the result depended on how the river
+               ! systems were split over the workers.  Results change only in such
+               ! cells, and there the flux is cut less; the synchronized dt, and so
+               ! the number of substeps, is the same as before.  Without the
+               ! momentum bound below this is the same single synchronization,
+               ! moved; with it, a second one follows the bound.
+               CALL sync_global_routing_dt(dt_res, dt_all, next_loop_active)
                normal_outgoing_rate = 0._r8
                hflux_sumups = 0._r8
                DO i = 1, numucat
@@ -942,18 +1057,29 @@ CONTAINS
                   mflux_fc(i) = mflux_fc(i) * dt_this
                   IF (is_built_resv(i)) qresv_out(ucat2resv(i)) = hflux_fc(i)
                ENDDO
-               CALL push_ups2ucat_sum (hflux_fc, hflux_sumups, mflux_fc, mflux_sumups)
+               IF (DEF_Reservoir_Method > 0) THEN
+                  ! Cache the actual limited reservoir release for the next dispatch.
+                  hflux_resv = 0._r8
+                  WHERE (ucatfilter .and. is_built_resv) hflux_resv = hflux_fc
+                  CALL push_ups2ucat_sum (hflux_fc, hflux_sumups, mflux_fc, mflux_sumups, &
+                     hflux_resv, mflux_resv)
+               ELSE
+                  CALL push_ups2ucat_sum (hflux_fc, hflux_sumups, mflux_fc, mflux_sumups)
+               ENDIF
                WHERE (ucatfilter)
                   sum_hflux_riv = hflux_fc - hflux_sumups
                   sum_mflux_riv = mflux_fc - mflux_sumups
                END WHERE
                DO i = 1, numucat
                   IF (.not. ucatfilter(i)) CYCLE
-                  IF (is_built_resv(i)) qresv_in(ucat2resv(i)) = hflux_sumups(i)
+                  IF (is_built_resv(i)) THEN
+                     qresv_in(ucat2resv(i)) = hflux_sumups(i)
+                     IF (DEF_Reservoir_Method > 0) qresv_ups_prev(ucat2resv(i)) = mflux_resv(i)
+                  ENDIF
                ENDDO
                IF (DEF_GRIDBASED_ROUTING_MOMENTUM_DT_LIMIT) THEN
                   DO i = 1, numucat
-                     IF (.not. ucatfilter(i) .or. is_built_resv(i)) CYCLE
+                     IF (.not. ucatfilter(i) .or. is_built_resv(i) .or. is_resv_upstream(i)) CYCLE
                      IF (abs(veloc_riv(i)) > 0.1_r8 .and. &
                          veloc_riv(i) * (sum_mflux_riv(i)-sum_zgrad_riv(i)) > 0._r8) THEN
                         dt_this = abs(momen_riv(i) * topo_rivare(i) / &
@@ -968,8 +1094,9 @@ CONTAINS
                         ENDIF
                      ENDIF
                   ENDDO
+                  ! the bound may have shortened dt on this worker only
+                  CALL sync_global_routing_dt(dt_res, dt_all, next_loop_active)
                ENDIF
-               CALL sync_global_routing_dt(dt_res, dt_all, next_loop_active)
                sum_hflux_base = sum_hflux_riv
                IF (allocated(volresv)) volresv_safe = volresv
                CALL bifurcation_calc(wdsrf_ucat, wdsrf_ucat_prev, volwater_ucat, &
@@ -1001,6 +1128,11 @@ CONTAINS
 #endif
             ENDIF
 
+#ifdef MaterialTransport
+            ! material transport with this substep's water fluxes
+            CALL mt_rlc_substep (acctime_rnof, dt_all, irivsys, hflux_fc, sum_hflux_riv, &
+               ucatfilter, is_built_resv)
+#endif
 
             DO i = 1, numucat
 
@@ -1035,10 +1167,15 @@ CONTAINS
 
                ! for inland depression, remove excess water (to be optimized)
                IF (ucat_next(i) == -10) THEN
-                  IF (volwater > topo_rivstomax(i)) THEN
-                     hflux_fc(i) = (volwater - topo_rivstomax(i)) / dt_all(irivsys(i))
+                  depression_capacity = topo_rivstomax(i)
+                  IF (is_built_resv(i)) depression_capacity = volresv_total(ucat2resv(i))
+                  IF (volwater > depression_capacity) THEN
+                     hflux_fc(i) = (volwater - depression_capacity) / dt_all(irivsys(i))
                      IF (is_built_resv(i)) qresv_out(ucat2resv(i)) = hflux_fc(i)
-                     volwater = topo_rivstomax(i)
+#ifdef MaterialTransport
+                     CALL mt_rlc_inland_depression (i, volwater, depression_capacity, dt_all(irivsys(i)))
+#endif
+                     volwater = depression_capacity
                   ENDIF
                ENDIF
 
@@ -1046,6 +1183,9 @@ CONTAINS
                   CALL levee_repartition_storage(i, volwater, wdsrf_ucat(i), fldfrc_levee, &
                      vis_vol_bef_lv2, levsto_bef_lv2)
                   levee_floodarea(i) = fldfrc_levee * topo_area(i)
+#ifdef MaterialTransport
+                  CALL mt_rlc_levee_repartition (i, vis_vol_bef_lv2, levsto_bef_lv2, volwater, levsto(i))
+#endif
                ELSE
                   wdsrf_ucat(i) = floodplain_curve(i)%depth (volwater)
                   ! wdsrf_ucat(i) changed: refresh the stored volume read below
@@ -1071,17 +1211,39 @@ CONTAINS
                   veloc_riv(i) = 0
                ENDIF
 
+               ! upstream of a built reservoir: the kinematic channel velocity of the
+               ! outflow (D2RIVVEL in CaMa-Flood), as the momentum is not used there
+               IF (is_resv_upstream(i) .and. (wdsrf_ucat(i) >= RIVERMIN)) THEN
+                  veloc_riv(i) = veloc_kine(i)
+                  momen_riv(i) = veloc_riv(i) * wdsrf_ucat(i)
+               ENDIF
+
                ! inland depression river
                IF ((.not. is_built_resv(i)) .and. (ucat_next(i) == -10)) THEN
                   momen_riv(i) = min(0., momen_riv(i))
                   veloc_riv(i) = min(0., veloc_riv(i))
                ENDIF
 
-               veloc_riv(i) = min(veloc_riv(i),  20.)
-               veloc_riv(i) = max(veloc_riv(i), -20.)
+               ! momen_riv is defined as wdsrf_ucat * veloc_riv.  The clamp
+               ! must update it as well: otherwise the next substep reads a
+               ! velocity of 20 m/s next to a momentum of 30 (depth 1 m), so
+               ! the face flux, the CFL estimate and the friction term use
+               ! inconsistent state.  Cells that are not clamped keep exactly
+               ! the previous behaviour.
+               IF (veloc_riv(i) > 20._r8) THEN
+                  veloc_riv(i) = 20._r8
+                  momen_riv(i) = wdsrf_ucat(i) * veloc_riv(i)
+               ELSEIF (veloc_riv(i) < -20._r8) THEN
+                  veloc_riv(i) = -20._r8
+                  momen_riv(i) = wdsrf_ucat(i) * veloc_riv(i)
+               ENDIF
 
             ENDDO
 
+#ifdef MaterialTransport
+            CALL mt_rlc_diag_accumulate (dt_all, irivsys, ucatfilter, is_built_resv, &
+               hflux_fc, levee_floodarea)
+#endif
 
             DO i = 1, numucat
                IF (ucatfilter(i)) THEN
@@ -1089,6 +1251,9 @@ CONTAINS
 #ifdef CoLMDEBUG
                   IF (ucat_next(i) <= 0) THEN
                      totaldis = totaldis + hflux_fc(i)*dt_all(irivsys(i))
+#ifdef MaterialTransport
+                     CALL mt_rlc_debug_discharge (i, dt_all(irivsys(i)))
+#endif
                   ENDIF
 #endif
 
@@ -1098,12 +1263,17 @@ CONTAINS
                   a_veloc_riv (i) = a_veloc_riv (i) + veloc_riv (i) * dt_all(irivsys(i))
                   a_discharge (i) = a_discharge (i) + hflux_fc  (i) * dt_all(irivsys(i))
 
-                  IF (DEF_USE_LEVEE) THEN
-                     IF (levee_floodarea(i) > 0._r8) THEN
-                        floodarea = levee_floodarea(i)
-                     ELSE
-                        floodarea = floodplain_curve(i)%floodarea (wdsrf_ucat(i))
-                     ENDIF
+                  ! Bug fix: a leveed cell takes the levee result even when it is
+                  ! zero.  levee_fldstg returns fldfrc = levee_frc between bank top
+                  ! and levee top, and levee_frc = 0 (all floodplain protected) is
+                  ! valid, so zero means "not flooded"; falling back to the
+                  ! floodplain curve then put the protected floodplain under water
+                  ! in the history (the flood fraction published to the land kept
+                  ! the zero).  Only the history floodarea changes, and only for
+                  ! leveed cells; reservoirs have no levee (has_levee = .false.)
+                  ! and levee_floodarea was 0 for every other cell already.
+                  IF (DEF_USE_LEVEE .and. has_levee(i) .and. (.not. is_built_resv(i))) THEN
+                     floodarea = levee_floodarea(i)
                   ELSE
                      floodarea = floodplain_curve(i)%floodarea (wdsrf_ucat(i))
                   ENDIF
@@ -1221,6 +1391,10 @@ CONTAINS
       flood_evap_period = 0._r8
       flood_infil_period = 0._r8
 
+#ifdef MaterialTransport
+      ! material balance (CoLMDEBUG), limiter statistics, reset of the accumulations
+      CALL mt_rlc_end_routing ()
+#endif
 
       acctime_rnof = 0.
 
@@ -1233,6 +1407,8 @@ CONTAINS
       IF (DEF_GridRiverLake_FloodFeedback) CALL publish_flood_feedback(year)
 
       IF (allocated(is_built_resv)) deallocate(is_built_resv)
+      IF (allocated(is_resv_upstream)) deallocate(is_resv_upstream)
+      IF (allocated(veloc_kine)) deallocate(veloc_kine)
       IF (allocated(wdsrf_next   )) deallocate(wdsrf_next   )
       IF (allocated(veloc_next   )) deallocate(veloc_next   )
       IF (allocated(hflux_fc     )) deallocate(hflux_fc     )
@@ -1420,6 +1596,9 @@ CONTAINS
       flood_visible_uc = 0._r8
       flood_protected_uc = 0._r8
       flood_reservoir_uc = .false.
+#ifdef MaterialTransport
+      CALL mt_rlc_flood_publish_reset ()
+#endif
       frac_uc = 0._r8
       DO i = 1, numucat
          IF (lake_type(i) == 2 .and. allocated(ucat2resv)) THEN
@@ -1436,6 +1615,9 @@ CONTAINS
          ENDIF
          protected = 0._r8
          IF (DEF_USE_LEVEE .and. has_levee(i)) protected = max(0._r8, levsto(i))
+#ifdef MaterialTransport
+         CALL mt_rlc_equilibrate_cell (i, visible, DEF_USE_LEVEE .and. has_levee(i))
+#endif
          IF (DEF_USE_LEVEE .and. has_levee(i)) THEN
             CALL levee_fldstg(i, visible+protected, stage, protected_new, protected_stage, fraction)
          ELSE
@@ -1446,6 +1628,9 @@ CONTAINS
          flood_visible_uc(i) = max(0._r8, visible - topo_rivstomax(i))
          flood_protected_uc(i) = protected
          frac_uc(i) = min(1._r8, fraction)
+#ifdef MaterialTransport
+         CALL mt_rlc_flood_publish_cell (i, visible, protected, flood_visible_uc(i))
+#endif
       ENDDO
 
       ! sum_area is allocated only on workers with requests (numucat > 0)
@@ -1494,6 +1679,10 @@ CONTAINS
          WHERE (flood_fraction_patch > epsilon(1._r8)) &
             flood_depth_patch = 1000._r8 * flood_credit_patch / max(flood_fraction_patch, tiny(1._r8))
       ENDIF
+#ifdef MaterialTransport
+      ! material of the flood credit, mapped to the patches as the water
+      CALL mt_rlc_flood_publish_push (flood_grid_area)
+#endif
    END SUBROUTINE publish_flood_feedback
 
 
@@ -1573,6 +1762,11 @@ CONTAINS
       ENDDO
       IF (any(fraction_sum > 1._r8+1.e-10_r8)) &
          CALL CoLM_stop('grid flood feedback: donor overdraft')
+#ifdef MaterialTransport
+      ! take from the river material pools what the land took; check the ledger
+      CALL mt_rlc_flood_debit (flood_credit_patch, flood_evap_acc, flood_infil_acc, &
+         flood_grid_area, flood_visible_uc, flood_protected_uc)
+#endif
       DO j = 1, numucat
          IF (flood_reservoir_uc(j)) THEN
             volresv(ucat2resv(j)) = max(0._r8, volresv(ucat2resv(j)) - fraction_sum(j)*flood_visible_uc(j))
@@ -1582,10 +1776,17 @@ CONTAINS
          ENDIF
          IF (DEF_USE_LEVEE .and. has_levee(j)) &
             levsto(j) = max(0._r8, levsto(j) - fraction_sum(j)*flood_protected_uc(j))
+#ifdef MaterialTransport
+         CALL mt_rlc_equilibrate_cell (j, volwater_ucat(j), DEF_USE_LEVEE .and. has_levee(j))
+#endif
          IF (fraction_sum(j) > 0._r8) THEN
             IF (DEF_USE_LEVEE .and. has_levee(j) .and. .not. flood_reservoir_uc(j)) THEN
                CALL levee_repartition_storage(j, volwater_ucat(j), wdsrf_ucat(j), &
                   fraction, visible_before, protected_before)
+#ifdef MaterialTransport
+               CALL mt_rlc_levee_repartition (j, visible_before, protected_before, &
+                  volwater_ucat(j), levsto(j))
+#endif
             ELSEIF (flood_reservoir_uc(j)) THEN
                wdsrf_ucat(j) = floodplain_curve(j)%depth(volresv(ucat2resv(j)))
             ELSE
@@ -1604,12 +1805,15 @@ CONTAINS
 
       IF (DEF_Reservoir_Method > 0) THEN
          CALL reservoir_final ()
+         CALL reservoir_upstream_final ()
       ENDIF
 
 
       CALL levee_final()
       CALL bifurcation_final()
-
+#ifdef MaterialTransport
+      CALL mt_rlc_final ()
+#endif
 
       IF (allocated(filter_rnof)) deallocate(filter_rnof)
       IF (allocated(flood_depth_patch)) deallocate(flood_depth_patch, flood_fraction_patch, &

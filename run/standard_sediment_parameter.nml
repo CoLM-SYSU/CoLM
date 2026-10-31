@@ -1,0 +1,59 @@
+&nl_colm_sediment_parameter
+    ! ------------------------------------------------------------------
+    ! River sediment (MOD_MT_Sediment), with GridRiverLakeFlow:
+    !
+    !   &nl_colm_material
+    !      DEF_USE_SEDIMENT        = .true.
+    !      DEF_SEDIMENT_PARAM_FILE = 'run/standard_sediment_parameter.nml'
+    !   /
+    !
+    ! The unit catchment file (DEF_UnitCatchment_file) must hold sed_frc
+    ! (grain-size fractions, dimension sed_n) and sed_slope (floodplain
+    ! slope, dimension slope_layers).
+    !
+    ! The grain_diameter classes are matched to the sed_frc classes by
+    ! order: class i of grain_diameter is class i of sed_frc.
+    !
+    ! Every entry is optional; the values below are the code defaults,
+    ! those of CaMa-Flood v4 (src/sediment/, etc/sediment/run_sediment.sh),
+    ! so this file changes nothing as it stands. They equal the former
+    ! DEF_SED_* defaults of &nl_colm except grain_diameter (formerly
+    ! 0.0002, 0.002, 0.02 m). Densities are in kg/m3 (DEF_SED_DENSITY was
+    ! in g/cm3: 2.65 g/cm3 = 2650 kg/m3). As in CaMa-Flood, the active
+    ! layer may be thinner than the largest grain (a warning is printed).
+    !
+    !   DEF_SED_DIAMETER  -> grain_diameter (one value per sed_n class)
+    !   DEF_SED_LAMBDA    -> porosity
+    !   DEF_SED_LYRDPH    -> active_layer_depth
+    !   DEF_SED_DENSITY   -> grain_density        (g/cm3 -> kg/m3)
+    !   DEF_SED_WATER_DENSITY -> water_density    (g/cm3 -> kg/m3)
+    !   DEF_SED_VISKIN    -> viscosity
+    !   DEF_SED_VONKAR    -> von_karman
+    !   DEF_SED_PSET      -> settling_multiplier
+    !   DEF_SED_TOTLYRNUM -> ndeposit_layers
+    !   DEF_SED_IGNORE_DPH -> ignore_depth_m
+    !   DEF_SED_DT_MAX    -> max_timestep_s
+    !   DEF_SED_PYLD      -> yield_coefficient
+    !   DEF_SED_PYLDC     -> slope_exponent
+    !   DEF_SED_PYLDPC    -> precipitation_exponent
+    !   DEF_SED_DSYLUNIT  -> unit_conversion
+    !   DEF_SED_CFL_ADV   -> (inactive; advection is limited by the donor
+    !                        inventory)
+    ! ------------------------------------------------------------------
+    DEF_SEDIMENT%grain_diameter         = 0.001, 0.000025, 0.0000001  ! sand, silt, clay [m]
+    DEF_SEDIMENT%grain_density          = 2650.    ! [kg/m3]
+    DEF_SEDIMENT%water_density          = 1000.    ! [kg/m3]
+    DEF_SEDIMENT%porosity               = 0.4      ! bed porosity [-]
+    DEF_SEDIMENT%active_layer_depth     = 0.00005  ! [m]
+    DEF_SEDIMENT%ndeposit_layers        = 5        ! deposition layers
+    DEF_SEDIMENT%bed_depth              = 10.      ! initial bed depth [m]
+    DEF_SEDIMENT%viscosity              = 1.0e-6   ! kinematic viscosity [m2/s]
+    DEF_SEDIMENT%von_karman             = 0.4      ! [-]
+    DEF_SEDIMENT%settling_multiplier    = 1.0      ! settling velocity factor [-]
+    DEF_SEDIMENT%ignore_depth_m         = 0.05     ! minimum depth for suspended processes [m]
+    DEF_SEDIMENT%max_timestep_s         = 3600.    ! maximum morphology interval [s]
+    DEF_SEDIMENT%yield_coefficient      = 0.01     ! hillslope yield coefficient
+    DEF_SEDIMENT%slope_exponent         = 2.0      ! hillslope yield slope exponent
+    DEF_SEDIMENT%precipitation_exponent = 2.0      ! hillslope yield precipitation exponent
+    DEF_SEDIMENT%unit_conversion        = 1.0e-6   ! hillslope yield unit factor
+/

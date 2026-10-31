@@ -127,6 +127,13 @@ CONTAINS
          CALL CoLM_stop ('vector_read_matrix_and_scatter: global_id size mismatch')
       ENDIF
 
+      IF (p_is_worker) THEN
+         IF (allocated(matrix)) THEN
+            IF (size(matrix,1) /= nrow .or. size(matrix,2) /= ncol_local) deallocate(matrix)
+         ENDIF
+         IF (.not. allocated(matrix)) allocate (matrix(nrow, ncol_local))
+      ENDIF
+
       IF (p_is_master) THEN
          CALL ncio_read_serial (filein, varname, rdata)
 
@@ -146,7 +153,6 @@ CONTAINS
             CALL mpi_send (global_id, ncol_local, MPI_INTEGER, &
                p_address_master, mpi_tag_mesg + 1, p_comm_glb, p_err)
 
-            IF (.not. allocated(matrix)) allocate (matrix(nrow, ncol_local))
             CALL mpi_recv (matrix, nrow*ncol_local, MPI_REAL8, p_address_master, &
                mpi_tag_data, p_comm_glb, p_stat, p_err)
          ENDIF
@@ -184,7 +190,6 @@ CONTAINS
 
       CALL mpi_barrier (p_comm_glb, p_err)
 #else
-      IF (.not. allocated(matrix)) allocate (matrix(nrow, ncol_local))
       DO ipth = 1, ncol_local
          IF (global_id(ipth) < 1 .or. global_id(ipth) > ncol_global) THEN
             CALL CoLM_stop ('vector_read_matrix_and_scatter: global_id out of range')

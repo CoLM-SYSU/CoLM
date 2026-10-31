@@ -1018,19 +1018,41 @@ CONTAINS
                ENDDO
             ENDDO
 
-            allocate (bedelv_next (numucat))
-            allocate (outletwth   (numucat))
-
          ENDIF
       ENDIF
+
+      ! Inactive ranks also pass these arrays to assumed-shape arguments.
+      allocate (bedelv_next (numucat))
+      allocate (outletwth   (numucat))
 
       CALL worker_push_data (push_next2ucat, topo_rivelv, bedelv_next, fillvalue = spval)
       CALL worker_push_data (push_next2ucat, topo_rivwth, outletwth  , fillvalue = spval)
 
       IF (p_is_worker) THEN
          IF (numucat > 0) THEN
+            ! Outlet width is the width of this cell's own channel (it was the
+            ! mean of this and the downstream channel), as in CaMa-Flood
+            ! (cmf_calc_outflw_mod: flow area and outflow use D2RIVWTH of the
+            ! upstream cell).  The momentum of a cell is divided by its own
+            ! channel area topo_rivare = rivwth*rivlen, while the CFL limit
+            ! uses rivlen.  Where a narrow tributary (~5 m) enters a wide river
+            ! or lake (~2000 m) the mean width was hundreds of times the cell's
+            ! own width, the effective length topo_rivare/outletwth only tens
+            ! of metres, and the outflow flipped sign every other substep: a
+            ! 1e-13 velocity perturbation grew to O(1) within a day (0.25 deg
+            ! global network, 3 days: 73-89 cells with discharge >= 10 m3/s off
+            ! by more than 1%, none now).  With the own width the effective
+            ! length is rivlen and the CFL limit holds; the adaptive dt now
+            ! stays at its 60 s cap (27% fewer substeps over 30 days).  The
+            ! routing results change wherever the two widths differ (69% of
+            ! the faces at 0.25 deg, 50% at 0.1 deg; most rivers widen
+            ! downstream, so the outlet becomes narrower): on a cold start the
+            ! discharge of the 10 largest river mouths averaged over 30 days is
+            ! 0-13% lower, the river storage up to 1.6% higher.
+            ! (min(w, w_next) was also tested: same stability and cost, about
+            ! twice the change of the results.)
             WHERE (ucat_next > 0)
-               outletwth = (outletwth + topo_rivwth) * 0.5
+               outletwth = topo_rivwth
             ELSEWHERE
                outletwth = topo_rivwth
             END WHERE
@@ -1114,6 +1136,8 @@ CONTAINS
 #endif
 
 
+      IF (.not. allocated(allups_mask_ucat)) allocate (allups_mask_ucat (0))
+
       IF (allocated (uc_up2down   )) deallocate (uc_up2down   )
       IF (allocated (nups_nst     )) deallocate (nups_nst     )
       IF (allocated (iups_nst     )) deallocate (iups_nst     )
@@ -1125,9 +1149,10 @@ CONTAINS
 
    ! The regional network must take the runoff of every runoff-input cell that the
    ! land patches overlap and that the full network (DEF_UnitCatchment_file) routes;
-   ! otherwise that runoff would be dropped without notice.  mksrfdata cuts the
-   ! network so, but with LULCC the patches of a later year may overlap cells that
-   ! the network was not cut for.  Called at start-up and after each LULCC.
+   ! otherwise that runoff would be dropped without notice.  mkinidata cuts the
+   ! network so, from the land patches of every land-cover year of the run, but the
+   ! run may reach a year that mkinidata had no land data for, or use a file cut for
+   ! another period or domain.  Called at start-up and after each LULCC.
    ! Collective over all processes.  idmap_x/idmap_y (the regional input matrix) are
    ! used on the master only.
 
@@ -1185,8 +1210,8 @@ CONTAINS
          IF (nmiss > 0) THEN
             write(*,'(A,I0,A)') 'ERROR: ', nmiss, ' runoff-input cells under the land patches are routed by'
             write(*,'(A)') '   DEF_UnitCatchment_file but not by the regional unit-catchment network.'
-            write(*,'(A)') '   With LULCC run mksrfdata for every land-cover year before mkinidata;'
-            write(*,'(A)') '   otherwise run mksrfdata again for this domain.'
+            write(*,'(A)') '   Run mkinidata again for this domain and simulation period'
+            write(*,'(A)') '   (with LULCC, after mksrfdata has made the land data of every year).'
          ENDIF
          deallocate (touched, routed_full, routed_regional, src_x, src_y)
       ENDIF
@@ -1248,7 +1273,7 @@ CONTAINS
       IF (.not. consistent) THEN
          write(*,'(A)') 'ERROR: the regional unit-catchment network does not belong to DEF_UnitCatchment_file.'
          write(*,'(2A)') '   regional file: ', trim(file_regional)
-         write(*,'(A)') '   Run mksrfdata again with the current DEF_UnitCatchment_file.'
+         write(*,'(A)') '   Run mkinidata again with the current DEF_UnitCatchment_file.'
          CALL CoLM_stop ()
       ENDIF
 
@@ -1362,6 +1387,14 @@ CONTAINS
             IF (present(idata1d)) allocate (idata1d (0))
          ENDIF
 
+      ENDIF
+
+      ! Master releases its global input above; IO ranks never read it.
+      ! Keep legal actual arguments for the subsequent all-rank push calls.
+      IF (.not. p_is_worker) THEN
+         IF (present(rdata1d)) allocate (rdata1d (0))
+         IF (present(rdata2d)) allocate (rdata2d (ndim1,0))
+         IF (present(idata1d)) allocate (idata1d (0))
       ENDIF
 
       CALL mpi_barrier (p_comm_glb, p_err)

@@ -68,7 +68,11 @@ CONTAINS
                hpbl, &
                qintr_rain ,qintr_snow ,t_precip   ,hprl       ,&
                dheatl     ,smp        ,hk         ,hksati     ,&
-               rootflux    )
+               rootflux &
+#ifdef MaterialTransport
+               ,canopy_diag &
+#endif
+               )
 
 !=======================================================================
 !
@@ -122,6 +126,9 @@ CONTAINS
    USE MOD_PlantHydraulic, only: PlantHydraulicStress_twoleaf
    USE MOD_Ozone, only: CalcOzoneStress
    USE MOD_UserSpecifiedForcing, only: HEIGHT_mode
+#ifdef MaterialTransport
+   USE MOD_MT_ThermalDiagnostics, only: mt_canopy_diagnostics
+#endif
 
    IMPLICIT NONE
 
@@ -268,6 +275,9 @@ CONTAINS
         etr,           &! transpiration rate [mm/s]
         hprl,          &! precipitation sensible heat from canopy
         dheatl          ! vegetation heat change [W/m2]
+#ifdef MaterialTransport
+   type(mt_canopy_diagnostics), intent(out), optional :: canopy_diag(ps:pe)
+#endif
 
    real(r8), intent(inout) :: &
         z0m,           &! effective roughness [m]
@@ -531,6 +541,9 @@ CONTAINS
          ENDIF
       ENDDO
 
+#ifdef MaterialTransport
+      IF (present(canopy_diag)) canopy_diag = mt_canopy_diagnostics()
+#endif
       ! When there is no vegetation in this Plant Community Patch, RETURN
       IF (.not. is_vegetated_patch) THEN
          RETURN
@@ -1970,6 +1983,9 @@ ENDIF
                   qmelt(i) = min(ldew_snow(i)/deltim,(tl(i)-tfrz)*cpice*ldew_snow(i)/(deltim*hfus))
                   ldew_snow(i) = max(0.,ldew_snow(i) - qmelt(i)*deltim)
                   ldew_rain(i) = max(0.,ldew_rain(i) + qmelt(i)*deltim)
+#ifdef MaterialTransport
+                  IF (present(canopy_diag)) canopy_diag(i)%melt = qmelt(i)*deltim
+#endif
                   !NOTE: There may be some problem, energy imbalance
                   !      However, detailed treatment could be somewhat trivial
                   tl(i) = fwet_snow(i)*tfrz + (1.-fwet_snow(i))*tl(i) !Niu et al., 2004
@@ -1979,6 +1995,9 @@ ENDIF
                   qfrz(i)  = min(ldew_rain(i)/deltim,(tfrz-tl(i))*cpliq*ldew_rain(i)/(deltim*hfus))
                   ldew_rain(i) = max(0.,ldew_rain(i) - qfrz(i)*deltim)
                   ldew_snow(i) = max(0.,ldew_snow(i) + qfrz(i)*deltim)
+#ifdef MaterialTransport
+                  IF (present(canopy_diag)) canopy_diag(i)%freeze = qfrz(i)*deltim
+#endif
                   !NOTE: There may be some problem, energy imbalance
                   !      However, detailed treatment could be somewhat trivial
                   tl(i) = fwet_snow(i)*tfrz + (1.-fwet_snow(i))*tl(i) !Niu et al., 2004
@@ -2077,6 +2096,9 @@ ENDIF
 
       tref = thm + vonkar/(fh-fht)*dth * (fh2m/vonkar - fh/vonkar)
       qref =  qm + vonkar/(fq-fqt)*dqh * (fq2m/vonkar - fq/vonkar)
+#ifdef MaterialTransport
+      IF (present(canopy_diag)) canopy_diag%raw = max(raw, 0._r8)
+#endif
 
    END SUBROUTINE LeafTemperaturePC
 !----------------------------------------------------------------------

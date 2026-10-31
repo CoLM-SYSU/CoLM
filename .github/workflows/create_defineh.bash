@@ -1,6 +1,6 @@
 #!/bin/bash
 #./create_defineh.bash GRID LULC_IGBP_PFT URBANON CaMaON BGCON
-echo $1 $2 $3 $4 $5 $6 $7 
+echo $1 $2 $3 $4 $5 $6 $7 $8 $9
 
 if [ $1 = "GRID" ];then
    GRIDBASE="#define GRIDBASED"
@@ -134,6 +134,24 @@ else
    fi
 fi
 
+# Argument 8 (optional): MTON / MTOFF, material transport. Default MTOFF.
+if [ "${8:-MTOFF}" = "MTON" ];then
+   MT="#define MaterialTransport"
+else
+   if [ "${8:-MTOFF}" = "MTOFF" ];then
+      MT="#undef MaterialTransport"
+   else
+      echo "Error in argument 8, try (MTON, MTOFF)"
+   fi
+fi
+
+# Argument 9 (optional): LULCCON / LULCCOFF. Default LULCCOFF.
+case "${9:-LULCCOFF}" in
+   LULCCON) LULCC="#define LULCC" ;;
+   LULCCOFF) LULCC="#undef LULCC" ;;
+   *) echo "Error in argument 9, try (LULCCON, LULCCOFF)"; exit 1 ;;
+esac
+
 cat>include/define.h<<EOF
 ! 1. Spatial structure:
 !    Select one of the following options.
@@ -193,9 +211,11 @@ $CaMa
 ! 7. If defined, BGC model is used.
 $BGC
 
-!    Conflicts :  only used when LULC_IGBP_PFT is defined.
+!    Conflicts : only used when LULC_IGBP_PFT or LULC_IGBP_PC is defined.
 #ifndef LULC_IGBP_PFT
+#ifndef LULC_IGBP_PC
 #undef BGC
+#endif
 #endif
 
 ! 7.1 If defined, CROP model is used
@@ -206,5 +226,11 @@ $CROP
 #endif
 
 ! 8. If defined, open Land use and land cover change mode.
-#undef LULCC
+$LULCC
+
+! 13. If defined, material transport is compiled in.
+$MT
+#if (defined MaterialTransport && defined Campbell_SOIL_MODEL)
+#error "MaterialTransport requires vanGenuchten_Mualem_SOIL_MODEL"
+#endif
 EOF

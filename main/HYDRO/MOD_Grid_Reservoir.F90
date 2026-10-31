@@ -30,6 +30,10 @@ MODULE MOD_Grid_Reservoir
    real(r8), allocatable :: volresv_adjust(:)  ! adjustment reservoir volume [m^3]
    real(r8), allocatable :: volresv_normal(:)  ! normal reservoir volume     [m^3]
 
+   ! H22 static parameters, only allocated for method 2.
+   real(r8), allocatable :: volresv_flood (:)  ! flood-control onset C [m^3]
+   real(r8), allocatable :: resv_h22_coeff(:)  ! inflow release coefficient k [-]
+
    real(r8), allocatable :: qresv_flood   (:)  ! flood reservoir outflow      [m^3/s]
    real(r8), allocatable :: qresv_adjust  (:)  ! adjustment reservoir outflow [m^3/s]
    real(r8), allocatable :: qresv_normal  (:)  ! normal reservoir outflow     [m^3/s]
@@ -68,15 +72,13 @@ CONTAINS
 
    integer :: i, j, iloc, irsv, nresv, iworker, nresv_catalogue, ndropped
    integer,  allocatable :: src_index(:), regional_index(:)
+   real(r8) :: flood_capacity, upstream_area
 
 
       parafile = DEF_ReservoirPara_file
 
-      ! 1 = Funato et al. (CaMa-Flood v4.20); 2 is reserved for Hanazaki et al. (2022),
-      ! not implemented yet (see reservoir_operation).
-      IF (DEF_Reservoir_Method == 2) &
-         CALL CoLM_stop ('reservoir operation method 2 (Hanazaki et al. 2022) is not implemented yet')
-      IF (DEF_Reservoir_Method /= 1) &
+      ! 1 = Funato et al.; 2 = Hanazaki et al. as implemented in CaMa-Flood PR #124.
+      IF (DEF_Reservoir_Method /= 1 .and. DEF_Reservoir_Method /= 2) &
          CALL CoLM_stop ('unsupported reservoir operation method')
 
       CALL ncio_read_bcast_serial (parafile, 'dam_GRAND_ID', dam_GRAND_ID)
@@ -269,6 +271,9 @@ CONTAINS
             allocate (volresv_emerg  (numresv))
             allocate (volresv_adjust (numresv))
             allocate (volresv_normal (numresv))
+            IF (DEF_Reservoir_Method == 2) THEN
+               allocate (volresv_flood (numresv), resv_h22_coeff (numresv))
+            ENDIF
 
             allocate (qresv_flood    (numresv))
             allocate (qresv_adjust   (numresv))
@@ -317,6 +322,14 @@ CONTAINS
       ENDIF
 
 
+      ! Read collectively using the original catalogue order, including on empty workers.
+      ! A globally inactive catalogue does not require H22-specific parameters.
+      IF (DEF_Reservoir_Method == 2 .and. totalnumresv > 0) THEN
+         CALL ncio_read_bcast_serial (parafile, 'dam_upreal', rcache)
+         IF (size(rcache) /= nresv_catalogue) &
+            CALL CoLM_stop ('reservoir dam_upreal and dam_seq lengths differ')
+      ENDIF
+
       IF (p_is_worker) THEN
          DO irsv = 1, numresv
             IF (.not. ieee_is_finite(volresv_total(irsv)) .or. volresv_total(irsv) <= 0._r8 .or. &
@@ -324,10 +337,27 @@ CONTAINS
                 .not. ieee_is_finite(qresv_normal(irsv)) .or. qresv_normal(irsv) < 0._r8 .or. &
                 .not. ieee_is_finite(qresv_flood(irsv)) .or. qresv_flood(irsv) < 0._r8) &
                CALL CoLM_stop ('invalid active reservoir volume or outflow parameter')
-            volresv_emerg (irsv) = volresv_total(irsv) * 0.94
-            volresv_adjust(irsv) = volresv_total(irsv) * 0.77
-            volresv_normal(irsv) = min(volresv_total(irsv)*0.7, volresv_normal(irsv))
-            qresv_adjust  (irsv) = (qresv_normal(irsv) + qresv_flood(irsv)) * 0.5
+            IF (DEF_Reservoir_Method == 1) THEN
+               volresv_emerg (irsv) = volresv_total(irsv) * 0.94
+               volresv_adjust(irsv) = volresv_total(irsv) * 0.77
+               volresv_normal(irsv) = min(volresv_total(irsv)*0.7, volresv_normal(irsv))
+               qresv_adjust  (irsv) = (qresv_normal(irsv) + qresv_flood(irsv)) * 0.5
+            ELSE
+               upstream_area = rcache(loc2all(irsv))  ! km^2
+               IF (.not. ieee_is_finite(upstream_area) .or. upstream_area <= 0._r8 .or. &
+                   volresv_normal(irsv) > volresv_total(irsv) .or. &
+                   qresv_flood(irsv) < qresv_normal(irsv)) &
+                  CALL CoLM_stop ('invalid active H22 reservoir storage, discharge or dam_upreal')
+               volresv_flood(irsv) = volresv_normal(irsv)
+               flood_capacity = volresv_total(irsv) - volresv_flood(irsv)
+               volresv_normal(irsv) = 0.5_r8 * volresv_flood(irsv)
+               ! Match the legacy LDAMH22 branch of CaMa-Flood PR #124: 0.95, not 0.8.
+               volresv_emerg(irsv) = volresv_flood(irsv) + 0.95_r8 * flood_capacity
+               resv_h22_coeff(irsv) = max(1._r8 - flood_capacity * 1.e-6_r8 / (upstream_area * 0.2_r8), 0._r8)
+               ! Adjustment parameters are unused by H22.
+               volresv_adjust(irsv) = 0._r8
+               qresv_adjust(irsv) = 0._r8
+            ENDIF
          ENDDO
       ENDIF
 
@@ -377,14 +407,33 @@ CONTAINS
          ENDIF
 
       CASE (2)
-         ! *** Reserved: Hanazaki et al. (2022) ***
-         ! [2] Risa Hanazaki, Dai Yamazaki, Kei Yoshimura.
-         ! Development of a Reservoir Flood Control Scheme for Global Flood Models.
-         ! Journal of Advances in Modeling Earth Systems, 2022.
-         ! Not implemented yet; reservoir_init stops before this is reached.
-         ! It needs its own parameters (flood control and conservative storage,
-         ! normal and flood discharge) read in reservoir_init.
-         CALL CoLM_stop ('reservoir operation method 2 (Hanazaki et al. 2022) is not implemented yet')
+         ! Hanazaki et al. (2022), legacy LDAMH22 in CaMa-Flood PR #124.
+         ! Preserve its exact interval boundaries, including the high-inflow jump at C.
+         IF (vol <= volresv_normal(irsv)) THEN
+            qout = qresv_normal(irsv) * (vol / volresv_flood(irsv))
+         ELSEIF (vol <= volresv_flood(irsv)) THEN
+            IF (qin >= qresv_flood(irsv)) THEN
+               qout = 0.5_r8 * qresv_normal(irsv) &
+                  + (vol-volresv_normal(irsv)) / (volresv_flood(irsv)-volresv_normal(irsv)) &
+                  * (qresv_flood(irsv)-qresv_normal(irsv))
+            ELSE
+               qout = 0.5_r8 * qresv_normal(irsv) &
+                  + ((vol-volresv_normal(irsv)) / (volresv_emerg(irsv)-volresv_normal(irsv)))**2 &
+                  * (qresv_flood(irsv)-qresv_normal(irsv))
+            ENDIF
+         ELSEIF (vol < volresv_emerg(irsv)) THEN
+            IF (qin >= qresv_flood(irsv)) THEN
+               qout = qresv_flood(irsv) + resv_h22_coeff(irsv) &
+                  * (vol-volresv_flood(irsv)) / (volresv_emerg(irsv)-volresv_flood(irsv)) &
+                  * (qin-qresv_flood(irsv))
+            ELSE
+               qout = 0.5_r8 * qresv_normal(irsv) &
+                  + ((vol-volresv_normal(irsv)) / (volresv_emerg(irsv)-volresv_normal(irsv)))**2 &
+                  * (qresv_flood(irsv)-qresv_normal(irsv))
+            ENDIF
+         ELSE
+            qout = max(qin, qresv_flood(irsv))
+         ENDIF
 
       CASE DEFAULT
          CALL CoLM_stop ('unsupported reservoir operation method')
@@ -409,6 +458,8 @@ CONTAINS
       IF (allocated(volresv_emerg    )) deallocate (volresv_emerg    )
       IF (allocated(volresv_adjust   )) deallocate (volresv_adjust   )
       IF (allocated(volresv_normal   )) deallocate (volresv_normal   )
+      IF (allocated(volresv_flood    )) deallocate (volresv_flood    )
+      IF (allocated(resv_h22_coeff   )) deallocate (resv_h22_coeff   )
 
       IF (allocated(qresv_flood      )) deallocate (qresv_flood      )
       IF (allocated(qresv_adjust     )) deallocate (qresv_adjust     )

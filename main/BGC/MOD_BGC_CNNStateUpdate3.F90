@@ -31,6 +31,9 @@ MODULE MOD_BGC_CNNStateUpdate3
 
      ! mineral nitrogen pools & fluxes variables (inout)
             sminn_leached_vr, smin_no3_leached_vr, smin_no3_runoff_vr
+#ifdef MaterialTransport
+   USE MOD_MT_BGC_NH4, only: mt_nh4_update_layer
+#endif
 
    USE MOD_BGC_Vars_PFTimeVariables, only: &
      ! vegetation nitrogen state variables (inout)
@@ -77,6 +80,9 @@ MODULE MOD_BGC_CNNStateUpdate3
 
 
    IMPLICIT NONE
+#ifdef MaterialTransport
+   PRIVATE :: mt_nh4_update_layer
+#endif
 
    PUBLIC NStateUpdate3
 
@@ -104,6 +110,9 @@ CONTAINS
       ELSE
          DO j = 1, nl_soil
          ! mineral N loss due to leaching and runoff
+#ifdef MaterialTransport
+            CALL mt_nh4_update_layer(j, i, deltim, smin_nh4_vr(j,i))
+#endif
             smin_no3_vr(j,i) = max( smin_no3_vr(j,i) &
                              - ( smin_no3_leached_vr(j,i) + smin_no3_runoff_vr(j,i) ) * deltim, 0._r8)
 

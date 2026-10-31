@@ -25,10 +25,6 @@ MODULE MOD_UnitCatchmentSubset
 !    the source network) and the global attribute source_nseqmax; tools that must
 !    translate indices of the source network, such as the reservoir catalogue, use them.
 !
-!    With merge_existing, the river systems kept in an existing output file (cut from
-!    the same source network) are kept as well, so runs for several land-cover years
-!    (LULCC) build one network that serves all of them.
-!
 !    Errors stop the program: the only caller is a preprocessing step.
 !-------------------------------------------------------------------------------------
 
@@ -299,7 +295,7 @@ CONTAINS
 
    ! ---------
    SUBROUTINE unitcatchment_subset_write (file_in, file_out, nlon, nlat, cell_touched, bif_closure, &
-         nkeep, nsystem, merge_existing, nsystem_merged)
+         nkeep, nsystem)
 
    IMPLICIT NONE
    character(len=*), intent(in)  :: file_in, file_out
@@ -307,8 +303,6 @@ CONTAINS
    logical,          intent(in)  :: cell_touched(nlon,nlat)   ! runoff-input grid cells of the land domain
    logical,          intent(in)  :: bif_closure
    integer,          intent(out) :: nkeep, nsystem
-   logical,          intent(in),  optional :: merge_existing
-   integer,          intent(out), optional :: nsystem_merged   ! systems kept only for the existing file
 
    integer :: ncin, ncout, ndim, nvar, nglobal, unlim
    integer :: nseq, npth, ndam
@@ -324,10 +318,6 @@ CONTAINS
    character(len=nf90_max_name) :: name, attname, dimname
    logical :: renumber
    integer :: selected
-   integer :: ncold, nmerged
-   integer, allocatable :: src_old(:)
-   logical :: exists
-   character(len=16) :: mode_old
 
       CALL check (nf90_open (trim(file_in), nf90_nowrite, ncin), 'open ' // trim(file_in))
 
@@ -370,35 +360,6 @@ CONTAINS
          IF (receives(i)) system_kept(mouth(i)) = .true.
       ENDDO
 
-      nmerged = 0
-      exists = .false.
-      IF (present(merge_existing)) THEN
-         IF (merge_existing) INQUIRE (file = trim(file_out), exist = exists)
-      ENDIF
-      IF (exists) THEN
-         CALL check (nf90_open (trim(file_out), nf90_nowrite, ncold), 'open ' // trim(file_out))
-         status = nf90_get_att (ncold, nf90_global, 'source_nseqmax', attr8)
-         IF (status /= nf90_noerr) CALL fail ('existing ' // trim(file_out) // &
-            ' has no source_nseqmax; remove it and rerun mksrfdata for all years')
-         IF (int(attr8) /= nseq) CALL fail ('existing ' // trim(file_out) // &
-            ' was cut from a different network; remove it and rerun mksrfdata for all years')
-         mode_old = ''
-         status = nf90_get_att (ncold, nf90_global, 'subset_bif_mode', mode_old)
-         IF (trim(mode_old) /= trim(merge('closure', 'drop   ', bif_closure))) CALL fail ('existing ' // &
-            trim(file_out) // ' was cut with another bifurcation mode; remove it and rerun mksrfdata')
-         CALL read_int_1d (ncold, 'seq_src_index', src_old)
-         CALL check (nf90_close (ncold), 'close ' // trim(file_out))
-         IF (any(src_old < 1 .or. src_old > nseq)) CALL fail ('existing ' // trim(file_out) // &
-            ' has seq_src_index outside the source network')
-         DO k = 1, size(src_old)
-            IF (.not. system_kept(mouth(src_old(k)))) THEN
-               system_kept(mouth(src_old(k))) = .true.
-               nmerged = nmerged + 1
-            ENDIF
-         ENDDO
-         deallocate (src_old)
-      ENDIF
-
       IF (npth > 0) THEN
          CALL read_int_1d (ncin, 'bifurcation_upst', bif_up)
          CALL read_int_1d (ncin, 'bifurcation_down', bif_dn)
@@ -427,7 +388,6 @@ CONTAINS
       ENDDO
       nkeep = count(keep)
       nsystem = count(system_kept)
-      IF (present(nsystem_merged)) nsystem_merged = nmerged
 
       allocate (new_index (nseq));  new_index = 0
       allocate (isel_seq (nkeep))

@@ -1,3 +1,5 @@
+#include <define.h>
+
 MODULE MOD_GroundFluxes
 
 !-----------------------------------------------------------------------
@@ -23,7 +25,11 @@ CONTAINS
                             t_soil, t_snow, q_soil, q_snow, &
                             taux, tauy, fseng, fseng_soil, fseng_snow, &
                             fevpg, fevpg_soil, fevpg_snow, tref, qref, &
-                            z0m, z0hg, zol, rib, ustar, qstar, tstar, fm, fh, fq)
+                            z0m, z0hg, zol, rib, ustar, qstar, tstar, fm, fh, fq &
+#ifdef MaterialTransport
+                            ,canopy_diag &
+#endif
+                            )
 
 !-----------------------------------------------------------------------
 !  This is the main SUBROUTINE to execute the calculation of thermal
@@ -45,6 +51,9 @@ CONTAINS
    USE MOD_FrictionVelocity
    USE mod_namelist, only: DEF_USE_CBL_HEIGHT,DEF_RSS_SCHEME
    USE MOD_TurbulenceLEddy
+#ifdef MaterialTransport
+   USE MOD_MT_ThermalDiagnostics, only: mt_canopy_diagnostics
+#endif
 
    IMPLICIT NONE
 
@@ -107,6 +116,11 @@ CONTAINS
           fm,        &! integral of profile FUNCTION for momentum
           fh,        &! integral of profile FUNCTION for heat
           fq          ! integral of profile FUNCTION for moisture
+#ifdef MaterialTransport
+   ! Material transport: aerodynamic resistance for water vapour, used by
+   ! the isotope kinetic fractionation. Output only; nothing here reads it.
+   type(mt_canopy_diagnostics), intent(inout), optional :: canopy_diag
+#endif
 
 !-------------------------- Local Variables ----------------------------
    integer niters,   &! maximum number of iterations for surface temperature
@@ -222,6 +236,9 @@ CONTAINS
       ram  = 1./(ustar*ustar/um)
       rah  = 1./(vonkar/fh*ustar)
       raw  = 1./(vonkar/fq*ustar)
+#ifdef MaterialTransport
+      IF (present(canopy_diag)) canopy_diag%raw = raw
+#endif
 
       raih = rhoair*cpair/rah
 

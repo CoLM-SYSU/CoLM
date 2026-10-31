@@ -16,6 +16,9 @@ MODULE MOD_BGC_CNSummary
 ! Xingjie Lu, 2022, modify original CLM5 to be compatible with CoLM code structure. 
 
    USE MOD_Precision
+#ifdef MaterialTransport
+   USE MOD_MT_BGC_NH4, only: mt_nh4_sum_layer
+#endif
     USE MOD_Namelist, only: DEF_USE_NITRIF, DEF_USE_DiagMatrix, DEF_USE_FIRE
    USE MOD_Vars_PFTimeInvariants, only: pftclass
    USE MOD_Vars_PFTimeVariables, only:irrig_method_p, lai_p
@@ -185,6 +188,9 @@ MODULE MOD_BGC_CNSummary
    USE MOD_SPMD_Task
      
    IMPLICIT NONE
+#ifdef MaterialTransport
+   PRIVATE :: mt_nh4_sum_layer
+#endif
  
    PUBLIC CNDriverSummarizeStates
    PUBLIC CNDriverSummarizeFluxes
@@ -709,6 +715,9 @@ CONTAINS
   
       DO j = 1, nl_soil
          supplement_to_sminn(i) = supplement_to_sminn(i) + supplement_to_sminn_vr(j,i) * dz_soi(j)
+#ifdef MaterialTransport
+         CALL mt_nh4_sum_layer(j, i, dz_soi(j))
+#endif
          smin_no3_leached(i)    = smin_no3_leached(i)    + smin_no3_leached_vr(j,i) * dz_soi(j)
          smin_no3_runoff(i)     = smin_no3_runoff(i)     + smin_no3_runoff_vr(j,i) * dz_soi(j)
          sminn_leached(i)       = sminn_leached(i)       + sminn_leached_vr(j,i) * dz_soi(j)

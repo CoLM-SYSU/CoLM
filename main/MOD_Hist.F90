@@ -18,6 +18,11 @@ MODULE MOD_Hist
    USE MOD_Vars_1DAccFluxes
    USE MOD_Vars_Global, only: spval
    USE MOD_NetCDFSerial
+#ifdef MaterialTransport
+   USE MOD_MT_Hist, only: mt_history_record, mt_hist_initialize, mt_hist_flush, &
+      mt_hist_begin, mt_hist_write_record, mt_hist_end, mt_hist_snapshot, mt_hist_write_frcsat
+   USE MOD_MT_HostFixes, only: mt_hist_continue_file
+#endif
 
    USE MOD_HistGridded
 #if (defined UNSTRUCTURED || defined CATCHMENT)
@@ -36,6 +41,10 @@ MODULE MOD_Hist
    USE MOD_Lake_Hist
 #endif
 
+#ifdef MaterialTransport
+   PRIVATE :: mt_history_record, mt_hist_initialize, mt_hist_flush, mt_hist_begin, &
+      mt_hist_write_record, mt_hist_end, mt_hist_snapshot, mt_hist_write_frcsat
+#endif
    PUBLIC :: hist_init
    PUBLIC :: hist_out
    PUBLIC :: hist_final
@@ -55,7 +64,11 @@ CONTAINS
    logical, optional, intent(in) :: lulcc_call
 
       CALL allocate_acc_fluxes ()
+#ifdef MaterialTransport
+      CALL mt_hist_initialize (lulcc_call)
+#else
       CALL FLUSH_acc_fluxes ()
+#endif
 
       HistForm = 'Gridded'
 #if (defined UNSTRUCTURED || defined CATCHMENT)
@@ -141,6 +154,7 @@ CONTAINS
    USE MOD_CaMa_Vars !definition of CaMa variables
 #endif
    USE MOD_Forcing, only: forcmask_pch
+   USE MOD_HistAccRestart, only: hist_acc_final_snapshot
 #ifdef DataAssimilation
    USE MOD_DA_TWS, only: fslp_k_mon
    USE MOD_Vars_Global
@@ -163,6 +177,9 @@ CONTAINS
    logical :: lwrite
    character(len=256) :: file_hist
    integer :: itime_in_file
+#ifdef MaterialTransport
+   type(mt_history_record) :: material_history
+#endif
 #if (defined CaMa_Flood)
    character(len=256) :: file_hist_cama
    integer :: itime_in_file_cama
@@ -211,13 +228,29 @@ CONTAINS
 #endif
 
       IF (itstamp <= ptstamp) THEN
+#ifdef MaterialTransport
+         CALL mt_hist_flush ()
+#else
          CALL FLUSH_acc_fluxes ()
+#endif
 #ifdef GridRiverLakeFlow
          CALL flush_acc_fluxes_riverlake ()
 #endif
          RETURN
       ELSE
          CALL accumulate_fluxes ()
+      ENDIF
+
+      ! History-accumulator restart (MOD_HistAccRestart): at the last time
+      ! step, if the history window is not complete, the partial window is
+      ! written below and the sums are cleared before the model restart is
+      ! saved, so the raw sums are saved here first. Nothing happens at other
+      ! steps; it only writes a file in the restart directory and changes no
+      ! model or history variable.
+      IF (hist_acc_final_snapshot (idate, deltim, itstamp, etstamp)) THEN
+#if (defined MaterialTransport) && (defined GridRiverLakeFlow)
+         CALL mt_hist_snapshot ()
+#endif
       ENDIF
 
       select CASE (trim(adjustl(DEF_HIST_FREQ)))
@@ -281,7 +314,17 @@ CONTAINS
 
          file_hist = trim(dir_hist) // '/' // trim(casename) //'_hist_'//trim(cdate)//'.nc'
 
+#ifdef MaterialTransport
+         ! After a restart inside a history group, append to the existing file
+         ! instead of creating it again (materials enabled only; see
+         ! MOD_MT_HostFixes). Does nothing otherwise.
+         CALL mt_hist_continue_file (file_hist, idate, HistForm, file_last)
+#endif
          CALL hist_write_time (file_hist, file_last, 'time', idate, itime_in_file)
+#ifdef MaterialTransport
+         CALL mt_hist_begin (material_history, dir_hist, casename, cdate, idate, HistForm, &
+            deltim, nac, hist_write_time)
+#endif
 
          IF (p_is_worker) THEN
             IF (numpatch > 0) THEN
@@ -298,6 +341,17 @@ CONTAINS
             IF (numpatch > 0) THEN
                allocate (filter_crop (numpatch))
                allocate (filter_irrig (numpatch))
+               ! filter_irrig is only recomputed inside IF (DEF_USE_IRRIGATION),
+               ! but 'irrigarea' is written unconditionally further down.  With
+               ! irrigation off the array therefore reached get_sumarea
+               ! uninitialised: the reported irrigation area came out of whatever
+               ! bit patterns the heap held, which made it differ between
+               ! otherwise identical runs with different river switches or
+               ! different MPI decomposition (while croparea, whose filter is
+               ! always computed, stayed bit-identical).  Zero is the correct
+               ! answer when irrigation is disabled.
+               filter_crop  (:) = .false.
+               filter_irrig (:) = .false.
             ENDIF
 #endif
          ENDIF
@@ -722,9 +776,14 @@ CONTAINS
             'fraction of snow cover on ground','-')
 
          ! fraction of saturation area on ground
+#ifdef MaterialTransport
+         CALL mt_hist_write_frcsat (DEF_hist_vars%frcsat, a_frcsat, file_hist, itime_in_file, &
+            sumarea, filter, write_history_variable_2d)
+#else
          CALL write_history_variable_2d ( DEF_hist_vars%frcsat, &
             a_frcsat, file_hist, 'f_frcsat', itime_in_file, sumarea, filter, &
             'fraction of saturation area on ground','-')
+#endif
 
          ! fraction of veg cover, excluding snow-covered veg [-]
          CALL write_history_variable_2d ( DEF_hist_vars%sigf, &
@@ -5297,6 +5356,10 @@ ENDIF
 
          IF (allocated(nac_one   )) deallocate (nac_one   )
 #endif
+#ifdef MaterialTransport
+         CALL mt_hist_write_record (material_history, HistForm, sumarea, filter, maxsnl, nl_soil, &
+            DEF_forcing%has_missing_value, forcmask_pch)
+#endif
 
          IF (allocated(filter    )) deallocate (filter    )
          IF (allocated(filter_dt )) deallocate (filter_dt )
@@ -5304,7 +5367,11 @@ ENDIF
          IF (allocated(filter_urb)) deallocate (filter_urb)
 #endif
 
+#ifdef MaterialTransport
+         CALL mt_hist_flush ()
+#else
          CALL FLUSH_acc_fluxes ()
+#endif
 
 #ifdef SinglePoint
          IF (USE_SITE_HistWriteBack .and. memory_to_disk) THEN
@@ -5313,6 +5380,9 @@ ENDIF
 #endif
 
          file_last = file_hist
+#ifdef MaterialTransport
+         CALL mt_hist_end (material_history)
+#endif
 
       ENDIF
 

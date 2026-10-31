@@ -39,6 +39,7 @@ MODULE MOD_Grid_RiverLakeLevee
    ! ----- Diagnostic -----
    real(r8), allocatable :: levdph        (:)   ! protected-side water depth [m]
 
+   PUBLIC :: levee_bashgt
    PUBLIC :: has_levee, levsto, levdph
    PUBLIC :: levee_init
    PUBLIC :: read_levee_restart
@@ -792,7 +793,7 @@ CONTAINS
    ! =========================================================================
    SUBROUTINE read_levee_restart (file_restart, restart_transaction_validated_in, &
       restart_feature_manifest_present_in, restart_levee_enabled_in, fold_protected_to_visible, &
-      volwater_ucat_io, volwater_ucat_valid_io, wdsrf_ucat_in)
+      volwater_ucat_io, volwater_ucat_valid_io, wdsrf_ucat_in, storage_folded_out)
    ! =========================================================================
    ! Read levee state from restart file. Called AFTER levee_init() so that
    ! levsto is already allocated. If the current run disables levees globally
@@ -813,12 +814,15 @@ CONTAINS
    real(r8), allocatable, intent(inout), optional :: volwater_ucat_io(:)
    logical,  intent(inout), optional :: volwater_ucat_valid_io
    real(r8), allocatable, intent(in), optional :: wdsrf_ucat_in(:)
+   logical, intent(out), optional :: storage_folded_out(:)
    integer :: has_restart_var(3)
    integer :: i, n_folded_cells
    logical :: do_fold, fold_failed, fold_this_cell, invalid_restart, legacy_fold_failed, &
       reservoir_fold_failed, visible_volume_ready, visible_volume_preloaded, &
       strict_levee_restart
    real(r8) :: folded_volume
+
+      IF (present(storage_folded_out)) storage_folded_out = .false.
 
       IF (.not. restart_transaction_validated_in) THEN
          CALL CoLM_stop ('read_levee_restart requires validated transaction context')
@@ -940,6 +944,7 @@ CONTAINS
                IF (present(volwater_ucat_io) .and. visible_volume_ready) THEN
                   IF (i <= size(volwater_ucat_io)) THEN
                      volwater_ucat_io(i) = volwater_ucat_io(i) + levsto(i)
+                     IF (present(storage_folded_out)) storage_folded_out(i) = .true.
                      folded_volume = folded_volume + levsto(i)
                      n_folded_cells = n_folded_cells + 1
                      levsto(i) = 0._r8

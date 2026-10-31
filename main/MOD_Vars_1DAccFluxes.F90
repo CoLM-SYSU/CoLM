@@ -11,7 +11,15 @@ MODULE MOD_Vars_1DAccFluxes
 #ifdef EXTERNAL_LAKE
    USE MOD_Lake_1DAccVars
 #endif
+#ifdef MaterialTransport
+   USE MOD_MT_LandPhase, only: mt_flush_acc_fluxes, mt_accumulate_fluxes
+   USE MOD_MT_HostHistory, only: mt_allocate_frcsat_count, mt_deallocate_frcsat_count, &
+      mt_flush_frcsat_count, mt_accumulate_frcsat
+#endif
 
+#ifdef MaterialTransport
+   PRIVATE :: mt_allocate_frcsat_count, mt_deallocate_frcsat_count, mt_flush_frcsat_count, mt_accumulate_frcsat
+#endif
    real(r8) :: nac ! number of accumulation
    real(r8), allocatable :: nac_ln      (:)
    real(r8), allocatable :: nac_dt      (:)
@@ -678,6 +686,9 @@ CONTAINS
             allocate (a_snowdp    (numpatch))
             allocate (a_fsno      (numpatch))
             allocate (a_frcsat    (numpatch))
+#ifdef MaterialTransport
+            CALL mt_allocate_frcsat_count(numpatch)
+#endif
             allocate (a_sigf      (numpatch))
             allocate (a_green     (numpatch))
             allocate (a_lai       (numpatch))
@@ -1275,6 +1286,9 @@ CONTAINS
             deallocate (a_snowdp    )
             deallocate (a_fsno      )
             deallocate (a_frcsat    )
+#ifdef MaterialTransport
+            CALL mt_deallocate_frcsat_count()
+#endif
             deallocate (a_sigf      )
             deallocate (a_green     )
             deallocate (a_lai       )
@@ -1789,13 +1803,26 @@ CONTAINS
    END SUBROUTINE deallocate_acc_fluxes
 
    !-----------------------
+#ifdef MaterialTransport
+   SUBROUTINE FLUSH_acc_fluxes (flush_mt)
+#else
    SUBROUTINE FLUSH_acc_fluxes ()
+#endif
 
       USE MOD_SPMD_Task
       USE MOD_LandPatch, only: numpatch
       USE MOD_LandUrban, only: numurban
       USE MOD_Vars_Global, only: spval
       IMPLICIT NONE
+#ifdef MaterialTransport
+      ! .false. keeps the material accumulators: at start-up they may
+      ! already hold values read from the material restart.
+      logical, intent(in), optional :: flush_mt
+      logical :: flush_mt_active
+
+      flush_mt_active = .true.
+      IF (present(flush_mt)) flush_mt_active = flush_mt
+#endif
 
       IF (p_is_worker) THEN
 
@@ -1875,6 +1902,9 @@ CONTAINS
             a_snowdp    (:) = spval
             a_fsno      (:) = spval
             a_frcsat    (:) = spval
+#ifdef MaterialTransport
+            CALL mt_flush_frcsat_count()
+#endif
             a_sigf      (:) = spval
             a_green     (:) = spval
             a_lai       (:) = spval
@@ -2383,6 +2413,9 @@ CONTAINS
       CALL Flush_LakeAccVars
 #endif
 
+#ifdef MaterialTransport
+      IF (flush_mt_active) CALL mt_flush_acc_fluxes ()
+#endif
    END SUBROUTINE FLUSH_acc_fluxes
 
    SUBROUTINE accumulate_fluxes
@@ -2557,7 +2590,11 @@ CONTAINS
             CALL acc1d (scv           , a_scv            )
             CALL acc1d (snowdp        , a_snowdp         )
             CALL acc1d (fsno          , a_fsno           )
+#ifdef MaterialTransport
+            CALL mt_accumulate_frcsat(frcsat, a_frcsat, acc1d)
+#else
             CALL acc1d (frcsat        , a_frcsat         )
+#endif
             CALL acc1d (sigf          , a_sigf           )
             CALL acc1d (green         , a_green          )
             CALL acc1d (lai           , a_lai            )
@@ -3398,11 +3435,14 @@ CONTAINS
       CALL accumulate_LakeTimeVars
 #endif
 
+#ifdef MaterialTransport
+      CALL mt_accumulate_fluxes ()
+#endif
    END SUBROUTINE accumulate_fluxes
 
 
 
-   SUBROUTINE acc1d (var, s)
+   SUBROUTINE acc1d (var, s, filter)
 
    USE MOD_Precision
    USE MOD_Vars_Global, only: spval
@@ -3411,10 +3451,14 @@ CONTAINS
 
    real(r8), intent(in)    :: var(:)
    real(r8), intent(inout) :: s  (:)
+   logical,  intent(in), optional :: filter(:)
    ! Local variables
    integer :: i
 
       DO i = lbound(var,1), ubound(var,1)
+         IF (present(filter)) THEN
+            IF (.not. filter(i)) CYCLE
+         ENDIF
          IF (var(i) /= spval) THEN
             IF (s(i) /= spval) THEN
                s(i) = s(i) + var(i)

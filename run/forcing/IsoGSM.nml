@@ -41,28 +41,11 @@
    DEF_forcing%vname    = 'tmp2m' 'spfh2m' 'pressfc' 'pratesfc' 'ugrd10m' 'vgrd10m' 'dswrfsfc' 'dlwrfsfc'
    DEF_forcing%timelog  = 'instant' 'instant' 'instant' 'forward' 'instant' 'instant' 'forward' 'forward'
    DEF_forcing%tintalgo = 'linear' 'linear' 'linear' 'nearest' 'linear' 'linear' 'coszen' 'linear'
-
-   DEF_forcing%precipitation_O18_fprefix        = 'IsoGSM_prate'
-   DEF_forcing%precipitation_O18_vname          = 'prate1sfc'
-   DEF_forcing%precipitation_O18_tintalgo       = 'linear'
-   DEF_forcing%precipitation_O18_dtime          = 21600
-   DEF_forcing%precipitation_O18_offset         = 10800
-
-   DEF_forcing%precipitation_H2_fprefix        = 'IsoGSM_prate'
-   DEF_forcing%precipitation_H2_vname          = 'prate2sfc'
-   DEF_forcing%precipitation_H2_tintalgo       = 'linear'
-   DEF_forcing%precipitation_H2_dtime          = 21600
-   DEF_forcing%precipitation_H2_offset         = 10800
-
-   DEF_forcing%water_vapor_O18_fprefix         = 'IsoGSM_Q'
-   DEF_forcing%water_vapor_O18_vname           = 'spfh12m'
-   DEF_forcing%water_vapor_O18_tintalgo        = 'linear'
-   DEF_forcing%water_vapor_O18_dtime           = 21600
-   DEF_forcing%water_vapor_O18_offset          = 10800
-
-   DEF_forcing%water_vapor_H2_fprefix        = 'IsoGSM_Q'
-   DEF_forcing%water_vapor_H2_vname          = 'spfh22m'
-   DEF_forcing%water_vapor_H2_tintalgo       = 'linear'
-   DEF_forcing%water_vapor_H2_dtime          = 21600
-   DEF_forcing%water_vapor_H2_offset         = 10800
 /
+
+! The isotope fields of IsoGSM (prate1sfc/prate2sfc, spfh12m/spfh22m) are
+! material forcing and are set per species in the &nl_colm_mt_forcing
+! groups of the isotope parameter file (run/standard_isotope_parameter.nml).
+! The former DEF_forcing%precipitation_O18_* / precipitation_H2_* /
+! water_vapor_O18_* / water_vapor_H2_* entries were removed: they are not
+! members of DEF_forcing, so reading this file stopped with a namelist error.

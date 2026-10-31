@@ -13,7 +13,7 @@
    DEF_forcing%regbnd            = -60.0 90.0 -180.0 180.0
 
    DEF_forcing%has_missing_value = .true.
-   missing_value_name            = 'missing_value'
+   DEF_forcing%missing_value_name = 'missing_value'
 
    DEF_forcing%NVAR              = 8       ! variable number of forcing data
    DEF_forcing%startyr           = 2002    ! start year of forcing data

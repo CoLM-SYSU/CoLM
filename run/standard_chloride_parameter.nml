@@ -1,0 +1,32 @@
+&nl_colm_solute_parameter
+    ! ------------------------------------------------------------------
+    ! Dilute chloride, a conservative hydrologic tracer.
+    !
+    !   &nl_colm_material
+    !      DEF_SOLUTE_NAMES       = 'CL'
+    !      DEF_SOLUTE_PARAM_FILES = 'CL:run/standard_chloride_parameter.nml'
+    !   /
+    !
+    ! Land transport carries a solute/water ratio; for CL, mass_fraction
+    ! is kg Cl per kg water (dilute water: about mg/L divided by 1.0e6).
+    !
+    ! Dissolved chloride is limited by halite saturation: NaCl solubility
+    ! at 25 C is about 359 g per kg water, and Cl is 35.453/58.443 of the
+    ! NaCl mass, giving 0.218 kg Cl per kg water. Excess mass goes to
+    ! location-preserving solid inventories and redissolves only up to the
+    ! available water capacity; no mass is clipped. Leaving
+    ! max_dissolved_conc out means no dissolved limit. Freeze/thaw uses
+    ! the bulk-water phase bookkeeping; brine rejection, salt precipitation,
+    ! ion activity and electroneutrality are not modelled.
+    ! Every field is optional; the code defaults are 0, except
+    ! unit_kind = 'material_per_water' and no dissolved limit.
+    ! ------------------------------------------------------------------
+    DEF_SOLUTE%unit_kind           = 'mass_fraction'
+    DEF_SOLUTE%mol_weight          = 35.453     ! [g/mol]
+    DEF_SOLUTE%init_conc           = 0.0        ! initial water [kg Cl / kg water]
+    DEF_SOLUTE%precip_default_conc = 0.0        ! when no precip field is configured
+    DEF_SOLUTE%vapor_default_conc  = 0.0        ! when no vapor field is configured
+    DEF_SOLUTE%max_dissolved_conc  = 0.218      ! kg Cl / kg water, halite saturation at 25 C
+    DEF_SOLUTE%decay_rate          = 0.0        ! first-order loss [1/s]
+    DEF_SOLUTE%charge              = -1
+/

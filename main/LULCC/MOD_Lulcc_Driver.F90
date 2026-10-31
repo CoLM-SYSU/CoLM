@@ -90,6 +90,9 @@ MODULE MOD_Lulcc_Driver
    USE MOD_Lulcc_TransferTraceReadin
    USE MOD_Lulcc_MassEnergyConserve
    USE MOD_Namelist
+#ifdef MaterialTransport
+   USE MOD_MT_Lulcc, only: mt_lulcc_save, mt_lulcc_remap
+#endif
 
    IMPLICIT NONE
 
@@ -108,6 +111,13 @@ MODULE MOD_Lulcc_Driver
       ! SAVE variables
       CALL SAVE_LulccTimeInvariants
       CALL SAVE_LulccTimeVariables
+#ifdef MaterialTransport
+      ! Material transport: snapshot the material pools and, for MEC, the
+      ! area of every old patch while landpatch/mesh/pixel still describe
+      ! the old year (LulccInitialize below replaces them). It only reads
+      ! host variables, so the host LULCC result is unchanged.
+      CALL mt_lulcc_save ()
+#endif
 
       ! =============================================================
       ! cold start for Lulcc
@@ -147,6 +157,15 @@ MODULE MOD_Lulcc_Driver
          CALL LulccMassEnergyConserve()
       ENDIF
 
+
+#ifdef MaterialTransport
+      ! Material transport: move the material pools onto the new patches.
+      ! It needs the old patch map (landpatch_, patchclass_) and, for MEC,
+      ! the transfer trace, so it runs before they are freed below. It only
+      ! reads host variables and writes material state, so the host LULCC
+      ! result is unchanged.
+      CALL mt_lulcc_remap (jdate(1), dir_landdata)
+#endif
 
       ! deallocate Lulcc memory
       CALL deallocate_LulccTimeInvariants()

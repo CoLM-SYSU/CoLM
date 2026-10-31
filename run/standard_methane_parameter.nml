@@ -1,0 +1,281 @@
+&nl_colm_methane_parameter
+
+    ! ==================================================================
+    ! Standard CH4 gas-provider parameter file.
+    !
+    ! How this file is used:
+    !   1) The main namelist switches methane on in &nl_colm_material:
+    !        DEF_USE_METHANE        = .true.
+    !        DEF_METHANE_PARAM_FILE = '<path of this file>'
+    !      (needs a BGC build, LULC_IGBP_PFT or LULC_IGBP_PC).
+    !   2) CoLM reads this file into DEF_METHANE / DEF_METHANE_hydrology
+    !      (and DEF_file_GIEMS for the satellite mode).
+    !   3) The active CH4 inundation mode is DEF_METHANE%inundation_mode below.
+    !      Mode presets may override some switches shown later in this file.
+    !
+    ! Mode presets in MOD_MT_Methane_Const:configure_methane_inundation_mode
+    !   wetwat:
+    !      DEF_wetland_finundation_scheme = 1
+    !      enable_wetwat_finundated_override = .true.
+    !      wetland_dry_unsat_branch = .true.
+    !      requires DEF_USE_Dynamic_Wetland = .false.
+    !   satellite / giems:
+    !      DEF_wetland_finundation_scheme = 5
+    !      wetland_dry_unsat_branch = .true.
+    !      requires DEF_USE_Dynamic_Wetland = .false.
+    !   routing:
+    !      DEF_wetland_finundation_scheme = 7
+    !      wetland_dry_unsat_branch = .true.
+    !      requires DEF_USE_Dynamic_Wetland = .false.
+    !   dynamic_wtd:
+    !      DEF_wetland_finundation_scheme = 6
+    !      wetland_dry_unsat_branch = .true.
+    !      use_routing_for_soil = .false.
+    !      requires DEF_USE_Dynamic_Wetland = .true.
+    !   hybrid (Pantanal-calibrated; requires independent validation elsewhere):
+    !      DEF_wetland_finundation_scheme = 6
+    !      wetland_dry_unsat_branch = .true.
+    !      use_routing_for_soil = .true.
+    !      hydrology preset does not override biome/redox/profile controls
+    !      flood threshold is an independent tuning parameter
+    !      requires DEF_USE_Dynamic_Wetland = .true.
+    !
+    ! Practical rule:
+    !   - To choose the CH4 hydrology/physics bundle, edit
+    !     DEF_METHANE%inundation_mode in this CH4 file.
+    !   - To enable rice CH4 or wetland-only CH4, edit the CH4 control lines
+    !     immediately below; do not add CH4-private fields to the main namelist.
+    ! ==================================================================
+
+    ! ------------------------------------------------------------------
+    ! 0. CH4 species controls
+    ! ------------------------------------------------------------------
+    ! The main namelist only switches methane on (DEF_USE_METHANE) and
+    ! names this file (DEF_METHANE_PARAM_FILE); all CH4 controls belong here.
+    ! enable_rice_paddy needs a CROP build.
+    DEF_METHANE%inundation_mode  = 'hybrid'
+    DEF_METHANE%enable_rice_paddy = .true.
+    ! Hybrid mode needs natural wetlands plus routing-connected soil columns;
+    ! paddy rice is a separately diagnosed subset of those soil patches.
+    ! Lake CH4 is handled by the WATERBODY substep below.
+    DEF_METHANE%only_wetland      = .false.
+    DEF_METHANE%use_spatial_ph   = .true.
+
+    ! ------------------------------------------------------------------
+    ! 1. Methane production yield and temperature response
+    ! ------------------------------------------------------------------
+    DEF_METHANE%q10methane       = 2.0
+    DEF_METHANE%q10methane_base  = 295.0
+    DEF_METHANE%cnscalefactor    = 1.0
+    DEF_METHANE%om_frac_sf       = 1.0
+    ! Biome-specific CH4 yield lookup.
+    ! Code path:
+    !   methane_driver fills biome_f_methane_patch(ipatch) via
+    !   get_biome_f_methane(); methane_prod then uses either:
+    !      if use_biome_f_methane=.false.: DEF_METHANE%f_methane
+    !      if use_biome_f_methane=.true. : biome_f_methane_patch(ipatch)
+    ! This standard hybrid configuration enables it explicitly; changing the
+    ! hydrology mode does not silently overwrite this independent control.
+    DEF_METHANE%use_biome_f_methane            = .true.
+    ! Non-biome modes and lake production use the compiled default f_methane=0.2.
+    ! With use_biome_f_methane=.true. the scalar is normally not active in
+    ! the standard hybrid run.  Uncomment
+    ! only for non-biome/lake sensitivity experiments.
+    ! DEF_METHANE%f_methane = 0.2
+    DEF_METHANE%f_methane_tropical_peat        = 0.12
+    DEF_METHANE%f_methane_tropical_floodplain  = 0.07
+    DEF_METHANE%f_methane_floodplain           = 0.10
+    DEF_METHANE%f_methane_temperate_marsh      = 0.15
+    DEF_METHANE%f_methane_boreal_fen           = 0.12
+    DEF_METHANE%f_methane_boreal_bog           = 0.08
+    DEF_METHANE%f_methane_rice_paddy           = 0.10
+    DEF_METHANE%f_methane_upland_soil          = 0.05
+
+    ! Vertical source-profile sharpening is independent of inundation mode.
+    DEF_METHANE%z0_methane_prod = 0.30
+
+    ! ------------------------------------------------------------------
+    ! 2. Redox/decomposition coupling
+    ! ------------------------------------------------------------------
+    DEF_METHANE%anoxia                  = .true.
+    DEF_METHANE%anoxicmicrosites        = .false.
+    DEF_METHANE%methane_rmcnlim         = .false.
+    DEF_METHANE%methane_frzout          = .false.
+    DEF_METHANE%use_nitrif_denitrif     = .true.
+    DEF_METHANE%bgc_anoxia_limits_decomp = .false.
+    DEF_METHANE%use_ch4_sif             = .true.
+    DEF_METHANE%mino2lim                = 0.2
+
+    DEF_METHANE%use_vertical_redoxlag = .true.
+    DEF_METHANE%redoxlag              = 30.0
+    DEF_METHANE%redoxlag_vertical     = 30.0
+
+    ! Biome-specific redox lag.
+    ! Code path:
+    !   methane_driver fills biome_redoxlag_patch(ipatch) via
+    !   get_biome_redoxlag(); methane_prod uses either:
+    !      if use_biome_redoxlag=.false.: DEF_METHANE%redoxlag
+    !      if use_biome_redoxlag=.true. : biome_redoxlag_patch(ipatch)
+    ! This standard hybrid configuration enables it explicitly.
+    DEF_METHANE%use_biome_redoxlag           = .true.
+    DEF_METHANE%redoxlag_tropical_peat       = 12.0
+    DEF_METHANE%redoxlag_tropical_floodplain = 7.0
+    DEF_METHANE%redoxlag_temperate_marsh     = 20.0
+    DEF_METHANE%redoxlag_boreal_fen          = 30.0
+    DEF_METHANE%redoxlag_boreal_bog          = 45.0
+    DEF_METHANE%redoxlag_rice_paddy          = 25.0
+    DEF_METHANE%redoxlag_upland_soil         = 30.0
+
+    ! ------------------------------------------------------------------
+    ! 3. Wetland / routing / hybrid inundation controls
+    ! ------------------------------------------------------------------
+    ! Smooth WTD->finundated transition for scheme 6:
+    !   finundated = 1 / (1 + exp((zwt - wtd_inflection)/wtd_steepness))
+    DEF_METHANE%wtd_inflection = 0.30      ! [m] depth at finundated = 0.5
+    DEF_METHANE%wtd_steepness  = 0.05      ! [m] S-curve width
+
+    ! Soil-tile sigmoid extension.  0 keeps backward-compatible behavior.
+    DEF_METHANE%wtd_inflection_soil = 0.0
+    DEF_METHANE%wtd_steepness_soil  = 0.3
+
+    ! Hybrid routing controls.
+    ! Code path:
+    !   use_routing_for_soil=.true. lets soil/non-wetland tiles use the
+    !   routing-published flood fraction instead of only sigmoid(zwt).
+    !   hybrid_soil_threshold then gates tiny routing flood fractions to dry.
+    ! The hybrid mode enables use_routing_for_soil; the numeric threshold is
+    ! independent and remains exactly as configured here.
+    DEF_METHANE%use_routing_for_soil  = .false.
+    DEF_METHANE%hybrid_soil_threshold = 0.05
+
+    ! Mode-controlled wetland branch switches.
+    ! enable_wetwat_finundated_override: wetwat mode replaces the scheme
+    !   wetland fraction on wetland tiles with clamp(wetwat/wetwatmax,0,1).
+    ! wetland_dry_unsat_branch: keeps saturated and unsaturated branches
+    !   physically distinct for seasonal-area modes.  Mode presets set these;
+    !   users normally should not tune them directly.
+    DEF_METHANE%enable_wetwat_finundated_override = .false.
+    DEF_METHANE%wetland_dry_unsat_branch          = .false.
+
+    ! ------------------------------------------------------------------
+    ! 4. Soil pH factor
+    ! ------------------------------------------------------------------
+    ! DEF_METHANE%use_spatial_ph controls whether CH4 reads spatial soil pH.
+    ! Spatial pH is fail-closed: required soil/wetland values must be finite
+    ! and within the physical validation range, otherwise initialization stops.
+    DEF_METHANE%usephfact = .true.
+    DEF_METHANE%pHmin     = 2.2
+    DEF_METHANE%pHmax     = 9.0
+
+    ! ------------------------------------------------------------------
+    ! 5. Methane oxidation
+    ! ------------------------------------------------------------------
+    DEF_METHANE%vmax_methane_oxid = 1.25e-5
+    DEF_METHANE%vmax_oxid_unsat   = 1.25e-6
+    DEF_METHANE%k_m               = 5.e-3
+    DEF_METHANE%k_m_unsat         = 5.e-4
+    DEF_METHANE%k_m_o2            = 2.e-2
+    DEF_METHANE%q10_methane_oxid  = 1.9
+    DEF_METHANE%smp_crit          = -2.4e5
+    DEF_METHANE%oxinhib           = 400.0
+
+    ! Lake-only oxidation overrides; negative values mean use global kinetics.
+    DEF_METHANE%lake_oxid_scale          = 1.0
+    DEF_METHANE%lake_k_m_o2              = -1.0
+    DEF_METHANE%lake_vmax_methane_oxid   = -1.0
+    DEF_METHANE%lake_oxic_sediment_depth = -1.0
+
+    ! ------------------------------------------------------------------
+    ! 6. Transport, ebullition and aerenchyma
+    ! ------------------------------------------------------------------
+    DEF_METHANE%vgc_max  = 0.15
+    DEF_METHANE%bubble_f = 0.57
+
+    DEF_METHANE%scale_factor_gasdiff    = 1.0
+    DEF_METHANE%scale_factor_liqdiff    = 1.0
+    DEF_METHANE%lake_liqdiff_scale      = 1.0
+    DEF_METHANE%lake_o2_liqdiff_scale   = 1.0
+    DEF_METHANE%grnd_methane_cond_default = 1.0e-6
+    DEF_METHANE%satpow                  = 2.0
+    DEF_METHANE%capthick                = 100.0
+
+    DEF_METHANE%poros_tiller       = 0.3
+    DEF_METHANE%nongrassporosratio = 0.3333333333333333
+    DEF_METHANE%unsat_aere_ratio   = 0.1666666666666667
+    DEF_METHANE%porosmin           = 0.05
+    DEF_METHANE%aere_radius        = 2.9e-3
+    DEF_METHANE%rob                = 3.0
+    DEF_METHANE%scale_factor_aere  = 1.0
+    DEF_METHANE%aereoxid           = 0.0
+    DEF_METHANE%use_aereoxid_prog  = .true.
+    DEF_METHANE%transpirationloss  = .true.
+    DEF_METHANE%tiller_C           = 0.22
+
+    ! ------------------------------------------------------------------
+    ! 7. Lake CH4 production
+    ! ------------------------------------------------------------------
+    ! Enabled in the standard methane configuration.  Lake sediment CH4
+    ! production uses DEF_METHANE%f_methane above and now exchanges through
+    ! an explicit well-mixed water-column stock before reaching atmosphere.
+    DEF_METHANE%allowlakeprod         = .true.
+    DEF_METHANE%lake_zero_depth_fatal = .true.
+    DEF_METHANE%lake_decomp_fact      = 9.e-11
+    DEF_METHANE%replenishlakec        = .false.
+    DEF_METHANE%q10lakebase           = 298.0
+    ! Targeted lake restart-continuity diagnostics; normally off.
+    DEF_METHANE%lake_restart_debug           = .false.
+    DEF_METHANE%lake_restart_debug_year      = 1996
+    DEF_METHANE%lake_restart_debug_start_doy = 1
+    DEF_METHANE%lake_restart_debug_end_doy   = 3
+    DEF_METHANE%lake_restart_debug_sec       = 1800
+
+    ! ------------------------------------------------------------------
+    ! 8. Atmospheric CH4 boundary condition
+    ! ------------------------------------------------------------------
+    ! methane_offline=.true. keeps CH4 diagnostic/offline with respect to
+    ! land-atmosphere coupling; atmospheric CH4 still uses atm_methane or the
+    ! optional transient forcing below.
+    DEF_METHANE%methane_offline = .true.
+    DEF_METHANE%atm_methane     = 1.7e-6
+    ! Optional transient atmospheric CH4 forcing.
+    ! ASCII format: "year value" or "year month value"; value units are
+    ! auto-detected as mol/mol, ppmv, or ppbv unless units are specified.
+    DEF_METHANE%use_transient_atm_methane = .false.
+    DEF_METHANE%atm_methane_file          = "null"
+    DEF_METHANE%atm_methane_file_units    = "auto"
+
+    ! ------------------------------------------------------------------
+    ! 9. CH4 history output control
+    ! ------------------------------------------------------------------
+    ! Use 'all' for legacy full diagnostics, 'core' for global production
+    ! runs, 'none' to suppress, or a comma-separated list of f_* variables.
+    DEF_METHANE%write_ch4_history = .true.
+    DEF_METHANE%ch4_history_vars  = 'core'
+    ! Abort a production run when a single-timestep CH4/O2 numerical
+    ! correction exceeds 1e-3 mol m-2.  Set <=0 only for diagnosis.
+    DEF_METHANE%numerical_correction_fatal_threshold = 1.0e-3
+
+    ! ------------------------------------------------------------------
+    ! 10. Optional microbial-pool diagnostics / flux override
+    ! ------------------------------------------------------------------
+    ! Disabled by default so legacy CH4 production/oxidation budgets remain
+    ! unchanged unless explicitly enabled.
+    DEF_METHANE%use_microbial_pools         = .false.
+    DEF_METHANE%use_microbial_flux_override = .false.
+    DEF_METHANE%use_microbial_dormancy      = .false.
+
+    DEF_METHANE%B_init_methanogen  = 1.0
+    DEF_METHANE%B_init_methanotroph = 1.0
+    DEF_METHANE%B_min_methanogen   = 1.0e-3
+    DEF_METHANE%B_min_methanotroph = 1.0e-3
+    DEF_METHANE%B_max_fraction_methanogen  = -1.0
+    DEF_METHANE%B_max_fraction_methanotroph = -1.0
+
+    DEF_METHANE%mu_max_methanogen    = 0.2
+    DEF_METHANE%mu_max_methanotroph  = 0.5
+    DEF_METHANE%gamma_methanogen     = 0.05
+    DEF_METHANE%gamma_methanotroph   = 0.10
+    DEF_METHANE%gamma_microbial_dormant = 0.005
+    DEF_METHANE%gamma_microbial_freeze  = 0.001
+
+/

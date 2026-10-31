@@ -49,6 +49,7 @@ PROGRAM CoLMINI
    USE MOD_HRUVector
 #endif
    USE MOD_Initialize
+   USE MOD_UnitCatchmentRegional, only: unitcatchment_regional_build
    ! SNICAR
 #ifdef HYPERSPECTRAL
    USE MOD_SnowSnicar_HiRes, only: SnowAge_init, SnowOptics_init
@@ -125,6 +126,18 @@ PROGRAM CoLMINI
 
       CALL pixel%load_from_file  (dir_landdata)
       CALL gblock%load_from_file (dir_landdata)
+
+      ! Regional river-lake network, cut from the land patches before the land data of
+      ! the initial year are loaded (it loads and frees them itself). With LULCC the
+      ! network serves every land-cover year of the run.
+      IF (DEF_UnitCatchment_regional) THEN
+#ifdef LULCC
+         CALL unitcatchment_regional_build (dir_landdata, lc_year, DEF_simulation_time%end_year)
+#else
+         CALL unitcatchment_regional_build (dir_landdata, lc_year, lc_year)
+#endif
+      ENDIF
+
       CALL mesh_load_from_file   (dir_landdata, lc_year)
 
       CALL pixelset_load_from_file (dir_landdata, 'landelm', landelm, numelm, lc_year)

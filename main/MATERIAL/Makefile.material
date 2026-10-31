@@ -1,0 +1,55 @@
+# Material transport build integration; included after shared object rules.
+VPATH += : main/MATERIAL : main/MATERIAL/GENERIC_WATER : main/MATERIAL/FAMILY_ISOTOPE : main/MATERIAL/FAMILY_SOLUTE : main/MATERIAL/FAMILY_PARTICLE : main/MATERIAL/FAMILY_GAS
+
+# Material transport settings, also read by mksrfdata (methane surface data);
+# every file is empty unless MaterialTransport is defined.
+OBJS_MT_CONFIG = \
+				  MOD_MT_Namelist.o                \
+				  MOD_MT_Defs.o                    \
+				  MOD_MT_NcIO.o                    \
+				  MOD_MT_Methane_Registry.o        \
+				  MOD_MT_Methane_Const.o           \
+				  MOD_MT_Methane_Preprocessing.o   \
+				  MOD_MT_Methane_PHMapping.o
+
+
+${OBJS_MT_CONFIG} : %.o : %.F90 ${HEADER} ${OBJS_SHARED}
+	${FF} -c ${FOPTS} $(INCLUDE_DIR) -o .bld/$@ $< ${MOD_CMD}.bld
+
+OBJS_MT_CONFIG_T = $(addprefix .bld/,${OBJS_MT_CONFIG})
+
+MOD_SnowLayersCombineDivide.o: MOD_MT_SnowRemap.o
+MOD_MT_LandWork.o: MOD_MT_HydroDiagnostics.o
+MOD_Hydro_SoilWater.o MOD_SoilSnowHydrology.o: MOD_MT_HydroDiagnostics.o
+# The object lists are compiled in list order, and the material-transport
+# modules are listed after the host modules that use them.  These edges are
+# the ones make needs to build that chain out of order; each is a direct USE
+# whose target sits later in OBJS_BASIC.
+MOD_Vars_TimeVariables.o: MOD_MT_Rest.o
+MOD_MT_Rest.o: MOD_MT_Forcing.o MOD_MT_Vars.o
+MOD_MT_Forcing.o: MOD_MT_Vars.o MOD_MT_Frac.o MOD_MT_Providers.o MOD_MT_ForcingInput.o \
+                  MOD_UserSpecifiedForcing.o MOD_Vars_1DForcing.o
+MOD_MT_Frac.o: MOD_MT_Isotope_Registry.o MOD_MT_Providers.o
+MOD_MT_Providers.o: MOD_MT_Isotope_HDO.o MOD_MT_Isotope_O18.o
+MOD_MT_Vars.o: MOD_MT_Isotope_Lulcc.o
+MOD_UserSpecifiedForcing.o: MOD_Qsadv.o
+
+MOD_MT_SurfaceData.o: MOD_Block.o
+MOD_RegionClip.o: MOD_MT_SurfaceData.o
+MOD_MT_Methane_Aggregation.o: MOD_MT_Methane_Preprocessing.o MOD_MT_Methane_PHMapping.o MOD_MT_NcIO.o
+MKSRFDATA.o: MOD_MT_Methane_Aggregation.o
+MOD_BGC_Vars_1DFluxes.o MOD_MT_NitrogenLeaching.o: MOD_MT_BGC_NH4.o
+MOD_MT_LandWork.o: MOD_MT_ThermalDiagnostics.o
+MOD_LeafInterception.o: MOD_MT_CanopyDiagnostics.o
+MOD_LeafTemperature.o MOD_LeafTemperaturePC.o MOD_GroundTemperature.o MOD_GroundFluxes.o MOD_PhaseChange.o MOD_Thermal.o: MOD_MT_ThermalDiagnostics.o
+MOD_MT_SnowHost.o: MOD_SnowLayersCombineDivide.o
+MOD_Grid_RiverLakeHist.o: MOD_MT_RiverLakeCoupling.o
+MOD_Vars_1DFluxes.o MOD_Vars_1DAccFluxes.o MOD_MT_Hist.o: MOD_MT_HostHistory.o
+MOD_MT_HistoryRestart.o: MOD_MT_Vars.o
+MOD_HistAccRestart.o: MOD_MT_HistoryRestart.o
+MOD_MT_Runtime.o: MOD_MT_HostFixes.o MOD_HistAccRestart.o MOD_Forcing.o MOD_MT_LandPhase.o
+CoLM.o: MOD_MT_Runtime.o
+MOD_MT_Hist.o: MOD_MT_HostFixes.o
+MOD_MT_HistoryRestart.o: MOD_MT_HostHistory.o
+
+MOD_MT_LandPhase.o: MOD_MT_RiverLakeCoupling.o

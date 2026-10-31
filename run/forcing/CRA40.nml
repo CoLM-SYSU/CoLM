@@ -44,7 +44,8 @@
 
    DEF_forcing%vname    = 'TMP_GDS0_HTGL' 'SPF_H_GDS0_HTGL' 'PRES_P0_L1_GLL0' 'PRATE_P8_L1_GLL0_avg' 'U_GRD_GDS0_HTGL' 'V_GRD_GDS0_HTGL' 'DSWRF_P8_L1_GLL0_avg' 'DLWRF_P8_L1_GLL0_avg'
    DEF_forcing%timelog  = 'instant' 'instant' 'instant' 'forward' 'instant' 'instant' 'forward' 'forward'
-   DEF_forcing%tintalgo = 'linear' 'linear' 'linear' 'nearest' 'NULL' 'linear' 'coszen' 'linear'
+   ! u wind (5) is read (vname set), so it needs an interpolation; 'NULL' left it unset
+   DEF_forcing%tintalgo = 'linear' 'linear' 'linear' 'nearest' 'linear' 'linear' 'coszen' 'linear'
 
 
 /

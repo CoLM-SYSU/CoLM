@@ -12,6 +12,10 @@ MODULE MOD_Grid_RiverLakeHist
 
    USE MOD_Precision
    USE MOD_Grid_RiverLakeHistState
+#ifdef MaterialTransport
+   USE MOD_MT_RiverLakeCoupling, only: mt_rlc_write_history, mt_rlc_flush_history
+   PRIVATE :: mt_rlc_write_history, mt_rlc_flush_history
+#endif
 
    ! -- PUBLIC SUBROUTINEs --
    PUBLIC :: hist_grid_riverlake_init
@@ -99,9 +103,9 @@ CONTAINS
 
       ! ----- for auxiliary data -----
       IF (p_is_worker) THEN
-         IF (numucat  > 0) allocate (vec_ucat  (numucat ))
-         IF (numinpm  > 0) allocate (vec_grid  (numinpm ))
-         IF (numinpm  > 0) allocate (vec_inpm  (numinpm ))
+         allocate (vec_ucat  (numucat ))
+         allocate (vec_grid  (numinpm ))
+         allocate (vec_inpm  (numinpm ))
          allocate (vec_patch (numpatch))
 
          ! Patches excluding (type >= 99), virtual patches and thos forcing missed
@@ -135,7 +139,7 @@ CONTAINS
             END WHERE
          ENDIF
 
-         IF (numinpm > 0) allocate (sum_grid_area (numinpm))
+         allocate (sum_grid_area (numinpm))
          CALL worker_remap_data_pset2grid (remap_patch2inpm, vec_patch, vec_grid, &
             fillvalue = spval, filter = filter_ucat)
          CALL worker_push_data (allreduce_inpm, vec_grid, sum_grid_area, fillvalue = spval)
@@ -171,7 +175,7 @@ CONTAINS
             END WHERE
          ENDIF
 
-         IF (numinpm > 0) allocate (sum_rmth_area (numinpm))
+         allocate (sum_rmth_area (numinpm))
 
          CALL worker_remap_data_pset2grid (remap_patch2inpm, vec_patch, vec_grid, &
             fillvalue = spval, filter = filter_rivmth)
@@ -313,7 +317,7 @@ CONTAINS
       ENDIF
 
       IF (p_is_worker) THEN
-         IF (numinpm  > 0) allocate (acc_vec_grid (numinpm ))
+         allocate (acc_vec_grid (numinpm ))
       ENDIF
 
       IF (DEF_hist_vars%riv_height) THEN
@@ -418,7 +422,7 @@ CONTAINS
 
             IF (numucat > 0) THEN
                allocate (a_floodfrc_ucat (numucat))
-               WHERE (topo_area > 0)
+               WHERE (topo_area > 0 .and. a_floodarea /= spval)
                   a_floodfrc_ucat = a_floodarea / topo_area
                ELSE WHERE
                   a_floodfrc_ucat = spval
@@ -427,7 +431,7 @@ CONTAINS
                allocate (a_floodfrc_ucat (0))
             ENDIF
 
-            IF (numinpm > 0) allocate (a_floodfrc_inpm (numinpm))
+            allocate (a_floodfrc_inpm (numinpm))
 
             CALL worker_push_data (push_ucat2inpm, a_floodfrc_ucat, a_floodfrc_inpm, &
                fillvalue = spval, mode = 'average')
@@ -456,6 +460,12 @@ CONTAINS
                a_flddph = a_flddph / acctime_ucat
                a_storge = a_storge / acctime_ucat
                a_sfcelv = a_sfcelv / acctime_ucat
+            ELSE WHERE
+               a_rivsto = spval
+               a_fldsto = spval
+               a_flddph = spval
+               a_storge = spval
+               a_sfcelv = spval
             END WHERE
          ENDIF
       ENDIF
@@ -488,8 +498,8 @@ CONTAINS
                levsto_local = a_levsto / acctime_ucat
                levdph_local = a_levdph / acctime_ucat
             ELSE WHERE
-               levsto_local = 0._r8
-               levdph_local = 0._r8
+               levsto_local = spval
+               levdph_local = spval
             END WHERE
          ELSE
             allocate (levsto_local (0))
@@ -514,7 +524,7 @@ CONTAINS
             WHERE (acctime_ucat > 0.)
                bifout_local = a_bifout / acctime_ucat
             ELSE WHERE
-               bifout_local = 0._r8
+               bifout_local = spval
             END WHERE
          ELSE
             allocate (bifout_local (0))
@@ -535,12 +545,12 @@ CONTAINS
                      IF (a_bifflw_acctime(i) > 0._r8) THEN
                         bifflw_local(:, i) = a_bifflw_lev(:, i) / a_bifflw_acctime(i)
                      ELSE
-                        bifflw_local(:, i) = 0._r8
+                        bifflw_local(:, i) = spval
                      ENDIF
                   ENDDO
                ELSE
                   allocate (bifflw_local (npthlev_bif, npthout_local))
-                  bifflw_local = 0._r8
+                  bifflw_local = spval
                ENDIF
                allocate (pth_global_id_bif (ncol_local_bif))
                pth_global_id_bif(:) = pth_global_id(:)
@@ -565,6 +575,9 @@ CONTAINS
       IF (allocated (a_floodfrc_inpm)) deallocate (a_floodfrc_inpm)
       IF (allocated (acc_vec_grid   )) deallocate (acc_vec_grid   )
 
+#ifdef MaterialTransport
+      CALL mt_rlc_write_history (file_hist_ucat, itime_in_file_ucat, acctime_ucat)
+#endif
 
       ! ----- reservoir variables -----
       IF (DEF_Reservoir_Method > 0) THEN
@@ -664,6 +677,9 @@ CONTAINS
             a_qresv_out  (:) = 0.
          ENDIF
 
+#ifdef MaterialTransport
+         CALL mt_rlc_flush_history ()
+#endif
 
       ENDIF
 
@@ -672,10 +688,15 @@ CONTAINS
    !---------------------------------------
    SUBROUTINE hist_grid_riverlake_final ()
 
+   USE MOD_DataType, only: block_data_real8_2d_free_mem
    USE MOD_Grid_RiverLakeHistRoute, only: route_hist_final
    IMPLICIT NONE
 
       CALL route_hist_final ()
+
+      CALL block_data_real8_2d_free_mem (sumarea_ucat)
+      CALL block_data_real8_2d_free_mem (sumarea_inpm)
+      CALL block_data_real8_2d_free_mem (allups_mask_grid)
 
       IF (allocated(acctime_ucat    )) deallocate (acctime_ucat    )
       IF (allocated(a_wdsrf_ucat    )) deallocate (a_wdsrf_ucat    )

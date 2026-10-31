@@ -67,14 +67,6 @@
 #undef GridRiverLakeFlow
 #endif
 
-#undef GridRiverLakeSediment
-#if (!defined GridRiverLakeFlow)
-#undef GridRiverLakeSediment
-#endif
-#ifdef GridRiverLakeSediment
-#error "GridRiverLakeSediment is not yet coupled to this version of GridRiverLakeFlow"
-#endif
-
 ! 7. If defined, BGC model is used.
 #undef BGC
 
@@ -111,3 +103,31 @@
 
 ! 12. Hyperspectral scheme.
 #undef HYPERSPECTRAL
+
+! 13. If defined, material transport is compiled in (water isotopes,
+!     solutes, river sediment, methane). Each material is switched on
+!     in the namelist; with all of them off the results are unchanged.
+#undef MaterialTransport
+!    Conflicts : needs the van Genuchten-Mualem soil model.
+#if (defined MaterialTransport && defined Campbell_SOIL_MODEL)
+#error "MaterialTransport requires vanGenuchten_Mualem_SOIL_MODEL"
+#endif
+#if (defined MaterialTransport && defined CATCHMENT)
+#error "MaterialTransport does not support the catchment (unit-catchment) grid (CATCHMENT); use GRID or UNSTRUCTURED (vector)."
+#endif
+!    Material transport is only meaningful with river-lake routing: enable it
+!    automatically and drop the CaMa-Flood alternative (which does not route
+!    land runoff materials). URBAN_MODEL is not supported together with it.
+#if (defined MaterialTransport && defined URBAN_MODEL)
+#error "MaterialTransport does not support URBAN_MODEL; disable URBAN_MODEL to build material transport."
+#endif
+#ifdef MaterialTransport
+#ifdef CaMa_Flood
+#undef CaMa_Flood
+#endif
+#if (!defined SinglePoint)
+#ifndef GridRiverLakeFlow
+#define GridRiverLakeFlow
+#endif
+#endif
+#endif

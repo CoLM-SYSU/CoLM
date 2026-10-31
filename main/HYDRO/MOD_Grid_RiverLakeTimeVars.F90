@@ -40,7 +40,7 @@ MODULE MOD_Grid_RiverLakeTimeVars
    real(r8), save       :: acctime_rnof = 0._r8
    real(r8), allocatable :: acc_rnof_uc (:)
 
-   ! -- restart file path (saved for deferred sediment restart read) --
+   ! -- restart file path (saved for the deferred levee, bifurcation and material reads) --
    character(len=512) :: gridriver_restart_file = ''
 
    ! -- running state set aside while LULCC re-initializes (see hold_GridRiverLakeTimeVars_lulcc) --

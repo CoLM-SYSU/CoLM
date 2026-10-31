@@ -435,6 +435,7 @@ MODULE MOD_Namelist
    character(len=256) :: DEF_ReservoirPara_file    = 'null'
 
    logical  :: DEF_USE_EstimatedRiverDepth  = .true.
+   ! Grid reservoirs: 0 = off, 1 = Funato, 2 = H22 (CaMa-Flood PR124 implementation).
    integer  :: DEF_Reservoir_Method         = 0
    real(r8) :: DEF_GRIDBASED_ROUTING_MAX_DT = 3600.
    logical  :: DEF_GRIDBASED_ROUTING_MOMENTUM_DT_LIMIT = .false.
@@ -450,22 +451,6 @@ MODULE MOD_Namelist
 
    ! ----- sediment module -----
    logical  :: DEF_USE_SEDIMENT        = .false.
-   real(r8) :: DEF_SED_LAMBDA          = 0.4
-   real(r8) :: DEF_SED_LYRDPH          = 0.00005
-   real(r8) :: DEF_SED_DENSITY         = 2.65
-   real(r8) :: DEF_SED_WATER_DENSITY   = 1.0
-   real(r8) :: DEF_SED_VISKIN          = 1.0e-6
-   real(r8) :: DEF_SED_VONKAR          = 0.4
-   real(r8) :: DEF_SED_PSET            = 1.0
-   integer  :: DEF_SED_TOTLYRNUM       = 5
-   real(r8) :: DEF_SED_CFL_ADV         = 0.5
-   real(r8) :: DEF_SED_IGNORE_DPH      = 0.05
-   real(r8) :: DEF_SED_DT_MAX          = 3600.
-   character(len=256) :: DEF_SED_DIAMETER = "0.0002,0.002,0.02"
-   real(r8) :: DEF_SED_PYLD            = 0.01
-   real(r8) :: DEF_SED_PYLDC           = 2.0
-   real(r8) :: DEF_SED_PYLDPC          = 2.0
-   real(r8) :: DEF_SED_DSYLUNIT        = 1.0e-6
 
    ! ----- others -----
    character(len=5)   :: DEF_precip_phase_discrimination_scheme = 'II'
@@ -1395,24 +1380,6 @@ CONTAINS
       DEF_USE_LEVEE,                          &
       DEF_USE_BIFURCATION,                    &
 
-      DEF_USE_SEDIMENT,                       &
-      DEF_SED_LAMBDA,                         &
-      DEF_SED_LYRDPH,                         &
-      DEF_SED_DENSITY,                        &
-      DEF_SED_WATER_DENSITY,                  &
-      DEF_SED_VISKIN,                         &
-      DEF_SED_VONKAR,                         &
-      DEF_SED_PSET,                           &
-      DEF_SED_TOTLYRNUM,                      &
-      DEF_SED_CFL_ADV,                        &
-      DEF_SED_IGNORE_DPH,                     &
-      DEF_SED_DT_MAX,                         &
-      DEF_SED_DIAMETER,                       &
-      DEF_SED_PYLD,                           &
-      DEF_SED_PYLDC,                          &
-      DEF_SED_PYLDPC,                         &
-      DEF_SED_DSYLUNIT,                       &
-
       DEF_precip_phase_discrimination_scheme, &
 
       DEF_USE_SoilInit,                       &
@@ -1557,7 +1524,8 @@ CONTAINS
          IF (DEF_UnitCatchment_regional) THEN
             IF (trim(DEF_UnitCatchment_file) == 'null') &
                CALL CoLM_Stop ('Regional unit catchment requires DEF_UnitCatchment_file.')
-            IF (len_trim(DEF_dir_landdata) + len(REGIONAL_UNITCATCHMENT_SUFFIX) > len(DEF_dir_landdata)) &
+            IF (len_trim(DEF_dir_output) + len_trim(adjustl(DEF_CASE_NAME)) + 1 &
+                + len(REGIONAL_UNITCATCHMENT_SUFFIX) > len(DEF_dir_landdata)) &
                CALL CoLM_Stop ('Regional unit catchment path is too long.')
 #ifndef GridRiverLakeFlow
             CALL CoLM_Stop ('Regional unit catchment requires GridRiverLakeFlow.')
@@ -1576,6 +1544,9 @@ CONTAINS
 #if !defined GridRiverLakeFlow && !defined CaMa_Flood
          IF (DEF_USE_BIFURCATION) CALL CoLM_Stop ('Bifurcation requires a river routing solver.')
 #endif
+         ! The river sediment switch now belongs to &nl_colm_material and is
+         ! read by MOD_MT_Namelist (where its compile-time requirements are
+         ! checked).  It is intentionally not part of &nl_colm anymore.
          IF ((DEF_GridRiverLake_FloodFeedback .or. DEF_CaMa_FloodFeedback) .and. DEF_Runoff_SCHEME /= 0) THEN
             write(*,*) 'Note: DEF_Runoff_SCHEME is set to 0 for two-way river coupling.'
             DEF_Runoff_SCHEME = 0
@@ -2251,22 +2222,6 @@ ENDIF
       CALL mpi_bcast (DEF_USE_BIFURCATION                    ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
 
       CALL mpi_bcast (DEF_USE_SEDIMENT                       ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_LAMBDA                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_LYRDPH                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_DENSITY                        ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_WATER_DENSITY                  ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_VISKIN                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_VONKAR                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_PSET                           ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_TOTLYRNUM                      ,1   ,mpi_integer   ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_CFL_ADV                        ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_IGNORE_DPH                     ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_DT_MAX                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_DIAMETER                       ,256 ,mpi_character ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_PYLD                           ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_PYLDC                          ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_PYLDPC                         ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
-      CALL mpi_bcast (DEF_SED_DSYLUNIT                       ,1   ,mpi_real8     ,p_address_master ,p_comm_glb ,p_err)
 
       CALL mpi_bcast (DEF_HISTORY_IN_VECTOR                  ,1   ,mpi_logical   ,p_address_master ,p_comm_glb ,p_err)
 
@@ -3102,13 +3057,14 @@ ENDIF
 
    END SUBROUTINE sync_hist_vars_one
 
-   ! path of the regional unit catchment file written by mksrfdata
+   ! path of the regional unit catchment file written by mkinidata: in the case
+   ! directory next to restart and history, so landdata shared by cases is not written
    FUNCTION regional_unitcatchment_file () RESULT (fname)
 
    IMPLICIT NONE
    character(len=256) :: fname
 
-      fname = trim(DEF_dir_landdata) // REGIONAL_UNITCATCHMENT_SUFFIX
+      fname = trim(DEF_dir_output) // '/' // trim(adjustl(DEF_CASE_NAME)) // REGIONAL_UNITCATCHMENT_SUFFIX
 
    END FUNCTION regional_unitcatchment_file
 

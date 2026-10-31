@@ -6,6 +6,9 @@ MODULE MOD_Vars_1DFluxes
 !-----------------------------------------------------------------------
 
    USE MOD_Precision
+#ifdef MaterialTransport
+   USE MOD_MT_HostHistory, only: mt_allocate_frcsat_valid, mt_deallocate_frcsat_valid
+#endif
 #if (defined LULC_IGBP_PFT || defined LULC_IGBP_PC)
    USE MOD_Vars_1DPFTFluxes
 #endif
@@ -22,6 +25,9 @@ MODULE MOD_Vars_1DFluxes
    USE MOD_DA_Vars_1DFluxes
 #endif
    IMPLICIT NONE
+#ifdef MaterialTransport
+   PRIVATE :: mt_allocate_frcsat_valid, mt_deallocate_frcsat_valid
+#endif
    SAVE
 
 !-----------------------------------------------------------------------
@@ -159,6 +165,9 @@ CONTAINS
             allocate ( zerr   (numpatch) )  ; zerr   (:) = spval ! the error of energy balance [W/m2]
 
             allocate ( frcsat (numpatch) )  ; frcsat (:) = spval ! fraction of saturation area [-]
+#ifdef MaterialTransport
+            CALL mt_allocate_frcsat_valid(numpatch)
+#endif
             allocate ( rsur   (numpatch) )  ; rsur   (:) = spval ! surface runoff (mm h2o/s)
             allocate ( rsur_se(numpatch) )  ; rsur_se(:) = spval ! saturation excess surface runoff (mm h2o/s)
             allocate ( rsur_ie(numpatch) )  ; rsur_ie(:) = spval ! infiltration excess surface runoff (mm h2o/s)
@@ -257,6 +266,9 @@ CONTAINS
             deallocate ( xerr    )  ! the error of water balance [mm/s]
             deallocate ( zerr    )  ! the error of energy balance [W/m2]
             deallocate ( frcsat  )  ! fraction of saturation area [-]
+#ifdef MaterialTransport
+            CALL mt_deallocate_frcsat_valid()
+#endif
             deallocate ( rsur    )  ! surface runoff (mm h2o/s)
             deallocate ( rsur_se )  ! saturation excess surface runoff (mm h2o/s)
             deallocate ( rsur_ie )  ! infiltration excess surface runoff (mm h2o/s)

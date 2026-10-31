@@ -1,0 +1,59 @@
+&nl_colm_solute_parameter
+    ! ------------------------------------------------------------------
+    ! Dissolved nitrate nitrogen, a solute in the material transport.
+    !
+    !   &nl_colm_material
+    !      DEF_SOLUTE_NAMES       = 'NO3'
+    !      DEF_SOLUTE_PARAM_FILES = 'NO3:run/standard_no3_parameter.nml'
+    !   /
+    !
+    ! Tracked mass is kg N per kg water (dilute water: mg N/L divided by
+    ! 1.0e6).  With BGC compiled and run, the nitrate leached below the
+    ! soil (smin_no3_leached_vr) and that lost with surface runoff
+    ! (smin_no3_runoff_vr) are booked as external solute inputs by
+    ! MOD_MT_NitrogenLeaching; BGC files are not modified.  When
+    ! nitrification is disabled BGC produces no NO3, so no leaching input
+    ! is booked.
+    !
+    ! Without BGC the species moves conservatively with precipitation and
+    ! the configured initial concentration only.
+    !
+    ! Default rain concentration: 0.5 mg N/L, a commonly used background
+    ! for nitrate in precipitation.  It is a tunable default, not a value
+    ! derived for a specific station or period.  No practical solubility
+    ! limit is set; denitrification and plant uptake are not modelled here
+    ! (they belong to BGC).
+    !
+    ! Indirect N2O: DEF_SOLUTE%n2o_ef5 below sets this solute's factor
+    ! [kg N2O-N per kg N reaching the river]; a non-negative
+    ! DEF_MT_N2O_EF5_NO3 in &nl_colm_material overrides it (0 turns the
+    ! conversion off for this solute).  Applied once at
+    ! the land-to-river entry; the removed nitrogen leaves
+    ! to the atmosphere as N2O-N and the water is unchanged, so the river
+    ! mass balance stays closed.  Reference values (IPCC 2019 Refinement,
+    ! Vol. 4 Ch. 11): EF5g = 0.006 (groundwater/drainage), EF5r = 0.0025
+    ! (rivers), EF5e = 0.0025 (estuaries), total 0.011; the 2006 Guidelines
+    ! used a single 0.0075.  Tian, Cai & Akiyama (2019), Environ. Pollut.
+    ! 245:300-306: rivers 0.0030, groundwater 0.0060, lakes/reservoirs
+    ! 0.0012.  Maavara et al. (2019), Glob. Change Biol. 25:473-488:
+    ! residence-time-limited mechanistic modelling suggests IPCC factors may
+    ! overestimate inland-water N2O by up to an order of magnitude; river
+    ! N2O is mostly denitrification-derived.
+    !
+    ! Method caveat: entry-point EF5 is inventory arithmetic (N_leached x
+    ! EF5), not a mechanistic water-body model.  It does not represent the
+    ! emission location or residence time and must not be applied again
+    ! along the river.  Suggested use: start with 0.0025 (river component)
+    ! and use 0.006 / 0.011 as sensitivity bounds; 0 disables the conversion
+    ! and leaves results bit-identical.
+    ! ------------------------------------------------------------------
+    DEF_SOLUTE%unit_kind           = 'mass_fraction'
+    DEF_SOLUTE%mol_weight          = 14.007    ! kg N per mole of tracked N
+    DEF_SOLUTE%init_conc           = 0.0       ! [kg N / kg water]
+    DEF_SOLUTE%precip_default_conc = 5.0e-7    ! 0.5 mg N/L
+    DEF_SOLUTE%vapor_default_conc  = 0.0
+    DEF_SOLUTE%max_dissolved_conc  = 1.0       ! no practical limit
+    DEF_SOLUTE%decay_rate          = 0.0       ! first-order loss [1/s]
+    DEF_SOLUTE%n2o_ef5             = 2.5e-3    ! river component (IPCC 2019 EF5r); 0 disables
+    DEF_SOLUTE%charge              = -1
+/

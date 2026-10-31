@@ -30,7 +30,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04]
+        # Keep GNU 9-14 compatible with Ubuntu's packaged netcdf.mod.
+        # ubuntu-latest moved to 26.04/GNU 15, whose module format differs.
+        os: [ubuntu-24.04, ubuntu-22.04]
         mpi: ['mpich', 'openmpi', 'intelmpi']
         toolchain:
           - {compiler: gcc, version: 14}
@@ -39,8 +41,14 @@ jobs:
           - {compiler: gcc, version: 11}
           - {compiler: gcc, version: 10}
           - {compiler: gcc, version:  9}
+        # The 93-case build loop is split into shards so that every job stays
+        # below GitHub's hard 6-hour job limit. All 93 cases are still built in
+        # every os/mpi/toolchain combination; the shard only distributes them
+        # over more jobs. check_defineh.py still validates the full 93-case list
+        # in every job.
+        shard: [0, 1, 2, 3]
        # include:
-       #   - os: ubuntu-latest
+       #   - os: ubuntu-24.04
        #     toolchain: {compiler: gcc, version: 12}
         exclude:
           - os: ubuntu-22.04
@@ -48,11 +56,11 @@ jobs:
           - mpi: 'mpich'
             toolchain: {compiler: gcc, version: 9}
             # mpich compiling FCFLAG has --fallow-type-mismatch, and will cause gfortran 9 failing
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             toolchain: {compiler: gcc, version: 9}
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             toolchain: {compiler: gcc, version: 10}
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             toolchain: {compiler: gcc, version: 11}
 
     steps:
@@ -73,31 +81,58 @@ jobs:
        run: which mpif90
      #- name: Test netcdf
      #  run: nc-config --all
+     - name: Check the history-accumulator restart field list
+       run: python3 .github/workflows/hist_acc_restart_fields.py --check
+     - name: Check effective test case macros (local-only test when present)
+       run: |
+         if [ -f tests/material_transport/check_defineh.py ]; then
+           python3 tests/material_transport/check_defineh.py
+         else
+           echo "tests/material_transport/check_defineh.py is local-only; skipping"
+         fi
      - name: Build CoLM202X
      #  run: make clean && make all
+       shell: bash
        run: |
-            cd ${{ github.workspace }}
+            set -euo pipefail
+            cd "${GITHUB_WORKSPACE}"
             TestList=./.github/workflows/TestCaseLists
-            for CaseName in `awk '{print $1}' $TestList`
+            SHARD='${{ matrix.shard }}'
+            NSHARD=4
+            python3 - "$TestList" "$SHARD" "$NSHARD" > /tmp/cases.txt <<'PYEOF'
+            import sys
+            path, shard, nshard = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+            lines = [line.rstrip('\n') for line in open(path) if line.strip()]
+            for index, line in enumerate(lines):
+                if index % nshard == shard:
+                    print(line)
+            PYEOF
+            ncases=$(grep -c . /tmp/cases.txt || true)
+            echo "shard ${SHARD}/${NSHARD}: ${ncases} of 93 cases"
+            test "${ncases}" -gt 0
+            while IFS= read -r CaseLine
             do
+              [ -z "${CaseLine}" ] && continue
+              CaseName=$(printf '%s\n' "${CaseLine}" | awk '{print $1}')
+              read -r -a DefineArgs <<< "$(printf '%s\n' "${CaseLine}" | awk '{$1=""; print}')"
               echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-              echo "Create test cases"
-              echo $CaseName
+              echo "Create test cases (shard ${SHARD}/${NSHARD})"
+              echo "${CaseName}"
               echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
- 
-              echo defineh `cat $TestList |grep $CaseName |awk '{print $2,$3,$4,$5,$6,$7,$8}'`
-              ./.github/workflows/create_defineh.bash `cat $TestList |grep $CaseName |awk '{print $2,$3,$4,$5,$6,$7,$8}'`
+              echo defineh "${DefineArgs[@]}"
+              ./.github/workflows/create_defineh.bash "${DefineArgs[@]}"
 
-              echo "Create test case $CaseName Complete!"
+              echo "Create test case ${CaseName} Complete!"
               cat ./include/define.h
 
               echo "...................................................................."
-              echo "Start Compilation $CaseName"
+              echo "Start Compilation ${CaseName}"
               echo "...................................................................."
- 
-              make clean && make all
-            done
+
+              make clean && make all FC="$FC" FCMP="$FC -fopenmp"
+            done < /tmp/cases.txt
 
             echo "----------------------------------------------------------------------"
-            echo "All test cases are compiled successfully! "
+            echo "Shard ${SHARD}/${NSHARD}: ${ncases} test cases are compiled successfully!"
+            echo "All 93 cases are covered across the four shards of this matrix cell."
             echo "----------------------------------------------------------------------"

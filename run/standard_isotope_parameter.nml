@@ -1,0 +1,56 @@
+&nl_colm_isotope_parameter
+    ! ------------------------------------------------------------------
+    ! Water isotope settings, read when DEF_USE_ISOTOPE = .true. and
+    ! DEF_ISOTOPE_PARAM_FILE points here. Every entry is optional; the
+    ! values below are the code defaults.
+    ! ------------------------------------------------------------------
+    DEF_ISO_USE_FRACTIONATION      = .false.
+    DEF_ISO_KINETIC_SCHEME         = 'MERLIVAT1978'   ! or 'CAPPA2003'
+    DEF_ISO_ICE_SUPERSAT_SLOPE     = 0.003
+    DEF_ISO_CG_RELHUM_MAX          = 0.99
+    DEF_ISO_OPEN_WATER_KINETIC     = 'MJ79'           ! or 'EXPONENT'
+    DEF_ISO_SUBL_SKIN_MM           = 5.0              ! ice skin sublimation draws from [mm]; no fractionation
+    DEF_ISO_SOIL_KINETIC           = 'RESISTANCE'     ! or 'EXPONENT'
+    DEF_ISO_SOIL_DIFFUSION         = .true.
+    DEF_ISO_SOIL_VAPOR_DIFFUSION   = .true.
+    DEF_ISO_CANOPY_EQUILIBRATION   = 0.0
+    DEF_ISO_SNOWMELT_EQUILIBRATION = 0.0
+    DEF_ISO_NSS_LEAF_WATER_PER_LAI = 0.12             ! leaf water [mm per LAI]; ratio kept when LAI changes
+    DEF_ISO_NSS_LEAF_PATH_LENGTH   = 0.01
+    DEF_ISO_NSS_LEAF_RB            = 100.
+
+    DEF_ISO_REF_RATIO_H2_18O       = 2.0052e-3        ! VSMOW 18O/16O
+    DEF_ISO_INIT_DELTA_H2_18O      = -10.0            ! initial delta-18O [permil]
+    DEF_ISO_REF_RATIO_HDO          = 1.5576e-4        ! VSMOW D/H
+    DEF_ISO_INIT_DELTA_HDO         = -70.0            ! initial delta-D [permil]
+/
+
+&nl_colm_mt_forcing
+    ! ------------------------------------------------------------------
+    ! Forcing of one species. IsoGSM fields are SMOW-normalised
+    ! (raw = water * R/Rstd); 'normalized_over_total' recovers
+    ! R = raw/total*Rstd. Without a group, precipitation and vapour carry
+    ! the species' initial delta.
+    ! ------------------------------------------------------------------
+    forcing_species    = 'H2_18O'
+    forcing_num        = 2
+    forcing_role       = 'precip', 'vapor'
+    forcing_fprefix    = 'IsoGSM_prate', 'IsoGSM_Q'
+    forcing_vname      = 'prate1sfc', 'spfh12m'
+    forcing_tintalgo   = 'nearest', 'linear'
+    forcing_dtime      = 21600, 21600
+    forcing_offset     = 10800, 10800
+    forcing_input_mode = 'normalized_over_total', 'normalized_over_total'
+/
+
+&nl_colm_mt_forcing
+    forcing_species    = 'HDO'
+    forcing_num        = 2
+    forcing_role       = 'precip', 'vapor'
+    forcing_fprefix    = 'IsoGSM_prate', 'IsoGSM_Q'
+    forcing_vname      = 'prate2sfc', 'spfh22m'
+    forcing_tintalgo   = 'nearest', 'linear'
+    forcing_dtime      = 21600, 21600
+    forcing_offset     = 10800, 10800
+    forcing_input_mode = 'normalized_over_total', 'normalized_over_total'
+/

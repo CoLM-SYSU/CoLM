@@ -78,6 +78,9 @@ CONTAINS
 #if (defined CaMa_Flood) || (defined GridRiverLakeFlow)
                       ,flddepth      ,fldfrc        ,fevpg_fld                    &
 #endif
+#ifdef MaterialTransport
+                      ,thermal_diag             &
+#endif
                        )
 
 !=======================================================================
@@ -149,6 +152,9 @@ CONTAINS
    ! without them (checked: land restart bit-identical to upstream).
    USE MOD_Namelist, only: LWEVAP => DEF_GridRiverLake_FloodFeedback
 #endif
+#endif
+#ifdef MaterialTransport
+   USE MOD_MT_ThermalDiagnostics, only: mt_canopy_diagnostics, mt_thermal_diagnostics, mt_thermal_reset, mt_canopy_average
 #endif
 
    IMPLICIT NONE
@@ -284,6 +290,9 @@ CONTAINS
    real(r8), intent(inout) :: flddepth   ! inundation depth [mm]
    real(r8), intent(in)    :: fldfrc     ! inundation fraction [0-1]
    real(r8), intent(out)   :: fevpg_fld  ! inundation evaporation [mm/s]
+#endif
+#ifdef MaterialTransport
+   type(mt_thermal_diagnostics), intent(inout), optional :: thermal_diag
 #endif
 
        ! state variables (2)
@@ -507,6 +516,10 @@ CONTAINS
    real(r8), allocatable :: assimsha_p    (:)
    real(r8), allocatable :: etrsha_p      (:)
    real(r8), allocatable :: dheatl_p      (:)
+#ifdef MaterialTransport
+   type(mt_canopy_diagnostics) :: canopy_diag
+   type(mt_canopy_diagnostics), allocatable :: canopy_diag_p(:)
+#endif
 
 
 !=======================================================================
@@ -534,6 +547,10 @@ CONTAINS
       assim  = 0.;  respc  = 0.
       hprl   = 0.;  dheatl = 0.
 
+#ifdef MaterialTransport
+      canopy_diag = mt_canopy_diagnostics()
+      CALL mt_thermal_reset(thermal_diag, lb, nl_soil)
+#endif
       emis   = 0.;  z0m    = 0.
       zol    = 0.;  rib    = 0.
       ustar  = 0.;  qstar  = 0.
@@ -676,7 +693,12 @@ ENDIF
                          !taux,tauy,fseng,fevpg,tref,qref, &
                          taux,tauy,fseng,fseng_soil,fseng_snow, &
                          fevpg,fevpg_soil,fevpg_snow,tref,qref, &
+#ifdef MaterialTransport
+                         z0m_g,z0h_g,zol_g,rib_g,ustar_g,qstar_g,tstar_g,fm_g,fh_g,fq_g, &
+                         canopy_diag=canopy_diag)
+#else
                          z0m_g,z0h_g,zol_g,rib_g,ustar_g,qstar_g,tstar_g,fm_g,fh_g,fq_g)
+#endif
 
       obu_g = forc_hgt_u / zol_g
 
@@ -747,7 +769,12 @@ IF ( patchtype==0.and.DEF_USE_LCT .or. patchtype>0 ) THEN
 !End WUE stomata model parameter
                  forc_hpbl   ,&
                  qintr_rain  ,qintr_snow  ,t_precip    ,hprl        ,dheatl      ,&
+#ifdef MaterialTransport
+                 smp         ,hk(1:)      ,hksati(1:)  ,rootflux(1:)               &
+                ,canopy_diag=canopy_diag)
+#else
                  smp         ,hk(1:)      ,hksati(1:)  ,rootflux(1:)              )
+#endif
       ELSE
          tleaf         = forc_t
          laisun        = 0.
@@ -808,12 +835,15 @@ IF (patchtype == 0) THEN
       allocate ( fh_p              (ps:pe) )
       allocate ( fq_p              (ps:pe) )
 
-      allocate ( hprl_p            (ps:pe) )
-      allocate ( assimsun_p        (ps:pe) )
-      allocate ( etrsun_p          (ps:pe) )
-      allocate ( assimsha_p        (ps:pe) )
-      allocate ( etrsha_p          (ps:pe) )
-      allocate ( dheatl_p          (ps:pe) )
+      allocate ( hprl_p            (ps:pe))
+      allocate ( assimsun_p        (ps:pe))
+      allocate ( etrsun_p          (ps:pe))
+      allocate ( assimsha_p        (ps:pe))
+      allocate ( etrsha_p          (ps:pe))
+      allocate ( dheatl_p          (ps:pe))
+#ifdef MaterialTransport
+      allocate (canopy_diag_p(ps:pe))
+#endif
 
       sabv_p(ps:pe) = sabvsun_p(ps:pe) + sabvsha_p(ps:pe)
       sabv = sabvsun + sabvsha
@@ -957,7 +987,12 @@ IF (patchtype == 0) THEN
                  forc_hpbl                                                                         ,&
                  qintr_rain_p(i) ,qintr_snow_p(i) ,t_precip        ,hprl_p(i)       ,dheatl_p(i)   ,&
                  smp             ,hk(1:)          ,hksati(1:)      ,rootflux_p(1:,i)                ,&
+#ifdef MaterialTransport
+                 ipft_index=i                                        , &
+                 canopy_diag=canopy_diag_p(i))
+#else
                  ipft_index=i)
+#endif
          ELSE
 
             CALL GroundFluxes (zlnd,zsno,forc_hgt_u,forc_hgt_t,forc_hgt_q,forc_hpbl, &
@@ -968,7 +1003,11 @@ IF (patchtype == 0) THEN
                                taux_p(i),tauy_p(i),fseng_p(i),fseng_soil_p(i),fseng_snow_p(i), &
                                fevpg_p(i),fevpg_soil_p(i),fevpg_snow_p(i),tref_p(i),qref_p(i), &
                                z0m_p(i),z0h_g,zol_p(i),rib_p(i),ustar_p(i),&
+#ifdef MaterialTransport
+                               qstar_p(i),tstar_p(i),fm_p(i),fh_p(i),fq_p(i),canopy_diag=canopy_diag_p(i))
+#else
                                qstar_p(i),tstar_p(i),fm_p(i),fh_p(i),fq_p(i))
+#endif
 
             tleaf_p      (i) = forc_t
             gssun_p      (i) = 0.
@@ -1064,7 +1103,12 @@ IF ( DEF_USE_PC .and. pn.ge.ps ) THEN
          forc_hpbl            ,&
          qintr_rain_p(ps:pe)  ,qintr_snow_p(ps:pe)  ,t_precip             ,hprl_p(:)            ,&
          dheatl_p(ps:pe)      ,smp                  ,hk(1:)               ,hksati(1:)           ,&
+#ifdef MaterialTransport
+         rootflux_p(:,:)                                          &
+        ,canopy_diag=canopy_diag_p(ps:pe)                                  )
+#else
          rootflux_p(:,:)       )
+#endif
 
       dlrad_p      (ps:pe) = dlrad
       ulrad_p      (ps:pe) = ulrad
@@ -1145,6 +1189,9 @@ ENDIF
       etrsha_out    = sum( etrsha_p    (ps:pe)*pftfrac(ps:pe) )
       hprl          = sum( hprl_p      (ps:pe)*pftfrac(ps:pe) )
       dheatl        = sum( dheatl_p    (ps:pe)*pftfrac(ps:pe) )
+#ifdef MaterialTransport
+      CALL mt_canopy_average(ps, pe, canopy_diag_p, pftfrac(ps:pe), canopy_diag)
+#endif
 IF (DEF_USE_OZONESTRESS)THEN
       o3uptakesun   = sum(o3uptakesun_p(ps:pe)*pftfrac(ps:pe) )
       o3uptakesha   = sum(o3uptakesha_p(ps:pe)*pftfrac(ps:pe) )
@@ -1203,10 +1250,16 @@ END IF
       deallocate ( assimsha_p   )
       deallocate ( etrsha_p     )
       deallocate ( dheatl_p     )
+#ifdef MaterialTransport
+      deallocate (canopy_diag_p)
+#endif
 
 ENDIF
 #endif
 
+#ifdef MaterialTransport
+      IF (present(thermal_diag)) thermal_diag%canopy = canopy_diag
+#endif
 #if (defined CaMa_Flood) || (defined GridRiverLakeFlow)
       ! CaMa: inundation evaporation is part of the ground energy balance
       IF (LWEVAP .and. patchtype == 0 .and. &
@@ -1256,7 +1309,12 @@ ENDIF
                       t_soisno,t_grnd,t_soil,t_snow,wice_soisno,wliq_soisno,scv,snowdp,fsno,&
                       frl,dlrad,sabg,sabg_soil,sabg_snow,sabg_snow_lyr,&
                       fseng,fseng_soil,fseng_snow,fevpg,fevpg_soil,fevpg_snow,cgrnd,htvp,emg,&
+#ifdef MaterialTransport
+                      imelt,snofrz,sm,xmf,fact,pg_rain,pg_snow,t_precip &
+                     ,thermal_diag=thermal_diag)
+#else
                       imelt,snofrz,sm,xmf,fact,pg_rain,pg_snow,t_precip)
+#endif
 
 !=======================================================================
 ! [6] Correct fluxes to present soil temperature

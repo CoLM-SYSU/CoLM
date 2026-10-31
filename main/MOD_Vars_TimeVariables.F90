@@ -1109,6 +1109,13 @@ CONTAINS
    USE MOD_Vars_Global
    USE MOD_Vars_TimeInvariants, only: dz_lake
    USE MOD_Const_LC, only: patchtypes
+#ifdef MaterialTransport
+   USE MOD_MT_Rest, only: mt_write_host_restart
+#ifdef GridRiverLakeFlow
+   USE MOD_MT_RiverLake, only: mt_riverlake_write_restart
+   USE MOD_MT_Lifecycle, only: mt_lifecycle_route_write_restart
+#endif
+#endif
    IMPLICIT NONE
 
    integer, intent(in) :: idate(3)
@@ -1249,6 +1256,11 @@ ENDIF
       CALL ncio_write_vector (file_restart, 'fm   ', 'patch', landpatch, fm   , compress) ! integral of profile FUNCTION for momentum
       CALL ncio_write_vector (file_restart, 'fh   ', 'patch', landpatch, fh   , compress) ! integral of profile FUNCTION for heat
       CALL ncio_write_vector (file_restart, 'fq   ', 'patch', landpatch, fq   , compress) ! integral of profile FUNCTION for moisture
+#ifdef MaterialTransport
+      CALL mt_write_host_restart (file_restart, maxsnl, nl_soil, numpatch, &
+         ldew_rain, ldew_snow, wliq_soisno, wice_soisno, wa, wdsrf, wetwat, scv, &
+         compress, waterstorage)
+#endif
 
 IF (DEF_USE_IRRIGATION) THEN
       CALL ncio_write_vector (file_restart, 'irrig_rate            ' , 'patch',landpatch,irrig_rate            , compress)
@@ -1295,6 +1307,12 @@ ENDIF
 #ifdef GridRiverLakeFlow
       file_restart = trim(dir_restart)// '/'//trim(cdate)//'/' // trim(site) //'_restart_gridriver_'//trim(cdate)//'_lc'//trim(cyear)//'.nc'
       CALL WRITE_GridRiverLakeTimeVars (file_restart)
+#ifdef MaterialTransport
+      ! river material pools (mt_* variables) and the state of the materials
+      ! with their own river state (sediment) into the same file, before the commit
+      CALL mt_riverlake_write_restart (file_restart)
+      CALL mt_lifecycle_route_write_restart (file_restart)
+#endif
       CALL commit_GridRiverLakeRestart (file_restart)
 #endif
 

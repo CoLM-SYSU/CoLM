@@ -66,12 +66,15 @@ OBJS_SHARED =    \
 				  MOD_ElmVector.o              \
 				  MOD_HRUVector.o              \
 				  MOD_MeshFilter.o             \
+				  MOD_MT_SurfaceData.o            \
 				  MOD_RegionClip.o
 
 ${OBJS_SHARED} : %.o : %.F90 ${HEADER}
 	${FF} -c ${FOPTS} $(INCLUDE_DIR) -o .bld/$@ $< ${MOD_CMD}.bld
 
 OBJS_SHARED_T = $(addprefix .bld/,${OBJS_SHARED})
+
+include main/MATERIAL/Makefile.material
 
 OBJS_MKSRFDATA = \
 				  Aggregation_PercentagesPFT.o           \
@@ -90,24 +93,22 @@ OBJS_MKSRFDATA = \
 				  Aggregation_Urban.o                    \
 				  Aggregation_SoilTexture.o              \
 				  MOD_Lulcc_TransferTrace.o              \
-				  MOD_UnitCatchmentSubset.o              \
-				  MOD_UnitCatchmentRegional.o            \
+				  MOD_MT_Methane_Aggregation.o           \
 				  MKSRFDATA.o
 
-MOD_UnitCatchmentRegional.o: MOD_UnitCatchmentSubset.o
-MKSRFDATA.o: MOD_UnitCatchmentRegional.o
+MKSRFDATA.o: MOD_MT_Methane_Preprocessing.o
 
-$(OBJS_MKSRFDATA) : %.o : %.F90 ${HEADER} ${OBJS_SHARED}
+$(OBJS_MKSRFDATA) : %.o : %.F90 ${HEADER} ${OBJS_SHARED} ${OBJS_MT_CONFIG}
 	${FF} -c ${FOPTS} $(INCLUDE_DIR) -o .bld/$@ $< ${MOD_CMD}.bld
 
 OBJS_MKSRFDATA_T = $(addprefix .bld/,${OBJS_MKSRFDATA})
 
 # ------- Target 1: mksrfdata --------
-mksrfdata.x : mkdir_build ${HEADER} ${OBJS_SHARED} ${OBJS_MKSRFDATA}
+mksrfdata.x : mkdir_build ${HEADER} ${OBJS_SHARED} ${OBJS_MT_CONFIG} ${OBJS_MKSRFDATA}
 	@echo ''
 	@echo 'making CoLM surface data start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 	@echo ''
-	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_MKSRFDATA_T} -o run/mksrfdata.x ${LDFLAGS}
+	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_MT_CONFIG_T} ${OBJS_MKSRFDATA_T} -o run/mksrfdata.x ${LDFLAGS}
 	@echo ''
 	@echo '<<<<<<<<<<<<<<<<<<<<<<<<<< making CoLM surface data completed!'
 	@echo ''
@@ -125,12 +126,20 @@ OBJS_BASIC =    \
 				 MOD_Grid_RiverLakeVectorIO.o    \
 				 MOD_Grid_RiverLakeNetwork.o     \
 				 MOD_Grid_Reservoir.o            \
+				 MOD_Grid_ReservoirUpstream.o    \
 				 MOD_Grid_RiverLakeLevee.o       \
 				 MOD_Grid_RiverLakeBifurcation.o \
 				 MOD_Grid_RiverLakeHistState.o   \
 				 MOD_Grid_RiverLakeHistShard.o   \
 				 MOD_Grid_RiverLakeHistRoute.o   \
+				 MOD_MT_Solute.o                 \
+				 MOD_MT_NitrogenN2O.o            \
+				 MOD_MT_Lifecycle.o              \
 				 MOD_Grid_RiverLakeTimeVars.o    \
+				 MOD_MT_RiverLake.o              \
+				 MOD_MT_Sediment.o               \
+				 MOD_MT_HostHistory.o            \
+				 MOD_MT_BGC_NH4.o                \
 				 MOD_BGC_Vars_1DFluxes.o         \
 				 MOD_BGC_Vars_1DPFTFluxes.o      \
 				 MOD_BGC_Vars_PFTimeVariables.o  \
@@ -146,10 +155,36 @@ OBJS_BASIC =    \
 				 MOD_Vars_1DPFTFluxes.o          \
 				 MOD_Vars_1DFluxes.o             \
 				 MOD_Vars_1DForcing.o            \
+				 MOD_MT_HydroDiagnostics.o      \
+				 MOD_MT_ThermalDiagnostics.o     \
+				 MOD_MT_CanopyDiagnostics.o      \
+				 MOD_MT_LandWork.o              \
+				 MOD_MT_SnowRemap.o             \
 				 MOD_Hydro_SoilFunction.o        \
 				 MOD_Hydro_SoilWater.o           \
 				 MOD_Eroot.o                     \
 				 MOD_Qsadv.o                     \
+				 MOD_UserSpecifiedForcing.o      \
+				 MOD_MT_Isotope_Registry.o       \
+				 MOD_MT_Isotope_O18.o            \
+				 MOD_MT_Isotope_HDO.o            \
+				 MOD_MT_Isotope_Lulcc.o          \
+				 MOD_MT_Isotope_SoilFlow.o       \
+				 MOD_MT_Providers.o              \
+				 MOD_MT_Frac.o                   \
+				 MOD_MT_EvapLimit.o              \
+				 MOD_MT_Vars.o                   \
+				 MOD_MT_Conservation.o           \
+				 MOD_MT_SoilInit.o               \
+				 MOD_MT_ForcingInput.o           \
+				 MOD_MT_Forcing.o                \
+				 MOD_MT_Precip.o                 \
+				 MOD_MT_Evapo.o                  \
+				 MOD_MT_SoilWater.o              \
+				 MOD_MT_NitrogenLeaching.o       \
+				 MOD_MT_Snow.o                   \
+				 MOD_MT_HistoryRestart.o         \
+				 MOD_MT_Rest.o                   \
 				 MOD_LAIEmpirical.o              \
 				 MOD_LAIReadin.o                 \
 				 MOD_CropReadin.o                \
@@ -189,25 +224,30 @@ OBJS_BASIC =    \
 				 MOD_Initialize.o
 
 
-$(OBJS_BASIC) : %.o : %.F90 ${HEADER} ${OBJS_SHARED}
+$(OBJS_BASIC) : %.o : %.F90 ${HEADER} ${OBJS_SHARED} ${OBJS_MT_CONFIG}
 	${FF} -c ${FOPTS} $(INCLUDE_DIR) -o .bld/$@ $< ${MOD_CMD}.bld
 
 OBJS_BASIC_T = $(addprefix .bld/,${OBJS_BASIC})
 
 OBJS_MKINIDATA = \
+				  MOD_UnitCatchmentSubset.o              \
+				  MOD_UnitCatchmentRegional.o            \
 				  CoLMINI.o
 
-$(OBJS_MKINIDATA) : %.o : %.F90 ${HEADER} ${OBJS_SHARED} ${OBJS_BASIC}
+MOD_UnitCatchmentRegional.o: MOD_UnitCatchmentSubset.o
+CoLMINI.o: MOD_UnitCatchmentRegional.o
+
+$(OBJS_MKINIDATA) : %.o : %.F90 ${HEADER} ${OBJS_SHARED} ${OBJS_MT_CONFIG} ${OBJS_BASIC}
 	${FF} -c ${FOPTS} $(INCLUDE_DIR) -o .bld/$@ $< ${MOD_CMD}.bld
 
 OBJS_MKINIDATA_T = $(addprefix .bld/,${OBJS_MKINIDATA})
 
 # -------- Target 2: mkinidata -------
-mkinidata.x : mkdir_build ${HEADER} ${OBJS_SHARED} ${OBJS_BASIC} ${OBJS_MKINIDATA}
+mkinidata.x : mkdir_build ${HEADER} ${OBJS_SHARED} ${OBJS_MT_CONFIG} ${OBJS_BASIC} ${OBJS_MKINIDATA}
 	@echo ''
 	@echo 'making CoLM initial data start >>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 	@echo ''
-	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_BASIC_T} ${OBJS_MKINIDATA_T} -o run/mkinidata.x ${LDFLAGS}
+	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_MT_CONFIG_T} ${OBJS_BASIC_T} ${OBJS_MKINIDATA_T} -o run/mkinidata.x ${LDFLAGS}
 	@echo ''
 	@echo '<<<<<<<<<<<<<<<<<<<<<<<<< making CoLM initial data completed!'
 	@echo ''
@@ -297,7 +337,6 @@ OBJS_MAIN = \
 				MOD_BGC_Veg_CNFireBase.o                  \
 				MOD_BGC_Veg_CNFireLi2016.o                \
 				MOD_Vars_2DForcing.o                      \
-				MOD_UserSpecifiedForcing.o                \
 				MOD_ForcingDownscaling.o                  \
 				MOD_Forcing.o                             \
 				MOD_DA_TWS.o                              \
@@ -323,6 +362,7 @@ OBJS_MAIN = \
 				MOD_Runoff.o                              \
 				MOD_SoilSnowHydrology.o                   \
 				MOD_SnowLayersCombineDivide.o             \
+				MOD_MT_SnowHost.o                         \
 				MOD_PhaseChange.o                         \
 				MOD_Glacier.o                             \
 				MOD_Lake.o                                \
@@ -339,6 +379,7 @@ OBJS_MAIN = \
 				MOD_CaMa_Vars.o                           \
 				MOD_CaMa_colmCaMa.o                       \
 				MOD_Thermal.o                             \
+				MOD_MT_LandPhase.o                        \
 				MOD_Vars_1DAccFluxes.o                    \
 				MOD_Irrigation.o                          \
 				MOD_BGC_driver.o                          \
@@ -346,11 +387,30 @@ OBJS_MAIN = \
 				MOD_HistGridded.o                         \
 				MOD_HistVector.o                          \
 				MOD_HistSingle.o                          \
+				MOD_MT_Hist.o                             \
+				MOD_MT_Methane_VegOverride.o              \
+				MOD_MT_Methane_GIEMS.o                    \
+				MOD_MT_Methane_pH.o                       \
+				MOD_MT_Methane_State.o                    \
+				MOD_MT_Methane_Microbes.o                 \
+				MOD_MT_Methane_WetlandBGC.o               \
+				MOD_MT_Methane_BgcLink.o                  \
+				MOD_MT_Methane_AccFlux.o                  \
+				MOD_MT_Methane_Physics.o                  \
+				MOD_MT_Methane_Driver.o                   \
+				MOD_MT_Methane_Hist.o                     \
+				MOD_MT_Methane_Impl.o                     \
+				MOD_MT_Methane.o                          \
+				MT_RegisterProviders.o                    \
+				MOD_MT_HostFixes.o                        \
+				MOD_MT_SpecialPatches.o                   \
 				MOD_Grid_RiverLakeHist.o                  \
+				MOD_HistAccRestart.o                      \
 				MOD_Hist.o                                \
 				MOD_CheckEquilibrium.o                    \
 				MOD_LightningData.o                       \
 				MOD_Catch_LateralFlow.o                   \
+				MOD_MT_RiverLakeCoupling.o                \
 				MOD_Grid_RiverLakeFlow.o                  \
 				MOD_Urban_Longwave.o                      \
 				MOD_Urban_NetSolar.o                      \
@@ -371,7 +431,9 @@ OBJS_MAIN = \
 				MOD_Lulcc_TransferTraceReadin.o           \
 				MOD_Lulcc_MassEnergyConserve.o            \
 				MOD_Lulcc_Initialize.o                    \
+				MOD_MT_Lulcc.o                            \
 				MOD_Lulcc_Driver.o                        \
+				MOD_MT_Runtime.o                          \
 				CoLMDRIVER.o                              \
 				CoLMMAIN.o                                \
 				CoLM.o
@@ -381,14 +443,6 @@ $(OBJS_MAIN) : %.o : %.F90 ${HEADER} ${OBJS_SHARED} ${OBJS_BASIC}
 
 MOD_Urban_Thermal.o: MOD_Urban_Flux.o
 MOD_LeafTemperature.o MOD_LeafTemperaturePC.o: MOD_LeafInterception.o
-MOD_Grid_RiverLakeNetwork.o: MOD_Grid_RiverLakePush.o
-MOD_Grid_RiverLakeBifurcation.o MOD_Grid_RiverLakeHistRoute.o MOD_Grid_RiverLakeTimeVars.o: MOD_Grid_RiverLakeVectorIO.o
-MOD_Grid_RiverLakeLevee.o: MOD_Grid_RiverLakeNetwork.o MOD_Vector_ReadWrite.o
-MOD_Grid_RiverLakeBifurcation.o: MOD_Grid_Reservoir.o MOD_Grid_RiverLakeLevee.o
-MOD_Grid_RiverLakeHistRoute.o: MOD_Grid_RiverLakeHistShard.o MOD_Grid_Reservoir.o
-MOD_Grid_RiverLakeTimeVars.o: MOD_Grid_RiverLakeBifurcation.o MOD_Grid_RiverLakeLevee.o
-MOD_Vars_TimeVariables.o: MOD_Grid_RiverLakeTimeVars.o
-MOD_Grid_RiverLakeFlow.o: MOD_Grid_RiverLakeHist.o
 
 OBJS_MAIN_T = $(addprefix .bld/,${OBJS_MAIN})
 
@@ -396,21 +450,21 @@ OBJS_MAIN_T = $(addprefix .bld/,${OBJS_MAIN})
 
 ifneq (${CaMa},YES)# Compile CoLM decoupled without river routing scheme (CaMa-Flood)
 
-colm.x : mkdir_build ${HEADER} ${OBJS_SHARED} ${OBJS_BASIC} ${OBJS_MAIN}
+colm.x : mkdir_build ${HEADER} ${OBJS_SHARED} ${OBJS_MT_CONFIG} ${OBJS_BASIC} ${OBJS_MAIN}
 	@echo ''
 	@echo 'making CoLM start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 	@echo ''
-	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_BASIC_T} ${OBJS_MAIN_T} -o run/colm.x ${LDFLAGS}
+	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_MT_CONFIG_T} ${OBJS_BASIC_T} ${OBJS_MAIN_T} -o run/colm.x ${LDFLAGS}
 	@echo ''
 	@echo '<<<<<<<<<<<<<<<<<<<<<<<<<<<<< making CoLM completed!'
 	@echo ''
 
 else
-colm.x : mkdir_build  ${HEADER} ${OBJS_SHARED} ${OBJECTS_CAMA} ${OBJS_BASIC} ${OBJS_MAIN}
+colm.x : mkdir_build  ${HEADER} ${OBJS_SHARED} ${OBJS_MT_CONFIG} ${OBJECTS_CAMA} ${OBJS_BASIC} ${OBJS_MAIN}
 	@echo ''
 	@echo 'making CoLM with CaMa start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
 	@echo ''
-	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_BASIC_T} ${OBJS_CAMA_T} ${OBJS_MAIN_T} -o run/colm.x ${LDFLAGS}
+	${FF} ${FOPTS} ${OBJS_SHARED_T} ${OBJS_MT_CONFIG_T} ${OBJS_BASIC_T} ${OBJS_CAMA_T} ${OBJS_MAIN_T} -o run/colm.x ${LDFLAGS}
 
 	@echo ''
 	@echo '<<<<<<<<<<<<<<<<<<<<<<<<<<<< making CoLM with CaMa completed!'

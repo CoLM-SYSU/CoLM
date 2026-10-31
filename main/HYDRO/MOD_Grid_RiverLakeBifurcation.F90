@@ -16,7 +16,7 @@ MODULE MOD_Grid_RiverLakeBifurcation
    USE MOD_Namelist, only: DEF_USE_LEVEE
    USE MOD_SPMD_Task
    USE MOD_Grid_Reservoir, only: ucat2resv
-   USE MOD_Grid_RiverLakeLevee, only: has_levee, levdph, levsto, &
+   USE MOD_Grid_RiverLakeLevee, only: has_levee, levdph, levsto, levee_bashgt, &
       levee_visible_volume_from_stage
    USE MOD_Grid_RiverLakeNetwork, only: floodplain_curve
    IMPLICIT NONE
@@ -483,6 +483,10 @@ CONTAINS
                IF (has_levee(i_ucat)) THEN
                   has_levee_r8(i_ucat) = 1._r8
                   protected_wdsrf_ucat(i_ucat) = floodplain_curve(i_ucat)%rivhgt + levdph(i_ucat)
+                  ! A dry protected pool has zero depth but its bed is above
+                  ! the floodplain datum. Wet levdph already includes this bed.
+                  IF (levsto(i_ucat) <= 0._r8) protected_wdsrf_ucat(i_ucat) = &
+                     floodplain_curve(i_ucat)%rivhgt + levee_bashgt(i_ucat)
                ELSE
                   protected_wdsrf_ucat(i_ucat) = wdsrf_ucat(i_ucat)
                ENDIF
@@ -1124,15 +1128,15 @@ CONTAINS
                   ! volwater_ucat as zero placeholders for wet levee cells.
                   storage = levee_visible_volume_from_stage(i, wdsrf, levsto(i)) + MAX(levsto(i), 0._r8)
                ELSE
-                  storage = storage_with_river_prism(i, wdsrf)
+                  storage = storage_from_stage(i, wdsrf)
                ENDIF
             ELSE
-               storage = storage_with_river_prism(i, wdsrf)
+               storage = storage_from_stage(i, wdsrf)
             ENDIF
          ELSEIF (has_levee_cell .and. allocated(levsto)) THEN
             storage = levee_visible_volume_from_stage(i, wdsrf, levsto(i)) + MAX(levsto(i), 0._r8)
          ELSE
-            storage = storage_with_river_prism(i, wdsrf)
+            storage = storage_from_stage(i, wdsrf)
          ENDIF
 
       END FUNCTION available_storage_ucat
@@ -1185,12 +1189,12 @@ CONTAINS
             ELSEIF (has_levee_cell) THEN
                storage = levee_visible_volume_from_stage(i, wdsrf, levsto(i))
             ELSE
-               storage = storage_with_river_prism(i, wdsrf)
+               storage = storage_from_stage(i, wdsrf)
             ENDIF
          ELSEIF (has_levee_cell .and. allocated(levsto)) THEN
             storage = levee_visible_volume_from_stage(i, wdsrf, levsto(i))
          ELSE
-            storage = storage_with_river_prism(i, wdsrf)
+            storage = storage_from_stage(i, wdsrf)
          ENDIF
          storage = max(storage, 0._r8)
 
@@ -1226,11 +1230,11 @@ CONTAINS
 
 
       ! =========================================================================
-      FUNCTION storage_with_river_prism (i, wdsrf) RESULT(storage)
+      FUNCTION storage_from_stage (i, wdsrf) RESULT(storage)
    ! =========================================================================
    !
-   ! Limiter storage reference using the same above-bank river-prism convention
-   ! as levee visible/total storage.
+   ! Ordinary cells must use the same stage-volume curve as the host.
+   ! Leveed cells use levee_visible_volume_from_stage at their call sites.
    !
    ! =========================================================================
 
@@ -1241,12 +1245,9 @@ CONTAINS
    real(r8)             :: storage
 
       storage = floodplain_curve(i)%volume(wdsrf)
-      IF (wdsrf > floodplain_curve(i)%rivhgt) THEN
-         storage = storage + floodplain_curve(i)%rivare * (wdsrf - floodplain_curve(i)%rivhgt)
-      ENDIF
       storage = MAX(storage, 0._r8)
 
-   END FUNCTION storage_with_river_prism
+   END FUNCTION storage_from_stage
 
 
    ! =========================================================================

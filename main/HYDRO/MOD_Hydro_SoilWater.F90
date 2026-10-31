@@ -16,6 +16,9 @@ MODULE MOD_Hydro_SoilWater
 !-------------------------------------------------------------------------
 
    USE MOD_Precision
+#ifdef MaterialTransport
+   USE MOD_MT_HydroDiagnostics, only: mt_water_diagnostics
+#endif
    USE MOD_Hydro_SoilFunction
    USE MOD_Namelist, only: DEF_USE_PLANTHYDRAULICS
    USE MOD_UserDefFun, only: findloc_ud
@@ -164,7 +167,11 @@ CONTAINS
          vl_r,       psi_s,      hksat,  nprm,     prms,          porsl_wa, &
          qgtop,      etr,        rootr,  rootflux, rsubst,        qinfl,    &
          ss_dp,      zwt,        wa,     ss_vliq,  smp,           hk,       &
-         qlayer,     tolerance,  wblc)
+         qlayer, &
+#ifdef MaterialTransport
+         water_diag, &
+#endif
+         tolerance, wblc)
 
    !=======================================================================
    ! this is the main subroutine to execute the calculation of
@@ -212,6 +219,9 @@ CONTAINS
    real(r8), intent(out) :: hk (1:nlev) ! hydraulic conductivity (mm/s)
 
    real(r8), intent(out) :: qlayer(0:nlev) ! water flux at interface of soil layers (mm/s)
+#ifdef MaterialTransport
+   type(mt_water_diagnostics), intent(inout) :: water_diag
+#endif
 
    real(r8), intent(in)  :: tolerance
 
@@ -286,12 +296,19 @@ CONTAINS
          etrdef = 0.
          etroot(:) = rootflux
       ENDIF
+#ifdef MaterialTransport
+      CALL water_diag%reset_soil(nlev)
+      water_diag%etroot = etroot
+#endif
 
       deficit = etrdef
 
       DO ilev = 1, izwt-1
          IF (is_permeable(ilev)) THEN
 
+#ifdef MaterialTransport
+            CALL water_diag%begin_root_uptake(ss_vliq(ilev), sp_dz(ilev))
+#endif
             ss_vliq(ilev) = (ss_vliq(ilev) * sp_dz(ilev) &
                - etroot(ilev)*dt - deficit) / sp_dz(ilev)
 
@@ -304,6 +321,9 @@ CONTAINS
             ELSE
                deficit = 0.
             ENDIF
+#ifdef MaterialTransport
+            CALL water_diag%end_root_uptake(ilev, ss_vliq(ilev), sp_dz(ilev))
+#endif
          ELSE
             deficit = deficit + etroot(ilev)*dt
          ENDIF
@@ -315,9 +335,16 @@ CONTAINS
 
       ! Exchange water with aquifer
       wexchange = rsubst * dt + deficit
+#ifdef MaterialTransport
+      CALL water_diag%begin_aquifer_exchange(nlev, sp_zi, is_permeable, porsl, ss_vliq, zwt, wa, ss_dp)
+#endif
       CALL soilwater_aquifer_exchange ( &
          nlev, wexchange, sp_zi, is_permeable, porsl, vl_r, psi_s, hksat, &
          nprm, prms, porsl_wa, ss_dp, ss_vliq, zwt, wa, izwt)
+#ifdef MaterialTransport
+      CALL water_diag%end_aquifer_exchange(nlev, sp_zi, is_permeable, porsl, ss_vliq, zwt, wa, ss_dp, &
+         rsubst*dt, deficit)
+#endif
 
       ! water table location
       ss_wt(:) = 0._r8
@@ -465,6 +492,7 @@ CONTAINS
       ENDDO
 
    END SUBROUTINE soil_water_vertical_movement
+
 
    ! --- water exchange between soil water and aquifer ---
    SUBROUTINE soilwater_aquifer_exchange ( &

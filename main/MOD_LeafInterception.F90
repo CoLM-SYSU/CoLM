@@ -31,8 +31,14 @@ MODULE MOD_LeafInterception
    USE MOD_Precision
    USE MOD_Const_Physical, only: tfrz, denh2o, denice, cpliq, cpice, hfus
    USE MOD_Namelist, only: DEF_Interception_scheme, DEF_VEG_SNOW
+#ifdef MaterialTransport
+   USE MOD_MT_CanopyDiagnostics, only: mt_canopy_drainage, mt_canopy_drain
+#endif
 
    IMPLICIT NONE
+#ifdef MaterialTransport
+   PRIVATE :: mt_canopy_drainage, mt_canopy_drain
+#endif
 
    real(r8), parameter ::  CICE        = 2.094E06  !specific heat capacity of ice (j/m3/k)
    real(r8), parameter ::  bp          = 20.
@@ -46,6 +52,7 @@ MODULE MOD_LeafInterception
    ! Tolerance for interception water balance checks [mm]
    ! Used by check_interception_balance subroutine under CoLMDEBUG
    real(r8), parameter ::  INTERCEPTION_BALANCE_TOL = 1.0e-5_r8
+
 
    !----------------------- Dummy argument --------------------------------
    real(r8) :: satcap                     ! maximum allowed water on canopy [mm]
@@ -416,6 +423,10 @@ CONTAINS
          qintr_rain = prc_rain + prl_rain + qflx_irrig_sprinkler - thru_rain / deltim
          qintr_snow = prc_snow + prl_snow - thru_snow / deltim
 
+#ifdef MaterialTransport
+         CALL mt_canopy_drain%capture(deltim, tex_rain, tex_snow)
+#endif
+
 #if (defined CoLMDEBUG)
          w = w - ldew - (pg_rain+pg_snow)*deltim
          IF (abs(w) > INTERCEPTION_BALANCE_TOL) THEN
@@ -453,6 +464,10 @@ CONTAINS
          qintr      = 0.
          qintr_rain = 0.
          qintr_snow = 0.
+
+#ifdef MaterialTransport
+         CALL mt_canopy_drain%clear()
+#endif
 
       ENDIF
 
@@ -638,6 +653,9 @@ CONTAINS
 #ifdef CROP
    integer  :: irrig_flag  ! 1 if sprinker, 2 if others
 #endif
+#ifdef MaterialTransport
+   type(mt_canopy_drainage) :: mt_drain_sum
+#endif
    real(r8) pg_rain_tmp, pg_snow_tmp, qflx_irrig_sprinkler_
 
       pg_rain_tmp = 0.
@@ -651,6 +669,9 @@ CONTAINS
 
       ps = patch_pft_s(ipatch)
       pe = patch_pft_e(ipatch)
+#ifdef MaterialTransport
+      CALL mt_drain_sum%clear()
+#endif
 
       IF (DEF_Interception_scheme==1) THEN
          DO i = ps, pe
@@ -660,6 +681,9 @@ CONTAINS
                                                 ldew_p(i),ldew_rain_p(i),ldew_snow_p(i),z0m_p(i),hu,pg_rain,pg_snow,qintr_p(i),qintr_rain_p(i),qintr_snow_p(i))
             pg_rain_tmp = pg_rain_tmp + pg_rain*pftfrac(i)
             pg_snow_tmp = pg_snow_tmp + pg_snow*pftfrac(i)
+#ifdef MaterialTransport
+            CALL mt_drain_sum%accumulate(mt_canopy_drain, pftfrac(i))
+#endif
          ENDDO
       ELSEIF (DEF_Interception_scheme==8) THEN
          DO i = ps, pe
@@ -670,6 +694,9 @@ CONTAINS
                                              ldew_p(i),ldew_rain_p(i),ldew_snow_p(i),z0m_p(i),hu,pg_rain,pg_snow,qintr_p(i),qintr_rain_p(i),qintr_snow_p(i))
             pg_rain_tmp = pg_rain_tmp + pg_rain*pftfrac(i)
             pg_snow_tmp = pg_snow_tmp + pg_snow*pftfrac(i)
+#ifdef MaterialTransport
+            CALL mt_drain_sum%accumulate(mt_canopy_drain, pftfrac(i))
+#endif
          ENDDO
       ELSE
          write(6,*) 'LEAF_interception_pftwrap requires scheme 1 or 8'
@@ -684,6 +711,9 @@ CONTAINS
       qintr   = sum(qintr_p(ps:pe) * pftfrac(ps:pe))
       qintr_rain = sum(qintr_rain_p(ps:pe) * pftfrac(ps:pe))
       qintr_snow = sum(qintr_snow_p(ps:pe) * pftfrac(ps:pe))
+#ifdef MaterialTransport
+      mt_canopy_drain = mt_drain_sum
+#endif
 
    END SUBROUTINE LEAF_interception_pftwrap
 #endif

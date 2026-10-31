@@ -47,14 +47,14 @@
    ! levee (levee_frc, levee_hgt) and reservoir parameters.
    DEF_UnitCatchment_file = '/path/to/CoLMruntime/unitcatchment/grid_routing_data_15min.nc'
 
-   ! Route only the river systems that the land domain covers. mksrfdata writes the
-   ! cut network to landdata/riverlake/unitcatchment_regional.nc; rerun mksrfdata and
-   ! mkinidata after switching. With LULCC, run mksrfdata for all land-cover years
-   ! before mkinidata: each year adds the river systems it needs to the same file.
+   ! Route only the river systems that the land domain covers. mkinidata writes the
+   ! cut network to <DEF_dir_output>/<case>/riverlake/unitcatchment_regional.nc; rerun
+   ! mkinidata (not mksrfdata) after switching. With LULCC it keeps the river systems
+   ! of the land patches of every land-cover year from the start to the end year.
    DEF_UnitCatchment_regional = .true.
 
-   ! reservoirs: 0 = off, 1 = Funato et al. (CaMa-Flood v4.20) operation
-   ! (2 = Hanazaki et al. 2022 is reserved, not implemented yet)
+   ! reservoirs: 0 = off, 1 = Funato, 2 = H22 (CaMa-Flood PR124 implementation).
+   ! H22 additionally requires dam_upreal [km2] in DEF_ReservoirPara_file.
    DEF_Reservoir_Method   = 1
    DEF_ReservoirPara_file = '/path/to/CoLMruntime/unitcatchment/grid_routing_data_15min.nc'
 

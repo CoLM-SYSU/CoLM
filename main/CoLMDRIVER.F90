@@ -1,6 +1,10 @@
 #include <define.h>
 
+#ifdef MaterialTransport
+SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro,istep_in)
+#else
 SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
+#endif
 
 
 !=======================================================================
@@ -25,7 +29,10 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
    USE MOD_LandUrban, only: patch2urban
    USE MOD_Namelist, only: DEF_forcing, DEF_URBAN_RUN
    USE MOD_Forcing, only: forcmask_pch
-   USE omp_lib
+#ifdef MaterialTransport
+   USE MOD_MT_LandPhase, only: mt_lake_step, mt_land_after_bgc, mt_report
+   USE MOD_MT_SpecialPatches, only: mt_waterbody_hist_sample
+#endif
 #ifdef HYPERSPECTRAL
   USE MOD_HighRes_Parameters
 #endif
@@ -52,18 +59,15 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
    logical,  intent(in) :: dosst    ! true if time for update sst/ice/snow
 
    real(r8), intent(inout) :: oro(numpatch)  ! ocean(0)/seaice(2)/ flag
+#ifdef MaterialTransport
+   integer,  intent(in), optional :: istep_in
+#endif
 
    real(r8) :: deltim_phy
    integer  :: steps_in_one_deltim
    integer  :: i, m, u, k
 
 ! ======================================================================
-
-#ifdef OPENMP
-!$OMP PARALLEL DO NUM_THREADS(OPENMP) &
-!$OMP PRIVATE(i, m, u, k, steps_in_one_deltim, deltim_phy) &
-!$OMP SCHEDULE(STATIC, 1)
-#endif
 
       DO i = 1, numpatch
 
@@ -91,6 +95,9 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
          IF (.not.DEF_URBAN_RUN .or. m.ne.URBAN) THEN
 
             DO k = 1, steps_in_one_deltim
+#ifdef MaterialTransport
+               mt_waterbody_hist_sample = k == steps_in_one_deltim
+#endif
                !                ***** Call CoLM main program *****
                !
                CALL CoLMMAIN (  i,idate,         coszen(i),       deltim_phy,      &
@@ -216,6 +223,9 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
                ustar(i),        qstar(i),        tstar(i),                         &
                fm(i),           fh(i),           fq(i)                             )
 
+#ifdef MaterialTransport
+               CALL mt_lake_step (istep_in, i, idate, deltim_phy, k, steps_in_one_deltim)
+#endif
             ENDDO
          ENDIF
 
@@ -227,6 +237,9 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
             !
             CALL bgc_driver (i,idate(1:3),deltim, patchlatr(i)*180/PI,patchlonr(i)*180/PI)
          ENDIF
+#ifdef MaterialTransport
+         CALL mt_land_after_bgc (istep_in, i, idate, deltim, patchtype(i))
+#endif
 #endif
 
 
@@ -370,9 +383,9 @@ SUBROUTINE CoLMDRIVER (idate,deltim,dolai,doalb,dosst,oro)
 
 #endif
       ENDDO
-#ifdef OPENMP
-!$OMP END PARALLEL DO
-#endif
 
+#ifdef MaterialTransport
+      CALL mt_report ()
+#endif
 END SUBROUTINE CoLMDRIVER
 ! ---------- EOP ------------

@@ -19,11 +19,18 @@ MODULE MOD_BGC_Soil_BiogeochemNLeaching
    USE MOD_BGC_Vars_TimeInvariants, only: sf, sf_no3
    USE MOD_Vars_TimeVariables, only: wliq_soisno
    USE MOD_BGC_Vars_TimeVariables,   only: sminn_vr, smin_no3_vr
+#ifdef MaterialTransport
+   USE MOD_BGC_Vars_TimeVariables, only: smin_nh4_vr
+   USE MOD_MT_BGC_NH4, only: mt_nh4_leach_layer
+#endif
    USE MOD_Vars_1DFluxes,     only: rnof, rsur
    USE MOD_BGC_Vars_1DFluxes, only: &
        sminn_leached_vr, smin_no3_leached_vr, smin_no3_runoff_vr
  
    IMPLICIT NONE
+#ifdef MaterialTransport
+   PRIVATE :: mt_nh4_leach_layer
+#endif
  
    PUBLIC SoilBiogeochemNLeaching
 
@@ -101,6 +108,10 @@ CONTAINS
          !----------------------------------------
   
          DO j = 1,nl_soil
+#ifdef MaterialTransport
+            CALL mt_nh4_leach_layer(j, i, sf, smin_nh4_vr(j,i), dz_soi(j), &
+               wliq_soisno(j,i), tot_water, drain_tot, deltim)
+#endif
             ! calculate the dissolved mineral N concentration (gN/kg water)
             ! assumes that 10% of mineral nitrogen is soluble
             disn_conc = 0._r8
